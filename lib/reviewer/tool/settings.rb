@@ -2,7 +2,7 @@
 
 # Converts/casts tool configuration values and provides default values if not set
 module Reviewer
-  module Tools
+  module Tool
     class Settings
       class MissingReviewCommandError < StandardError; end
 
