@@ -3,6 +3,7 @@
 require "yaml"
 require "active_support/core_ext/hash/indifferent_access"
 
+# Loads the YAML configuration and converts to a hash with indifferent access
 module Reviewer
   module Tools
     class Loader

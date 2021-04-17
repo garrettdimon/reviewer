@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Converts/casts tool configuration values and provides default values if not set
 module Reviewer
   module Tools
     class Settings
