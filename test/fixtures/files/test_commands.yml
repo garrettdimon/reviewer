@@ -1,0 +1,50 @@
+# For Testing Enabled Tool Option Loading
+enabled:
+  description: 'Run the tests.'
+  tags: [disabled, test, fixture]
+  links:
+    home: 'https://example.com'
+    install: 'https://example.com/install'
+    ignore_syntax: 'https://example.com/ignore'
+  commands:
+    install: 'bundle exec gem install example'
+    prepare: 'bundle exec example update'
+    review: 'bundle exec example review'
+    format: 'bundle exec example format'
+    quiet_flag: '--quiet'
+    max_exit_status: 3
+  env:
+    first: 'first environment variable'
+    second: 'second environment variable'
+  flags:
+    third: 'third flag'
+    fourth: 'fourth flag'
+
+# For Testing Disabled Tools
+disabled:
+  disabled: true
+  description: 'Run the tests.'
+  tags: [disabled, test, fixture]
+  links:
+    home: 'https://example.com'
+    install: 'https://example.com/install'
+    ignore_syntax: 'https://example.com/ignore'
+  commands:
+    install: 'bundle exec gem install example'
+    prepare: 'bundle exec example update'
+    review: 'bundle exec example review'
+    format: 'bundle exec example format'
+    quiet_flag: '--quiet'
+    max_exit_status: 3
+  env:
+    first: 'first environment variable'
+    second: 'second environment variable'
+  flags:
+    third: 'third flag'
+    fourth: 'fourth flag'
+
+# For Testing Defaults
+minimum:
+  description: 'Run the tests.'
+  commands:
+    review: 'bundle exec example review'

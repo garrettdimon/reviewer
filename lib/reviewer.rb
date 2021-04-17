@@ -3,6 +3,7 @@
 require_relative "reviewer/version"
 require_relative "reviewer/configuration"
 require_relative "reviewer/command"
+require_relative "reviewer/tools"
 
 module Reviewer
   class Error < StandardError; end
