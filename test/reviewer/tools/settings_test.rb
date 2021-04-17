@@ -71,7 +71,7 @@ module Reviewer
         assert_equal @config[:env], settings.env
       end
 
-      def test_provides_the_tool_environment_variables_with_empty_hash_as_default
+      def test_provides_the_tool_flags_with_empty_hash_as_default
         settings = ::Reviewer::Tools::Settings.new(tool: @tool, config: @config)
         assert_equal Hash.new, settings.flags
 

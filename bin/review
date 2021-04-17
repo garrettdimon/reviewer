@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/reviewer/command'
+require_relative '../lib/reviewer'
 
-Reviewer::Command.new.run
+Reviewer.run

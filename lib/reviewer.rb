@@ -2,7 +2,7 @@
 
 require_relative "reviewer/version"
 require_relative "reviewer/configuration"
-require_relative "reviewer/command"
+require_relative "reviewer/arguments"
 require_relative "reviewer/tools"
 
 module Reviewer
@@ -10,6 +10,13 @@ module Reviewer
 
   class << self
     attr_writer :configuration
+  end
+
+  def self.run
+    options = Arguments.new
+    # TODO: Make it actually run the tools.
+    puts "Running with the following options:"
+    pp options
   end
 
   def self.configuration

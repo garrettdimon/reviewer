@@ -4,7 +4,7 @@ require 'slop'
 
 # Handles option parsing for bin/review
 module Reviewer
-  class Command
+  class Arguments
     attr_accessor :options
 
     def initialize(options = ARGV)
@@ -22,10 +22,6 @@ module Reviewer
           exit
         end
       end
-    end
-
-    def run
-      # TODO
     end
 
     def files
