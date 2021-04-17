@@ -1,0 +1,3 @@
+# Intentionallay malformed YAML for testing.
+key:
+  other_key: "Test "broken" value."
