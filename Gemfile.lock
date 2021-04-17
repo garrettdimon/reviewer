@@ -1,0 +1,23 @@
+PATH
+  remote: .
+  specs:
+    reviewer (0.1.0)
+      slop
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.14.4)
+    rake (13.0.3)
+    slop (4.8.2)
+
+PLATFORMS
+  x86_64-darwin-19
+
+DEPENDENCIES
+  minitest (~> 5.0)
+  rake (~> 13.0)
+  reviewer!
+
+BUNDLED WITH
+   2.2.16
