@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "tools/loader"
+require_relative "tools/settings"
 
 module Reviewer
   module Tools
