@@ -4,7 +4,7 @@ require "test_helper"
 
 module Reviewer
   module Tools
-    class ToolsTest < MiniTest::Test
+    class LoaderTest < MiniTest::Test
       def setup
         Reviewer.configure do |config|
           config.file = 'test/fixtures/files/test_commands.yml'
