@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/string"
 require_relative "tool/command"
 require_relative "tool/env"
 require_relative "tool/flags"

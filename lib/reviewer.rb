@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "active_support/core_ext/string"
+
 require_relative "reviewer/arguments"
 require_relative "reviewer/configuration"
 require_relative "reviewer/loader"
