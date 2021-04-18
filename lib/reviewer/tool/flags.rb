@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Assembles tool settings into a usable command string
+# Assembles tool flag settings into a single string or array
 module Reviewer
   class Tool
     class Flags

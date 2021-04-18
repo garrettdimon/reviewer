@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "tool/command"
+require_relative "tool/env"
 require_relative "tool/flags"
 require_relative "tool/settings"
 
@@ -9,7 +10,8 @@ module Reviewer
   class Tool
     attr_reader :settings
 
-    def initialize
+    def initialize(tool_key)
+      @settings = Settings.new(tool: @tool, config: @config)
     end
 
     def install

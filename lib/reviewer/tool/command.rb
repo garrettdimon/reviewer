@@ -11,12 +11,16 @@ module Reviewer
         @quiet = quiet
       end
 
-      def flags
-        Flags.new(settings.flags)
+      def env
+        Env.new(settings.env)
       end
 
-      def env
+      def body
         ''
+      end
+
+      def flags
+        Flags.new(settings.flags)
       end
 
       def verbosity
