@@ -16,29 +16,5 @@ module Reviewer
       @settings = Settings.new(tool)
       @command = Command.new(settings)
     end
-
-    def install
-      return unless settings.commands.key?(:install)
-
-      ''
-    end
-
-    def prepare
-      return unless settings.commands.key?(:prepare)
-
-      ''
-    end
-
-    def review
-      return unless settings.commands.key?(:review)
-
-      ''
-    end
-
-    def format
-      return unless settings.commands.key?(:format)
-
-      ''
-    end
   end
 end
