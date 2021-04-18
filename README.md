@@ -1,8 +1,10 @@
+**Note:** As of April 18th, 2021, Reviewer is a work in progress and does not actually do anything just yet. Hopefully soon.
+
 # Reviewer
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/reviewer`. To experiment with that code, run `bin/console` for an interactive prompt.
+Reviewer is a gem to reduce the friction of using automated tools for dependency audits, static analysis, linting, testing, and more.
 
-TODO: Delete this and the text above, and describe your gem
+Reviewer provides a standardized way to configue commands that makes it easier to run them on a regular basis. For more detailed information, take a look at the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) and [Usage](https://github.com/garrettdimon/reviewer/wiki/Usage) pages in the wiki.
 
 ## Installation
 
