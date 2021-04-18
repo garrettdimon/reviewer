@@ -3,7 +3,7 @@
 require "test_helper"
 
 module Reviewer
-  module Tool
+  class Tool
     class SettingsTest < MiniTest::Test
       def setup
         @tool = :example
@@ -33,7 +33,7 @@ module Reviewer
 
       def test_provides_the_tool_description
         settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal '', settings.description
+        assert_equal "(No description provided for '#{@tool}')", settings.description
 
         @config[:description] = 'description'
         settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)

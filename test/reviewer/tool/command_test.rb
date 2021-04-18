@@ -3,12 +3,9 @@
 require "test_helper"
 
 module Reviewer
-  module Tool
+  class Tool
     class CommandTest < MiniTest::Test
       def setup
-      end
-
-      def teardown
       end
     end
   end

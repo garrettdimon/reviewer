@@ -2,7 +2,7 @@
 
 # Converts/casts tool configuration values and provides default values if not set
 module Reviewer
-  module Tool
+  class Tool
     class Settings
       class MissingReviewCommandError < StandardError; end
 
@@ -34,7 +34,7 @@ module Reviewer
       end
 
       def description
-        config.fetch(:description) { '' }
+        config.fetch(:description) { "(No description provided for '#{name}')" }
       end
 
       def tags

@@ -2,28 +2,24 @@
 
 # Assembles tool settings into a usable command string
 module Reviewer
-  module Tool
+  class Tool
     class Command
-      attr_reader :settings, :silent
+      attr_reader :settings, :quiet
 
-      def initialize(tool:, config:, silent: true)
+      def initialize(tool:, config:, quiet: true)
         @settings = Settings.new(tool: tool, config: config)
-        @silent = silent
+        @quiet = quiet
       end
 
-      def install
+      def flags
         ''
       end
 
-      def prepare
+      def env
         ''
       end
 
-      def review
-        ''
-      end
-
-      def format
+      def verbosity
         ''
       end
     end
