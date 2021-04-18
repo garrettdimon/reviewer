@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/string"
-
 # Converts/casts tool configuration values and provides default values if not set
 module Reviewer
   class Tool
