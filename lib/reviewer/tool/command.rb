@@ -4,11 +4,27 @@
 module Reviewer
   class Tool
     class Command
-      attr_reader :settings, :quiet
+      TYPES = %i[install prepare review format].freeze
 
-      def initialize(settings, quiet: true)
+      attr_reader :settings, :command_type, :verbosity_level
+
+      def initialize(settings, command_type: nil, verbosity_level: nil)
         @settings = settings
-        @quiet = quiet
+        @command_type = command_type
+        @verbosity_level = verbosity_level
+      end
+
+      def to_s
+        to_a.map(&:strip).join(' ')
+      end
+
+      def to_a
+        [
+          env,
+          body,
+          flags,
+          verbosity
+        ].compact
       end
 
       def env
@@ -16,7 +32,8 @@ module Reviewer
       end
 
       def body
-        ''
+        # Body.new(settings.commands, command_type: command_type)
+        '<command body goes here>'
       end
 
       def flags
@@ -24,7 +41,7 @@ module Reviewer
       end
 
       def verbosity
-        ''
+        Verbosity.new(settings.quiet_flag, level: verbosity_level)
       end
     end
   end
