@@ -56,6 +56,14 @@ module Reviewer
       def commands
         config.fetch(:commands) { {} }
       end
+
+      def max_exit_status
+        commands.fetch(:max_exit_status) { 0 }
+      end
+
+      def quiet_flag
+        commands.fetch(:quiet_flag) { '' }
+      end
     end
   end
 end

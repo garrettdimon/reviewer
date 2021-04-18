@@ -83,6 +83,30 @@ module Reviewer
         assert_equal @config[:flags], settings.flags
       end
 
+      def test_provides_the_tool_max_exit_status_with_zero_as_default
+        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
+        assert_equal 0, settings.max_exit_status
+
+        @config[:commands] = {
+          review: 'example review',
+          max_exit_status: 3
+        }
+        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
+        assert_equal @config.dig(:commands, :max_exit_status), settings.max_exit_status
+      end
+
+      def test_provides_the_tool_quiet_flag_with_empty_string_as_default
+        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
+        assert_equal '', settings.quiet_flag
+
+        @config[:commands] = {
+          review: 'example review',
+          quiet_flag: '--silent'
+        }
+        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
+        assert_equal @config.dig(:commands, :quiet_flag), settings.quiet_flag
+      end
+
       def test_provides_the_tool_commands_with_empty_hash_as_default
         settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
         assert_equal @config[:commands], settings.commands
