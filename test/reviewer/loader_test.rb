@@ -21,8 +21,14 @@ module Reviewer
 
     def test_hashes_configuration_with_indiffferent_access
       loader = Loader.new
-      assert loader.configuration.key?(:enabled)
-      assert loader.configuration.key?('enabled')
+      assert loader.configuration.key?(:enabled_tool)
+      assert loader.configuration.key?('enabled_tool')
+    end
+
+    def test_to_h
+      loader_hash = Loader.new.to_h
+      assert loader_hash.is_a? Hash
+      assert loader_hash.key? :enabled_tool
     end
 
     def test_fails_gracefully_when_configuration_yaml_missing

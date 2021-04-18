@@ -15,6 +15,9 @@ module Reviewer
       @configuration = HashWithIndifferentAccess.new(configuration_hash)
     end
 
+    def to_h
+      configuration
+    end
 
     private
 

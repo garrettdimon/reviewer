@@ -10,5 +10,9 @@ module Reviewer
     def initialize
       @file = "#{DEFAULT_CONFIGURATION_PATH}/#{DEFAULT_CONFIGURATION_FILE}"
     end
+
+    def tools
+      @tools ||= Loader.new.to_h
+    end
   end
 end

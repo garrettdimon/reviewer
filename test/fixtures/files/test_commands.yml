@@ -1,5 +1,5 @@
 # For Testing Enabled Tool Option Loading
-enabled:
+enabled_tool:
   description: 'Run the tests.'
   tags: [disabled, test, fixture]
   links:
@@ -21,7 +21,7 @@ enabled:
     fourth: 'fourth flag'
 
 # For Testing Disabled Tools
-disabled:
+disabled tool:
   disabled: true
   description: 'Run the tests.'
   tags: [disabled, test, fixture]
@@ -44,7 +44,6 @@ disabled:
     fourth: 'fourth flag'
 
 # For Testing Defaults
-minimum:
-  description: 'Run the tests.'
+minimum_viable_tool:
   commands:
     review: 'bundle exec example review'
