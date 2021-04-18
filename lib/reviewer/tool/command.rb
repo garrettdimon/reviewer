@@ -12,7 +12,7 @@ module Reviewer
       end
 
       def flags
-        ''
+        Flags.new(settings.flags)
       end
 
       def env
