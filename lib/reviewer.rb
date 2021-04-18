@@ -5,6 +5,7 @@ require "active_support/core_ext/string"
 require_relative "reviewer/arguments"
 require_relative "reviewer/configuration"
 require_relative "reviewer/loader"
+require_relative "reviewer/runner"
 require_relative "reviewer/tool"
 require_relative "reviewer/tools"
 require_relative "reviewer/version"
@@ -18,16 +19,16 @@ module Reviewer
 
   def self.review
     options = Arguments.new
-    # TODO: Make it actually run the tools.
-    puts "Running with the following options:"
-    pp options
+    Tools.all.each do |tool|
+      Runner.run(tool, :review)
+    end
   end
 
   def self.format
     options = Arguments.new
-    # TODO: Make it actually run the tools.
-    puts "Running with the following options:"
-    pp options
+    Tools.all.each do |tool|
+      Runner.run(tool, :format)
+    end
   end
 
   def self.configuration

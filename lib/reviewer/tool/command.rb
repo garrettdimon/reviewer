@@ -21,9 +21,9 @@ module Reviewer
 
       def to_s
         to_a
-          .map(&:strip)
-          .join(' ')
-          .strip
+          .map(&:strip) # Remove extra spaces on the components
+          .join(' ')    # Merge the components
+          .strip        # Strip extra spaces from the end result
       end
 
       def to_a
@@ -44,8 +44,10 @@ module Reviewer
       end
 
       def flags
-        # :review commands are the only commands that use flags (except the :quiet_flag)
-        return nil unless review?
+        # :review commands are the only commands that use flags
+        # And if no flags are configured, this won't do much
+        # The :quiet_flag is handled separately by design and excluded from this check.
+        return nil unless review? && tool_settings.flags.any?
 
         Flags.new(tool_settings.flags).to_s
       end

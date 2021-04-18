@@ -1,0 +1,47 @@
+# Quick overview of the options configuration for command-line tools.
+#
+# <command_key>:                // ex. 'rubocop', 'bundler-audit', etc.
+#  disabled: true               // Optional. Tools are enabled by default
+#  name:                        // Optional. Will use the `command_key` if name isn't provided.
+#  description:                 // Optional. Serves as a handy reminder for the purpose of the command.
+#  tags: [ruby, dependencies]   // Optional. Lets you run commands tagged with the same word.
+#  links:
+#    home:                      // Optional. A link to the home page for the tool.
+#    install:                   // Optional. A link to the installation instructions for the tool.
+#    ignore_syntax:             // Optional. A link to the syntax for ignoring/disabling some rules for the tool.
+#  commands:
+#    install:                   // Optional. Command to run to install the tool.
+#    prepare:                   // Optional. Command to run prior to the review phase. ex. 'bundle exec bundle-audit update'
+#    review:                    // Required. The only truly required field because this is the whole point.
+#    format:                    // Optional. Command to auto-update rule violations when possible.
+#    quiet_flag:                // Optional, but strongly suggested. Helps keep output under control when running multiple tools.
+#    max_exit_status:           // Optional, defaults to 0. Some tools like Yarn Audit essentially won't return less than a 3. This specifies the threshold that's still considered passing.
+#   env:                        // Optional. A way to specify necessary environment variables for the tools commands. The key is the variable name, and the value is, well, the value.
+#     example_one: value        //           - The names will automatically be capitalized, so you can freely use lower-case here.
+#     example_one: value        //           - Reviewer is smart enough to handle string values with spaces and automatically quote them.
+#   flags:                      // Optional. A way to specify flags *only for the review command*. The key is the flag name, and the value is, well, the value.
+#     example_one: value        //           - Reviewer is smart enough to handle single-letter (-f) and multi-letter (--format) flags.
+#     example_two: value        //           - It's highly-recommended to use the longer-name format for flags when possible to serve as self-documentation.
+
+# This is an example for a YAML block for a command-line tool:
+#
+# tool-name-key:
+#  disabled: true
+#  name: Tool
+#  description: A tool that finds issues and fixes code.
+#  tags: [syntax, security]
+#  links:
+#    home: https://example.com
+#    install: https://example.com/install
+#    ignore_syntax: https://example.com/ignore
+#  commands:
+#    install: 'bundle install tool'
+#    prepare: 'bundle exec tool update'
+#    review: 'bundle exec tool'
+#    format: 'bundle exec tool --format'
+#    quiet_flag: '--quiet'
+#    max_exit_status: 1
+#   env:
+#     report: false
+#   flags:
+#     format: json

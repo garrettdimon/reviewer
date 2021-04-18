@@ -4,15 +4,11 @@
 module Reviewer
   module Tools
     def self.all
-      []
-    end
-
-    def self.enabled
-      []
-    end
-
-    def self.disabled
-      []
+      tools = []
+      Reviewer.configuration.tools.keys.each do |key|
+        tools << Tool.new(key)
+      end
+      tools
     end
   end
 end

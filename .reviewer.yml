@@ -1,0 +1,12 @@
+bundler_audit:
+  tags: [dependencies, security, critical]
+  name: Bundler Dependency Audit
+  description: Review Gem dependencies in Gemfile.lock for security issues
+  links:
+    home: https://github.com/rubysec/bundler-audit
+    install: https://github.com/rubysec/bundler-audit#install
+  commands:
+    install: 'bundle exec gem install bundler-audit'
+    prepare: 'bundle exec bundle-audit update'
+    review: 'bundle exec bundle-audit check --no-update'
+    quiet_flag: '--quiet'

@@ -18,7 +18,7 @@ module Reviewer
 
     def test_preparation_command
       cmd = @tool.preparation_command
-      assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example update", cmd
+      assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example update --quiet > /dev/null", cmd
     end
 
     def test_review_command

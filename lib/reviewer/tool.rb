@@ -19,7 +19,7 @@ module Reviewer
       command_string(:install, verbosity_level: verbosity_level)
     end
 
-    def preparation_command(verbosity_level = :no_silence)
+    def preparation_command(verbosity_level = :total_silence)
        command_string(:prepare, verbosity_level: verbosity_level)
     end
 

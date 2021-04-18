@@ -24,7 +24,7 @@ module Reviewer
       end
 
       def to_s
-        to_a.join(' ').strip
+        to_a.map(&:strip).join(' ').strip
       end
 
       def to_a
