@@ -8,10 +8,11 @@ require_relative "tool/settings"
 # Provides an instance of a specific tool
 module Reviewer
   class Tool
-    attr_reader :settings
+    attr_reader :settings, :command
 
-    def initialize(tool_key)
-      @settings = Settings.new(tool: @tool, config: @config)
+    def initialize(tool)
+      @settings = Settings.new(tool)
+      @command = Command.new(settings)
     end
 
     def install
@@ -36,12 +37,6 @@ module Reviewer
       return unless settings.commands.key?(:format)
 
       ''
-    end
-
-
-    private
-
-    def command
     end
   end
 end

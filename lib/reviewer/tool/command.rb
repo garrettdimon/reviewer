@@ -6,8 +6,8 @@ module Reviewer
     class Command
       attr_reader :settings, :quiet
 
-      def initialize(tool:, config:, quiet: true)
-        @settings = Settings.new(tool: tool, config: config)
+      def initialize(settings, quiet: true)
+        @settings = settings
         @quiet = quiet
       end
 

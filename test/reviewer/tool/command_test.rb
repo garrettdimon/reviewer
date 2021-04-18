@@ -7,6 +7,10 @@ module Reviewer
     class CommandTest < MiniTest::Test
       def setup
       end
+
+      def test_does_something_useful
+        skip "TODO: Implement command options"
+      end
     end
   end
 end
