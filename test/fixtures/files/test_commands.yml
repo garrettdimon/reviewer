@@ -22,7 +22,7 @@ enabled_tool:
     fourth: 'fourth flag'
 
 # For Testing Disabled Tools
-disabled tool:
+disabled_tool:
   disabled: true
   name: 'Disabled Tool'
   description: 'Run the tests.'
