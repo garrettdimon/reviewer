@@ -11,7 +11,7 @@ module Reviewer
       end
 
       def to_s
-        to_a.join(' ')
+        to_a.compact.join(' ')
       end
 
       def to_a
@@ -24,7 +24,15 @@ module Reviewer
       private
 
       def env(key, value)
-        "#{key.to_s.upcase}=#{value}".strip
+        return nil if key.to_s.blank? || value.to_s.blank?
+
+        value = needs_quotes?(value) ? "'#{value}'" : value
+
+        "#{key.to_s.strip.upcase}=#{value.to_s.strip};"
+      end
+
+      def needs_quotes?(value)
+        value.is_a?(String) && value.include?(' ')
       end
     end
   end

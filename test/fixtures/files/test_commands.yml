@@ -15,8 +15,11 @@ enabled_tool:
     quiet_flag: '--quiet'
     max_exit_status: 3
   env:
-    first: 'first environment variable'
-    second: 'second environment variable'
+    with_spaces: 'with spaces'
+    word: second
+    integer: 1
+    boolean: true
+    empty:
   flags:
     third: 'third flag'
     fourth: 'fourth flag'
@@ -39,8 +42,8 @@ disabled_tool:
     quiet_flag: '--quiet'
     max_exit_status: 3
   env:
-    first: 'first environment variable'
-    second: 'second environment variable'
+    first: first
+    second: second
   flags:
     third: 'third flag'
     fourth: 'fourth flag'

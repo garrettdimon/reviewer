@@ -6,7 +6,7 @@ module Reviewer
     class Settings
       class MissingReviewCommandError < StandardError; end
 
-      attr_accessor :tool, :config
+      attr_reader :tool, :config
 
       def initialize(tool, config: nil)
         @tool = tool
