@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Assembles tool settings into a usable command string
+# Assembles tool tool_settings into a usable command string
 module Reviewer
   class Tool
     class Command
@@ -9,12 +9,12 @@ module Reviewer
 
       TYPES = %i[install prepare review format].freeze
 
-      attr_reader :settings, :command_type, :verbosity_level
+      attr_reader :tool_settings, :command_type, :verbosity_level
 
-      def initialize(settings, verbosity_level: nil)
+      def initialize(tool_settings, verbosity_level: nil)
         verify_command_type!
 
-        @settings = settings
+        @tool_settings = tool_settings
         @command_type = :review
         @verbosity_level = verbosity_level
       end
@@ -50,19 +50,19 @@ module Reviewer
       end
 
       def env
-        Env.new(settings.env)
+        Env.new(tool_settings.env)
       end
 
       def command
-        settings.commands.fetch(command_type)
+        tool_settings.commands.fetch(command_type)
       end
 
       def flags
-        Flags.new(settings.flags)
+        Flags.new(tool_settings.flags)
       end
 
       def verbosity
-        Verbosity.new(settings.quiet_flag, level: verbosity_level)
+        Verbosity.new(tool_settings.quiet_flag, level: verbosity_level)
       end
 
 
@@ -70,7 +70,7 @@ module Reviewer
 
       def verify_command_type!
         raise InvalidTypeError, "'#{body}' is not a supported command type. (Make sure it's not a typo.)" unless TYPES.include?(body)
-        raise NotConfiguredError, "The '#{body}' command is not configured for #{settings.name}.  (Make sure it's not a typo.)" unless settings.commands.key?(body)
+        raise NotConfiguredError, "The '#{body}' command is not configured for #{tool_settings.name}.  (Make sure it's not a typo.)" unless tool_settings.commands.key?(body)
       end
 
       def command_string(command_type, verbosity_level)
