@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "active_support/core_ext/string"
+
 # Converts/casts tool configuration values and provides default values if not set
 module Reviewer
   class Tool
@@ -30,7 +32,7 @@ module Reviewer
       end
 
       def name
-        tool.to_s
+        config.fetch(:name) { tool.to_s.titleize }
       end
 
       def description

@@ -25,13 +25,20 @@ module Reviewer
         assert @settings.disabled?
       end
 
-      def test_provides_the_tool_name_as_string_or_key
-        assert_equal @tool.to_s, @settings.name
+      def test_provides_the_tool_key
         assert_equal @tool, @settings.key
       end
 
+      def test_provides_the_tool_name_with_the_key_as_default
+        assert_equal @tool.to_s.titleize, @settings.name
+
+        @config[:name] = 'Tool Name'
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:name], @settings.name
+      end
+
       def test_provides_the_tool_description
-        assert_equal "(No description provided for '#{@tool}')", @settings.description
+        assert_equal "(No description provided for '#{@settings.name}')", @settings.description
 
         @config[:description] = 'description'
         @settings = Settings.new(tool: @tool, config: @config)

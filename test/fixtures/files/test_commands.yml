@@ -1,5 +1,6 @@
 # For Testing Enabled Tool Option Loading
 enabled_tool:
+  name: 'Enabled Tool'
   description: 'Run the tests.'
   tags: [disabled, test, fixture]
   links:
@@ -23,6 +24,7 @@ enabled_tool:
 # For Testing Disabled Tools
 disabled tool:
   disabled: true
+  name: 'Disabled Tool'
   description: 'Run the tests.'
   tags: [disabled, test, fixture]
   links:
