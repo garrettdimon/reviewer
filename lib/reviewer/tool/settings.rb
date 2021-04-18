@@ -10,9 +10,9 @@ module Reviewer
 
       attr_accessor :tool, :config
 
-      def initialize(tool:, config:)
+      def initialize(tool, config: nil)
         @tool = tool
-        @config = config
+        @config = config || Reviewer.configuration.tools.fetch(tool.to_sym) { {} }
 
         # Ideally, folks would fill out everything, but realistically, the 'review' command is the only required value.
         # If the key is missing, or maybe there was a typo, fail right away.
