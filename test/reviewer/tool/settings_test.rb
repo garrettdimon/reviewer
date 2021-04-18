@@ -12,112 +12,103 @@ module Reviewer
             review: 'example'
           }
         }
+        @settings = Settings.new(tool: @tool, config: @config)
       end
 
       def test_exposes_enabled_or_disbled_status_with_enabled_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert settings.enabled?
-        refute settings.disabled?
+        assert @settings.enabled?
+        refute @settings.disabled?
 
         @config[:disabled] = true
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        refute settings.enabled?
-        assert settings.disabled?
+        @settings = Settings.new(tool: @tool, config: @config)
+        refute @settings.enabled?
+        assert @settings.disabled?
       end
 
       def test_provides_the_tool_name_as_string_or_key
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @tool.to_s, settings.name
-        assert_equal @tool, settings.key
+        assert_equal @tool.to_s, @settings.name
+        assert_equal @tool, @settings.key
       end
 
       def test_provides_the_tool_description
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal "(No description provided for '#{@tool}')", settings.description
+        assert_equal "(No description provided for '#{@tool}')", @settings.description
 
         @config[:description] = 'description'
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:description], settings.description
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:description], @settings.description
       end
 
       def test_provides_the_tool_tags_with_empty_array_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal Array.new, settings.tags
+        assert_equal Array.new, @settings.tags
 
         @config[:tags] = %w{ruby css}
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:tags], settings.tags
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:tags], @settings.tags
       end
 
       def test_provides_the_tool_links_with_empty_hash_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal Hash.new, settings.links
+        assert_equal Hash.new, @settings.links
 
         @config[:links] = {
           home: 'https://example.com'
         }
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:links], settings.links
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:links], @settings.links
       end
 
       def test_provides_the_tool_environment_variables_with_empty_hash_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal Hash.new, settings.env
+        assert_equal Hash.new, @settings.env
 
         @config[:env] = {
           frictionless: true
         }
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:env], settings.env
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:env], @settings.env
       end
 
       def test_provides_the_tool_flags_with_empty_hash_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal Hash.new, settings.flags
+        assert_equal Hash.new, @settings.flags
 
         @config[:flags] = {
           q: true,
           verbose: false
         }
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:flags], settings.flags
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:flags], @settings.flags
       end
 
       def test_provides_the_tool_max_exit_status_with_zero_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal 0, settings.max_exit_status
+        assert_equal 0, @settings.max_exit_status
 
         @config[:commands] = {
           review: 'example review',
           max_exit_status: 3
         }
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config.dig(:commands, :max_exit_status), settings.max_exit_status
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config.dig(:commands, :max_exit_status), @settings.max_exit_status
       end
 
       def test_provides_the_tool_quiet_flag_with_empty_string_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal '', settings.quiet_flag
+        assert_equal '', @settings.quiet_flag
 
         @config[:commands] = {
           review: 'example review',
           quiet_flag: '--silent'
         }
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config.dig(:commands, :quiet_flag), settings.quiet_flag
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config.dig(:commands, :quiet_flag), @settings.quiet_flag
       end
 
       def test_provides_the_tool_commands_with_empty_hash_as_default
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:commands], settings.commands
+        assert_equal @config[:commands], @settings.commands
 
         @config[:commands] = {
           install: 'example install',
           prepare: 'example prepare',
           review: 'example review'
         }
-        settings = ::Reviewer::Tool::Settings.new(tool: @tool, config: @config)
-        assert_equal @config[:commands], settings.commands
+        @settings = Settings.new(tool: @tool, config: @config)
+        assert_equal @config[:commands], @settings.commands
       end
 
       def test_raises_error_without_command_for_review
