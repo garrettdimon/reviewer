@@ -1,6 +1,6 @@
 tests:
   name: Minitest
-  description: Run unit tests
+  description: Unit Tests
   tags: [ruby, tests]
   links:
     home:
@@ -11,7 +11,7 @@ tests:
 bundler_audit:
   tags: [dependencies, critical, ruby]
   name: Bundler Dependency Audit
-  description: Review Gem dependencies in Gemfile.lock for security issues
+  description: Check for Gem Security Issues
   links:
     home: https://github.com/rubysec/bundler-audit
     install: https://github.com/rubysec/bundler-audit#install
