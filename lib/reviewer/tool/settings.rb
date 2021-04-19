@@ -25,6 +25,18 @@ module Reviewer
         !disabled?
       end
 
+      def has_prepare_command?
+        commands.key?(:prepare) && commands[:prepare].present?
+      end
+
+      def has_install_command?
+        commands.key?(:install) && commands[:install].present?
+      end
+
+      def has_install_link?
+        links.key?(:install) && links[:install].present?
+      end
+
       def key
         tool.to_sym
       end

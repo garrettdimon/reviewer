@@ -18,14 +18,21 @@ module Reviewer
   end
 
   def self.review
-    options = Arguments.new
+    # options = Arguments.new
+    total_time = 0
     Tools.all.each do |tool|
-      Runner.run(tool, :review)
+      next if tool.disabled?
+
+      exit_status, elapsed_time = Runner.new(tool, :review).run
+
+      break unless exit_status <= tool.max_exit_status
+
+      total_time += elapsed_time
     end
   end
 
   def self.format
-    options = Arguments.new
+    # options = Arguments.new
     Tools.all.each do |tool|
       Runner.run(tool, :format)
     end

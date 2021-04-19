@@ -11,8 +11,22 @@ module Reviewer
   class Tool
     attr_reader :settings
 
+    delegate :name,
+             :description,
+             :enabled?,
+             :disabled?,
+             :max_exit_status,
+             :has_prepare_command?,
+             :has_install_command?,
+             :has_install_link?,
+             to: :settings
+
     def initialize(tool)
       @settings = Settings.new(tool)
+    end
+
+    def to_s
+      name
     end
 
     def installation_command(verbosity_level = :no_silence)

@@ -3,6 +3,7 @@ PATH
   specs:
     reviewer (0.1.1)
       activesupport
+      colorize
       slop
 
 GEM
@@ -14,6 +15,7 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
+    colorize (0.8.1)
     concurrent-ruby (1.1.8)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)

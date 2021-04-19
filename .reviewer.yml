@@ -1,5 +1,15 @@
+tests:
+  name: Minitest
+  description: Run unit tests
+  tags: [ruby, tests]
+  links:
+    home:
+  commands:
+    review: 'bundle exec rake'
+    quiet_flag: '--silent'
+
 bundler_audit:
-  tags: [dependencies, security, critical]
+  tags: [dependencies, critical, ruby]
   name: Bundler Dependency Audit
   description: Review Gem dependencies in Gemfile.lock for security issues
   links:
