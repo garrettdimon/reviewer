@@ -2,8 +2,8 @@
 
 require 'slop'
 
-# Handles option parsing for bin/review
 module Reviewer
+  # Handles option parsing for bin/review
   class Arguments
     attr_accessor :options
 

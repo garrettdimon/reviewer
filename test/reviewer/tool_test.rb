@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 module Reviewer
   class ToolTest < MiniTest::Test
@@ -30,6 +30,5 @@ module Reviewer
       cmd = @tool.format_command
       assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example format", cmd
     end
-
   end
 end

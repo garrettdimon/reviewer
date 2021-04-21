@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Converts/casts tool configuration values and provides default values if not set
 module Reviewer
   class Tool
+    # Converts/casts tool configuration values and provides default values if not set
     class Settings
       class MissingReviewCommandError < StandardError; end
 
@@ -18,22 +18,22 @@ module Reviewer
       end
 
       def disabled?
-        config.fetch(:disabled) { false }
+        config.fetch(:disabled, false)
       end
 
       def enabled?
         !disabled?
       end
 
-      def has_prepare_command?
+      def prepare_command?
         commands.key?(:prepare) && commands[:prepare].present?
       end
 
-      def has_install_command?
+      def install_command?
         commands.key?(:install) && commands[:install].present?
       end
 
-      def has_install_link?
+      def install_link?
         links.key?(:install) && links[:install].present?
       end
 
@@ -70,11 +70,11 @@ module Reviewer
       end
 
       def max_exit_status
-        commands.fetch(:max_exit_status) { 0 }
+        commands.fetch(:max_exit_status, 0)
       end
 
       def quiet_flag
-        commands.fetch(:quiet_flag) { '' }
+        commands.fetch(:quiet_flag, '')
       end
     end
   end

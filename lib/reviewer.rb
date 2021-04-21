@@ -1,16 +1,17 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/string"
+require 'active_support/core_ext/string'
 require 'benchmark'
 
-require_relative "reviewer/arguments"
-require_relative "reviewer/configuration"
-require_relative "reviewer/loader"
-require_relative "reviewer/runner"
-require_relative "reviewer/tool"
-require_relative "reviewer/tools"
-require_relative "reviewer/version"
+require_relative 'reviewer/arguments'
+require_relative 'reviewer/configuration'
+require_relative 'reviewer/loader'
+require_relative 'reviewer/runner'
+require_relative 'reviewer/tool'
+require_relative 'reviewer/tools'
+require_relative 'reviewer/version'
 
+# Primary interface for the reviewer tools
 module Reviewer
   class Error < StandardError; end
 
@@ -23,11 +24,9 @@ module Reviewer
       Tools.all.each do |tool|
         next if tool.disabled?
 
-        exit_status, elapsed_time = Runner.new(tool, :review).run
+        exit_status = Runner.new(tool, :review).run
 
         break unless exit_status <= tool.max_exit_status
-
-        total_time += elapsed_time
       end
     end
     puts "Total Time: #{elapsed_time.round(3)}s)\n"

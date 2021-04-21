@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 module Reviewer
   class ConfigurationTest < Minitest::Test
-    def setup
-    end
-
     def test_file_has_default
       config = Configuration.new
       assert_equal config.file, "#{Configuration::DEFAULT_CONFIGURATION_PATH}/#{Configuration::DEFAULT_CONFIGURATION_FILE}"

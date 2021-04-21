@@ -3,21 +3,20 @@
 require 'colorize'
 require 'open3'
 
-# Handles running, benchmarking, and printing output for a command
 module Reviewer
+  # Handles running, benchmarking, and printing output for a command
   class Runner
-    SUCCESS = "Success".freeze
-    FAILURE = "Failure ·".freeze
-    PROMPT  = "$"
+    SUCCESS = 'Success'
+    FAILURE = 'Failure ·'
+    PROMPT  = '$'
 
     attr_accessor :tool, :command
 
     attr_reader :elapsed_time, :stdout, :stderr, :status, :exception, :exit_status
 
-    def initialize(tool, command, logger: nil)
+    def initialize(tool, command)
       @tool = tool
       @command = command
-      @logger = logger
     end
 
     def run
@@ -29,13 +28,14 @@ module Reviewer
       end
 
       print_result
-    rescue => e
+      exit_status
+    rescue StandardError => e
       @exception = e
       print_exception
+      exit_status
     ensure
-      return [exit_status, elapsed_time]
+      @exit_status = nil
     end
-
 
     private
 
@@ -47,7 +47,7 @@ module Reviewer
     end
 
     def prepare
-      return unless tool.has_prepare_command?
+      return unless tool.prepare_command?
 
       shell_out(tool.preparation_command)
     end
@@ -64,7 +64,7 @@ module Reviewer
 
     def print_tool_info
       # Outputs the tool name and description.
-      puts "\n#{tool.name}".bold + " · ".light_black + tool.description
+      puts "\n#{tool.name}".bold + ' · '.light_black + tool.description
     end
 
     def print_result
@@ -87,23 +87,28 @@ module Reviewer
     def recovery_guidance
       puts FAILURE.red.bold + " #{error_message}\n".red.bold
       if missing_executable?
-        if tool.has_install_command?
-          puts "  Installation Command:\n"
-          puts "  #{tool.installation_command}\n".light_black
-        end
-        if tool.has_install_link?
-          puts "  Installation Help:"
-          puts "  #{tool.settings.links[:install]}\n".light_black
-        end
+        missing_executable_guidance
       else
-        # puts "#{stderr}".red
         review_verbosely
       end
     end
 
+    def missing_executable_guidance
+      # TODO: Proactively suggest updating dependency files based on bundler/yarn/etc.
+      if tool.install_command?
+        puts '  Installation Command:'
+        puts "  #{tool.installation_command}\n".light_black
+      end
+
+      return unless tool.install_link?
+
+      puts '  Installation Help:'
+      puts "  #{tool.settings.links[:install]}\n".light_black
+    end
+
     def print_exception
       puts "\n\n"
-      puts "#{exception.message}".red.bold
+      puts exception.message.red.bold
       puts exception.backtrace.join("\n")
     end
 

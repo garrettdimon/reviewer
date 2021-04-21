@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module Reviewer
+  # Configuration for Reviewer
   class Configuration
     DEFAULT_CONFIGURATION_PATH = Dir.pwd.freeze
-    DEFAULT_CONFIGURATION_FILE = '.reviewer.yml'.freeze
+    DEFAULT_CONFIGURATION_FILE = '.reviewer.yml'
 
     attr_accessor :file
 

@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-# Assembles tool tool_settings into a usable command string
 module Reviewer
   class Tool
+    # Assembles tool tool_settings into a usable command string
     class Command
       class InvalidTypeError < StandardError; end
+
       class NotConfiguredError < StandardError; end
 
       TYPES = %i[install prepare review format].freeze
@@ -55,7 +56,6 @@ module Reviewer
       def verbosity
         Verbosity.new(tool_settings.quiet_flag, level: verbosity_level).to_s
       end
-
 
       private
 

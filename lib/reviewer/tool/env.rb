@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Assembles tool environment variables into a single string or array
 module Reviewer
   class Tool
+    # Assembles tool environment variables into a single string or array
     class Env
       attr_reader :env_pairs
 
@@ -19,7 +19,6 @@ module Reviewer
         env_pairs.each { |key, value| env << env(key, value) }
         env
       end
-
 
       private
 

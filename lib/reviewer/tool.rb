@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative "tool/command"
-require_relative "tool/env"
-require_relative "tool/flags"
-require_relative "tool/settings"
-require_relative "tool/verbosity"
+require_relative 'tool/command'
+require_relative 'tool/env'
+require_relative 'tool/flags'
+require_relative 'tool/settings'
+require_relative 'tool/verbosity'
 
-# Provides an instance of a specific tool
 module Reviewer
+  # Provides an instance of a specific tool
   class Tool
     attr_reader :settings
 
@@ -16,9 +16,9 @@ module Reviewer
              :enabled?,
              :disabled?,
              :max_exit_status,
-             :has_prepare_command?,
-             :has_install_command?,
-             :has_install_link?,
+             :prepare_command?,
+             :install_command?,
+             :install_link?,
              to: :settings
 
     def initialize(tool)
@@ -34,7 +34,7 @@ module Reviewer
     end
 
     def preparation_command(verbosity_level = :total_silence)
-       command_string(:prepare, verbosity_level: verbosity_level)
+      command_string(:prepare, verbosity_level: verbosity_level)
     end
 
     def review_command(verbosity_level = :total_silence)
@@ -44,7 +44,6 @@ module Reviewer
     def format_command(verbosity_level = :no_silence)
       command_string(:format, verbosity_level: verbosity_level)
     end
-
 
     private
 

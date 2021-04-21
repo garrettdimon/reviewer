@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 module Reviewer
   class Tool
     class SettingsTest < MiniTest::Test
       def setup
+        Reviewer.configure do |config|
+          config.file = 'test/fixtures/files/test_commands.yml'
+        end
+
         @tool = :example
         @config = {
           commands: {
@@ -16,10 +20,6 @@ module Reviewer
       end
 
       def test_uses_reviewer_configuration_when_config_not_provided
-        Reviewer.configure do |config|
-          config.file = 'test/fixtures/files/test_commands.yml'
-        end
-
         settings = Settings.new(:enabled_tool)
         assert_equal 'Enabled Tool', settings.name
       end
@@ -55,35 +55,31 @@ module Reviewer
       end
 
       def test_provides_the_tool_tags_with_empty_array_as_default
-        assert_equal Array.new, @settings.tags
+        assert_equal([], @settings.tags)
 
-        @config[:tags] = %w{ruby css}
+        @config[:tags] = %w[ruby css]
         @settings = Settings.new(@tool, config: @config)
         assert_equal @config[:tags], @settings.tags
       end
 
       def test_provides_the_tool_links_with_empty_hash_as_default
-        assert_equal Hash.new, @settings.links
+        assert_equal({}, @settings.links)
 
-        @config[:links] = {
-          home: 'https://example.com'
-        }
+        @config[:links] = { home: 'https://example.com' }
         @settings = Settings.new(@tool, config: @config)
         assert_equal @config[:links], @settings.links
       end
 
       def test_provides_the_tool_environment_variables_with_empty_hash_as_default
-        assert_equal Hash.new, @settings.env
+        assert_equal({}, @settings.env)
 
-        @config[:env] = {
-          frictionless: true
-        }
+        @config[:env] = { frictionless: true }
         @settings = Settings.new(@tool, config: @config)
         assert_equal @config[:env], @settings.env
       end
 
       def test_provides_the_tool_flags_with_empty_hash_as_default
-        assert_equal Hash.new, @settings.flags
+        assert_equal({}, @settings.flags)
 
         @config[:flags] = {
           q: true,
@@ -128,13 +124,8 @@ module Reviewer
       end
 
       def test_raises_error_without_command_for_review
-        @config = {
-          commands: {
-            format: 'example'
-          }
-        }
         assert_raises(Settings::MissingReviewCommandError) do
-          Settings.new(@tool, config: @config)
+          Settings.new(@tool, config: { commands: { format: 'example' } })
         end
       end
     end

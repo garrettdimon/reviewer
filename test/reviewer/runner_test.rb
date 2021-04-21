@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 module Reviewer
   class RunnerTest < MiniTest::Test
@@ -11,7 +11,7 @@ module Reviewer
     end
 
     def test_pending
-      skip "Pending Implentation"
+      skip 'Pending Implentation'
     end
   end
 end
