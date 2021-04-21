@@ -9,7 +9,7 @@ tests:
     quiet_flag: '--silent'
 
 bundler_audit:
-  tags: [dependencies, critical, ruby]
+  tags: [critical, dependencies, ruby]
   name: Bundler Dependency Audit
   description: Check for Gem Security Issues
   links:
@@ -20,3 +20,17 @@ bundler_audit:
     prepare: 'bundle exec bundle-audit update'
     review: 'bundle exec bundle-audit check --no-update'
     quiet_flag: '--quiet'
+
+rubocop:
+  tags: [ruby, syntax]
+  description: Review Ruby syntax/formatting for consistency
+  links:
+    home: https://rubocop.org
+    install: https://docs.rubocop.org/rubocop/1.13/installation.html
+    ignore_syntax: https://docs.rubocop.org/rubocop/configuration.html#ignoredmethods
+    disable_syntax: https://docs.rubocop.org/rubocop/configuration.html#disabling-cops-within-source-code
+  commands:
+    install: 'bundle exec gem install rubocop'
+    review: 'bundle exec rubocop --parallel'
+    format: 'bundle exec rubocop --auto-correct'
+    quiet_flag: '--format q'

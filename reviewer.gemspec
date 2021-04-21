@@ -31,6 +31,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport"
   spec.add_dependency "colorize"
   spec.add_dependency "slop"
+  spec.add_dependency "bundler-audit"
+  spec.add_dependency "rubocop"
+  spec.add_dependency "rubocop-minitest"
+  spec.add_dependency "rubocop-rake"
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
