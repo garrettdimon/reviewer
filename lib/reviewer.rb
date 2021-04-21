@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "active_support/core_ext/string"
+require 'benchmark'
 
 require_relative "reviewer/arguments"
 require_relative "reviewer/configuration"
@@ -18,17 +19,18 @@ module Reviewer
   end
 
   def self.review
-    # options = Arguments.new
-    total_time = 0
-    Tools.all.each do |tool|
-      next if tool.disabled?
+    elapsed_time = Benchmark.realtime do
+      Tools.all.each do |tool|
+        next if tool.disabled?
 
-      exit_status, elapsed_time = Runner.new(tool, :review).run
+        exit_status, elapsed_time = Runner.new(tool, :review).run
 
-      break unless exit_status <= tool.max_exit_status
+        break unless exit_status <= tool.max_exit_status
 
-      total_time += elapsed_time
+        total_time += elapsed_time
+      end
     end
+    puts "Total Time: #{elapsed_time.round(3)}s)\n"
   end
 
   def self.format
