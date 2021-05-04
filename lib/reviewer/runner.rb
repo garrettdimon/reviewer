@@ -5,7 +5,7 @@ require 'open3'
 module Reviewer
   # Handles running, benchmarking, and printing output for a command
   class Runner
-    COMMAND_NOT_FOUND_EXIT_STATUS_CODE = 127.freeze
+    COMMAND_NOT_FOUND_EXIT_STATUS_CODE = 127
 
     attr_accessor :tool, :command
 

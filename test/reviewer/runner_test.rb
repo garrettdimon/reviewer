@@ -25,7 +25,7 @@ module Reviewer
       assert_match(/Re-running/i, out)
     end
 
-    def test_failing_command_returns_exit_status_and_retries
+    def test_missing_command_returns_exit_status_and_does_not_retry
       tool = Tool.new(:missing_command)
       runner = Runner.new(tool, :review)
       out, _err = capture_subprocess_io do
