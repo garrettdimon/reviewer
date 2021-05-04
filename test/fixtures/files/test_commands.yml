@@ -48,10 +48,21 @@ disabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
-# For Testing Defaults
+# For Testing Defaults and Runner
 minimum_viable_tool:
   commands:
-    review: 'bundle exec example review'
+    review: 'ls'
+
+# Intentionally Failing Command
+failing_command:
+  commands:
+    review: 'exit 1'
+
+# Intentionally Missing Command
+# Uses the Unix exit code for 'command not found'
+missing_command:
+  commands:
+    review: 'exit 127'
 
 # For Testing Seed String Replacement
 dynamic_seed_tool:

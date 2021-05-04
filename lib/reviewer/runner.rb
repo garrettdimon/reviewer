@@ -5,6 +5,8 @@ require 'open3'
 module Reviewer
   # Handles running, benchmarking, and printing output for a command
   class Runner
+    COMMAND_NOT_FOUND_EXIT_STATUS_CODE = 127.freeze
+
     attr_accessor :tool, :command
 
     attr_reader :elapsed_time, :stdout, :stderr, :status, :exit_status, :logger
@@ -87,11 +89,13 @@ module Reviewer
     end
 
     def missing_executable?
-      stderr.include?("can't find executable")
+      (@exit_status == COMMAND_NOT_FOUND_EXIT_STATUS_CODE) ||
+        stderr.include?("can't find executable")
     end
 
     def seed
-      # Keep the same seed for each instance so re-running generates the same results as the failure
+      # Keep the same seed for each instance so re-running generates the same results as the failure.
+      # Otherwise, re-running after the failure will change the seed and show different results.
       @seed ||= Random.rand(100_000)
     end
   end
