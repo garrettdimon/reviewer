@@ -1,10 +1,28 @@
-**Note:** As of April 18th, 2021, Reviewer is a work in progress and does not actually do anything just yet. Hopefully soon.
+**Note:** As of May 4th, 2021, Reviewer is a work in progress and does not actually do anything just yet. Hopefully soon.
 
 # Reviewer
 
-Reviewer is a gem to reduce the friction of using automated tools for dependency audits, static analysis, linting, testing, and more.
+Reviewer reduces the friction of using automated tools for dependency audits, static analysis, linting, testing, and more by providing a standardized way to configure and run them in different contexts with less friction.
 
-Reviewer provides a standardized way to configue commands that makes it easier to run them on a regular basis. For more detailed information, take a look at the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) and [Usage](https://github.com/garrettdimon/reviewer/wiki/Usage) pages in the wiki.
+So, instead of...
+```
+yarn audit --level moderate
+bundle exec bundle-audit check --no-update
+bundle exec rubocop --parallel
+bundle exec erblint --lint-all --enable-all-linters
+yarn stylelint .
+yarn eslint .
+bundle exec rake notes
+```
+
+You run...
+```
+./bin/rvw
+```
+
+Having a simpler command is just the beginning through. It also cleans up the output and lets you run subsets of commands.
+
+For more detailed information, take a look at the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) and [Usage](https://github.com/garrettdimon/reviewer/wiki/Usage) pages in the wiki.
 
 ## Installation
 
