@@ -3,8 +3,10 @@
 require 'slop'
 
 module Reviewer
-  # Handles option parsing for bin/review
+  # Handles option parsing for `rvw` and `fmt` commands
   class Arguments
+    KEYWORDS = %w[new staged]
+
     attr_accessor :options
 
     def initialize(options = ARGV)
@@ -37,8 +39,13 @@ module Reviewer
     end
 
     def keywords
-      # TODO: Filter arguments to only for allowed keywords to be defined later.
-      arguments
+      arguments.reject { |arg| unrecognized_keyword?(arg) }
+    end
+
+    private
+
+    def unrecognized_keyword?(arg)
+      !KEYWORDS.include?(arg)
     end
   end
 end

@@ -21,6 +21,7 @@ module Reviewer
   end
 
   def self.review
+    # options = Arguments.new
     elapsed_time = Benchmark.realtime do
       Tools.all.each do |tool|
         next if tool.disabled?

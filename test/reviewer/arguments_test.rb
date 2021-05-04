@@ -41,17 +41,22 @@ module Reviewer
     end
 
     def test_exposes_leftover_arguments_as_keywords
-      args = %w[first -t ruby second]
+      args = %w[staged -t ruby invalid]
       command = Arguments.new(args)
-      assert_equal %w[first second], command.arguments
-      assert_equal %w[first second], command.keywords
+      assert_equal %w[staged invalid], command.arguments
+    end
+
+    def test_rejects_unrecognized_keywords
+      args = %w[staged -t ruby invalid]
+      command = Arguments.new(args)
+      assert_equal %w[staged], command.keywords
     end
 
     def test_gracefully_handles_robust_sets_of_arguments
-      args = %w[keyword --tags ruby,css --files ./app/**/*.rb,./test/**/*.rb]
+      args = %w[staged --tags ruby,css --files ./app/**/*.rb,./test/**/*.rb]
       command = Arguments.new(args)
-      assert_equal %w[keyword], command.arguments
-      assert_equal %w[keyword], command.keywords
+      assert_equal %w[staged], command.arguments
+      assert_equal %w[staged], command.keywords
       assert_equal %w[ruby css], command.tags
       assert_equal ['./app/**/*.rb', './test/**/*.rb'], command.files
     end
