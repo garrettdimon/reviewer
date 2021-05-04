@@ -14,7 +14,7 @@
 #    prepare:                   // Optional. Command to run prior to the review phase. ex. 'bundle exec bundle-audit update'
 #    review:                    // Required. The only truly required field because this is the whole point.
 #    format:                    // Optional. Command to auto-update rule violations when possible.
-#    quiet_flag:                // Optional, but strongly suggested. Helps keep output under control when running multiple tools.
+#    quiet_option:                // Optional, but strongly suggested. Helps keep output under control when running multiple tools.
 #    max_exit_status:           // Optional, defaults to 0. Some tools like Yarn Audit essentially won't return less than a 3. This specifies the threshold that's still considered passing.
 #   env:                        // Optional. A way to specify necessary environment variables for the tools commands. The key is the variable name, and the value is, well, the value.
 #     example_one: value        //           - The names will automatically be capitalized, so you can freely use lower-case here.
@@ -39,7 +39,7 @@
 #    prepare: 'bundle exec tool update'
 #    review: 'bundle exec tool'
 #    format: 'bundle exec tool --format'
-#    quiet_flag: '--quiet'
+#    quiet_option: '--quiet'
 #    max_exit_status: 1
 #   env:
 #     report: false

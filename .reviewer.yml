@@ -1,17 +1,7 @@
-tests:
-  name: Minitest
-  description: Unit Tests
-  tags: [ruby, tests]
-  links:
-    home:
-  commands:
-    review: 'bundle exec rake'
-    quiet_flag: '--silent'
-
 bundler_audit:
   tags: [critical, dependencies, ruby]
-  name: Bundler Dependency Audit
-  description: Check for Gem Security Issues
+  name: Bundler Audit
+  description: Audit Gem Dependencies for Security Issues
   links:
     home: https://github.com/rubysec/bundler-audit
     install: https://github.com/rubysec/bundler-audit#install
@@ -19,7 +9,17 @@ bundler_audit:
     install: 'bundle exec gem install bundler-audit'
     prepare: 'bundle exec bundle-audit update'
     review: 'bundle exec bundle-audit check --no-update'
-    quiet_flag: '--quiet'
+    quiet_option: '--quiet'
+
+tests:
+  name: Minitest
+  description: Unit Tests
+  tags: [ruby, tests]
+  links:
+    home:
+  commands:
+    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
+    quiet_option: '--silent'
 
 rubocop:
   tags: [ruby, syntax]
@@ -33,4 +33,4 @@ rubocop:
     install: 'bundle exec gem install rubocop'
     review: 'bundle exec rubocop --parallel'
     format: 'bundle exec rubocop --auto-correct'
-    quiet_flag: '--format q'
+    quiet_option: '--format q'

@@ -47,14 +47,14 @@ module Reviewer
       def flags
         # :review commands are the only commands that use flags
         # And if no flags are configured, this won't do much
-        # The :quiet_flag is handled separately by design and excluded from this check.
+        # Flags for 'quiet' are handled separately by design and excluded from this check.
         return nil unless review? && tool_settings.flags.any?
 
         Flags.new(tool_settings.flags).to_s
       end
 
       def verbosity
-        Verbosity.new(tool_settings.quiet_flag, level: verbosity_level).to_s
+        Verbosity.new(tool_settings.quiet_option, level: verbosity_level).to_s
       end
 
       private

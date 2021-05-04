@@ -18,6 +18,7 @@ module Reviewer
              :max_exit_status,
              :prepare_command?,
              :install_command?,
+             :format_command?,
              :install_link?,
              to: :settings
 
@@ -37,8 +38,8 @@ module Reviewer
       command_string(:prepare, verbosity_level: verbosity_level)
     end
 
-    def review_command(verbosity_level = :total_silence)
-      command_string(:review, verbosity_level: verbosity_level)
+    def review_command(verbosity_level = :total_silence, seed: nil)
+      command_string(:review, verbosity_level: verbosity_level).gsub('$SEED', seed.to_s)
     end
 
     def format_command(verbosity_level = :no_silence)

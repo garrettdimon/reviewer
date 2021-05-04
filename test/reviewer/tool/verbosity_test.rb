@@ -11,8 +11,7 @@ module Reviewer
       end
 
       def test_converts_to_a_string
-        verbosity_string = "#{@flag} #{Verbosity::SEND_TO_DEV_NULL}"
-        assert_equal verbosity_string, @verbosity.to_s
+        assert_equal @flag, @verbosity.to_s
       end
 
       def test_converts_to_array

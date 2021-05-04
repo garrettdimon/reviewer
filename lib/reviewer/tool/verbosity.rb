@@ -15,7 +15,7 @@ module Reviewer
 
       attr_reader :flag, :level
 
-      def initialize(flag, level: :total_silence)
+      def initialize(flag, level: :tool_silence)
         @flag = flag
 
         raise InvalidLevelError, "Invalid Verbosity Level: '#{level}'" unless LEVELS.include?(level)

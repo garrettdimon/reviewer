@@ -4,14 +4,8 @@ require 'test_helper'
 
 module Reviewer
   class LoaderTest < MiniTest::Test
-    def setup
-      Reviewer.configure do |config|
-        config.file = 'test/fixtures/files/test_commands.yml'
-      end
-    end
-
     def teardown
-      Reviewer.reset
+      apply_test_configuration!
     end
 
     def test_reads_the_yaml_configuration_file

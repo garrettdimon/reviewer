@@ -5,9 +5,6 @@ require 'test_helper'
 module Reviewer
   class ToolTest < MiniTest::Test
     def setup
-      Reviewer.configure do |config|
-        config.file = 'test/fixtures/files/test_commands.yml'
-      end
       @tool = Tool.new(:enabled_tool)
     end
 
@@ -29,6 +26,13 @@ module Reviewer
     def test_format_command
       cmd = @tool.format_command
       assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example format", cmd
+    end
+
+    def test_command_with_seed
+      tool = Tool.new(:dynamic_seed_tool)
+      seed = 123
+      cmd = tool.review_command(seed: seed)
+      assert_equal "bundle exec example review --seed #{seed} > /dev/null", cmd
     end
   end
 end

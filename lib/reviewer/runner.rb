@@ -1,26 +1,22 @@
 # frozen_string_literal: true
 
-require 'colorize'
 require 'open3'
 
 module Reviewer
   # Handles running, benchmarking, and printing output for a command
   class Runner
-    SUCCESS = 'Success'
-    FAILURE = 'Failure ·'
-    PROMPT  = '$'
-
     attr_accessor :tool, :command
 
-    attr_reader :elapsed_time, :stdout, :stderr, :status, :exception, :exit_status
+    attr_reader :elapsed_time, :stdout, :stderr, :status, :exit_status, :logger
 
-    def initialize(tool, command)
+    def initialize(tool, command, logger: Logger.new)
       @tool = tool
       @command = command
+      @logger = logger
     end
 
     def run
-      print_tool_info
+      logger.running(tool)
 
       @elapsed_time = Benchmark.realtime do
         prepare
@@ -29,12 +25,6 @@ module Reviewer
 
       print_result
       exit_status
-    rescue StandardError => e
-      @exception = e
-      print_exception
-      exit_status
-    ensure
-      @exit_status = nil
     end
 
     private
@@ -43,36 +33,43 @@ module Reviewer
       @stdout, @stderr, @status = Open3.capture3(cmd)
       @exit_status = status.exitstatus
 
-      puts "#{PROMPT} #{cmd}".light_black unless status.success?
+      logger.command(cmd) unless status.success?
     end
 
     def prepare
-      return unless tool.prepare_command?
-
-      shell_out(tool.preparation_command)
+      shell_out(tool.preparation_command) if tool.prepare_command?
     end
 
     def review
-      shell_out(tool.review_command)
+      shell_out(tool.review_command(seed: seed))
+    end
+
+    def format
+      shell_out(tool.format_command) if tool.format_command?
     end
 
     def review_verbosely
-      cmd = tool.review_command(:no_silence)
-      puts "Re-running #{tool.name} verbosely:"
+      cmd = tool.review_command(:no_silence, seed: seed)
+      logger.rerunning(tool)
+      logger.command(cmd)
       system(cmd)
-    end
-
-    def print_tool_info
-      # Outputs the tool name and description.
-      puts "\n#{tool.name}".bold + ' · '.light_black + tool.description
     end
 
     def print_result
       if status.success?
         # Outputs success details
-        puts SUCCESS.green.bold + " (#{elapsed_time.round(3)}s)\n".green
+        logger.success(elapsed_time)
       else
         recovery_guidance
+      end
+    end
+
+    def recovery_guidance
+      logger.failure(error_message)
+      if missing_executable?
+        missing_executable_guidance
+      else
+        review_verbosely
       end
     end
 
@@ -84,36 +81,18 @@ module Reviewer
       end
     end
 
-    def recovery_guidance
-      puts FAILURE.red.bold + " #{error_message}\n".red.bold
-      if missing_executable?
-        missing_executable_guidance
-      else
-        review_verbosely
-      end
-    end
-
     def missing_executable_guidance
-      # TODO: Proactively suggest updating dependency files based on bundler/yarn/etc.
-      if tool.install_command?
-        puts '  Installation Command:'
-        puts "  #{tool.installation_command}\n".light_black
-      end
-
-      return unless tool.install_link?
-
-      puts '  Installation Help:'
-      puts "  #{tool.settings.links[:install]}\n".light_black
-    end
-
-    def print_exception
-      puts "\n\n"
-      puts exception.message.red.bold
-      puts exception.backtrace.join("\n")
+      logger.guidance('Installation Command:', tool.installation_command) if tool.install_command?
+      logger.guidance('Installation Help:', tool.settings.links[:install]) if tool.install_link?
     end
 
     def missing_executable?
       stderr.include?("can't find executable")
+    end
+
+    def seed
+      # Keep the same seed for each instance so re-running generates the same results as the failure
+      @seed ||= Random.rand(100_000)
     end
   end
 end

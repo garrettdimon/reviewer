@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Provides a unified approach to managing automated code quality tools.'
   spec.homepage      = 'https://github.com/garrettdimon/reviewer'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.3')
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/garrettdimon/reviewer'
@@ -27,15 +27,12 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  # Uncomment to register a new dependency of your gem
   spec.add_dependency 'activesupport'
-  spec.add_dependency 'bundler-audit'
   spec.add_dependency 'colorize'
-  spec.add_dependency 'rubocop'
-  spec.add_dependency 'rubocop-minitest'
-  spec.add_dependency 'rubocop-rake'
   spec.add_dependency 'slop'
 
-  # For more information and examples about making a new gem, checkout our
-  # guide at: https://bundler.io/guides/creating_gem.html
+  spec.add_development_dependency 'bundler-audit'
+  spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'rubocop-minitest'
+  spec.add_development_dependency 'rubocop-rake'
 end

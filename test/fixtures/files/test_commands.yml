@@ -12,7 +12,7 @@ enabled_tool:
     prepare: 'bundle exec example update'
     review: 'bundle exec example review'
     format: 'bundle exec example format'
-    quiet_flag: '--quiet'
+    quiet_option: '--quiet'
     max_exit_status: 3
   env:
     with_spaces: 'with spaces'
@@ -39,7 +39,7 @@ disabled_tool:
     prepare: 'bundle exec example update'
     review: 'bundle exec example review'
     format: 'bundle exec example format'
-    quiet_flag: '--quiet'
+    quiet_option: '--quiet'
     max_exit_status: 3
   env:
     first: first
@@ -52,3 +52,8 @@ disabled_tool:
 minimum_viable_tool:
   commands:
     review: 'bundle exec example review'
+
+# For Testing Seed String Replacement
+dynamic_seed_tool:
+  commands:
+    review: 'bundle exec example review --seed $SEED'

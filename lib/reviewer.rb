@@ -3,9 +3,10 @@
 require 'active_support/core_ext/string'
 require 'benchmark'
 
-require_relative 'reviewer/arguments'
 require_relative 'reviewer/configuration'
+require_relative 'reviewer/arguments'
 require_relative 'reviewer/loader'
+require_relative 'reviewer/logger'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
@@ -16,7 +17,7 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :configuration
+    attr_writer :configuration, :logger
   end
 
   def self.review
@@ -29,7 +30,7 @@ module Reviewer
         break unless exit_status <= tool.max_exit_status
       end
     end
-    puts "Total Time: #{elapsed_time.round(3)}s)\n"
+    puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
   end
 
   def self.format

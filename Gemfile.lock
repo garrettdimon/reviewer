@@ -3,11 +3,7 @@ PATH
   specs:
     reviewer (0.1.1)
       activesupport
-      bundler-audit
       colorize
-      rubocop
-      rubocop-minitest
-      rubocop-rake
       slop
 
 GEM
@@ -59,13 +55,18 @@ GEM
     zeitwerk (2.4.2)
 
 PLATFORMS
+  ruby
   x86_64-darwin-19
   x86_64-linux
 
 DEPENDENCIES
+  bundler-audit
   minitest (~> 5.0)
   rake (~> 13.0)
   reviewer!
+  rubocop
+  rubocop-minitest
+  rubocop-rake
 
 BUNDLED WITH
    2.2.16

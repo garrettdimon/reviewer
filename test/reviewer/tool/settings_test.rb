@@ -6,10 +6,6 @@ module Reviewer
   class Tool
     class SettingsTest < MiniTest::Test
       def setup
-        Reviewer.configure do |config|
-          config.file = 'test/fixtures/files/test_commands.yml'
-        end
-
         @tool = :example
         @config = {
           commands: {
@@ -100,15 +96,15 @@ module Reviewer
         assert_equal @config.dig(:commands, :max_exit_status), @settings.max_exit_status
       end
 
-      def test_provides_the_tool_quiet_flag_with_empty_string_as_default
-        assert_equal '', @settings.quiet_flag
+      def test_provides_the_tool_quiet_option_with_empty_string_as_default
+        assert_equal '', @settings.quiet_option
 
         @config[:commands] = {
           review: 'example review',
-          quiet_flag: '--silent'
+          quiet_option: '--silent'
         }
         @settings = Settings.new(@tool, config: @config)
-        assert_equal @config.dig(:commands, :quiet_flag), @settings.quiet_flag
+        assert_equal @config.dig(:commands, :quiet_option), @settings.quiet_option
       end
 
       def test_provides_the_tool_commands_with_empty_hash_as_default
