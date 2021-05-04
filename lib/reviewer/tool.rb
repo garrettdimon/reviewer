@@ -1,36 +1,50 @@
 # frozen_string_literal: true
 
-require_relative "tool/command"
-require_relative "tool/env"
-require_relative "tool/flags"
-require_relative "tool/settings"
-require_relative "tool/verbosity"
+require_relative 'tool/command'
+require_relative 'tool/env'
+require_relative 'tool/flags'
+require_relative 'tool/settings'
+require_relative 'tool/verbosity'
 
-# Provides an instance of a specific tool
 module Reviewer
+  # Provides an instance of a specific tool
   class Tool
     attr_reader :settings
 
+    delegate :name,
+             :description,
+             :enabled?,
+             :disabled?,
+             :max_exit_status,
+             :prepare_command?,
+             :install_command?,
+             :format_command?,
+             :install_link?,
+             to: :settings
+
     def initialize(tool)
       @settings = Settings.new(tool)
+    end
+
+    def to_s
+      name
     end
 
     def installation_command(verbosity_level = :no_silence)
       command_string(:install, verbosity_level: verbosity_level)
     end
 
-    def preparation_command(verbosity_level = :no_silence)
-       command_string(:prepare, verbosity_level: verbosity_level)
+    def preparation_command(verbosity_level = :total_silence)
+      command_string(:prepare, verbosity_level: verbosity_level)
     end
 
-    def review_command(verbosity_level = :total_silence)
-      command_string(:review, verbosity_level: verbosity_level)
+    def review_command(verbosity_level = :total_silence, seed: nil)
+      command_string(:review, verbosity_level: verbosity_level).gsub('$SEED', seed.to_s)
     end
 
     def format_command(verbosity_level = :no_silence)
       command_string(:format, verbosity_level: verbosity_level)
     end
-
 
     private
 

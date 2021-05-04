@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 module Reviewer
   class Tool
@@ -11,9 +11,7 @@ module Reviewer
       end
 
       def test_converts_to_a_string
-        verbosity_string = "#{@flag} #{Verbosity::SEND_TO_DEV_NULL}"
-        assert_equal verbosity_string, @verbosity.to_s
-        assert_equal verbosity_string, "#{@verbosity}"
+        assert_equal @flag, @verbosity.to_s
       end
 
       def test_converts_to_array

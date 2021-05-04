@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-# Assembles tool tool_settings into a usable command string
 module Reviewer
   class Tool
+    # Assembles tool tool_settings into a usable command string
     class Command
       class InvalidTypeError < StandardError; end
+
       class NotConfiguredError < StandardError; end
 
       TYPES = %i[install prepare review format].freeze
@@ -21,9 +22,9 @@ module Reviewer
 
       def to_s
         to_a
-          .map(&:strip)
-          .join(' ')
-          .strip
+          .map(&:strip) # Remove extra spaces on the components
+          .join(' ')    # Merge the components
+          .strip        # Strip extra spaces from the end result
       end
 
       def to_a
@@ -44,16 +45,17 @@ module Reviewer
       end
 
       def flags
-        # :review commands are the only commands that use flags (except the :quiet_flag)
-        return nil unless review?
+        # :review commands are the only commands that use flags
+        # And if no flags are configured, this won't do much
+        # Flags for 'quiet' are handled separately by design and excluded from this check.
+        return nil unless review? && tool_settings.flags.any?
 
         Flags.new(tool_settings.flags).to_s
       end
 
       def verbosity
-        Verbosity.new(tool_settings.quiet_flag, level: verbosity_level).to_s
+        Verbosity.new(tool_settings.quiet_option, level: verbosity_level).to_s
       end
-
 
       private
 

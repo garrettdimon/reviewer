@@ -12,7 +12,7 @@ enabled_tool:
     prepare: 'bundle exec example update'
     review: 'bundle exec example review'
     format: 'bundle exec example format'
-    quiet_flag: '--quiet'
+    quiet_option: '--quiet'
     max_exit_status: 3
   env:
     with_spaces: 'with spaces'
@@ -39,7 +39,7 @@ disabled_tool:
     prepare: 'bundle exec example update'
     review: 'bundle exec example review'
     format: 'bundle exec example format'
-    quiet_flag: '--quiet'
+    quiet_option: '--quiet'
     max_exit_status: 3
   env:
     first: first
@@ -48,7 +48,23 @@ disabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
-# For Testing Defaults
+# For Testing Defaults and Runner
 minimum_viable_tool:
   commands:
-    review: 'bundle exec example review'
+    review: 'ls'
+
+# Intentionally Failing Command
+failing_command:
+  commands:
+    review: 'exit 1'
+
+# Intentionally Missing Command
+# Uses the Unix exit code for 'command not found'
+missing_command:
+  commands:
+    review: 'exit 127'
+
+# For Testing Seed String Replacement
+dynamic_seed_tool:
+  commands:
+    review: 'bundle exec example review --seed $SEED'

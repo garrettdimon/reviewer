@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
-require "yaml"
-require "active_support/core_ext/hash/indifferent_access"
+require 'yaml'
+require 'active_support/core_ext/hash/indifferent_access'
 
-# Provides a collection of the configured tools
 module Reviewer
+  # Provides a collection of the configured tools
   class Loader
     class MissingConfigurationError < StandardError; end
+
     class InvalidConfigurationError < StandardError; end
 
     attr_reader :configuration

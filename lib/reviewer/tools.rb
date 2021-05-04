@@ -1,18 +1,14 @@
 # frozen_string_literal: true
 
-# Provides a collection of the configured tools
 module Reviewer
+  # Provides a collection of the configured tools
   module Tools
     def self.all
-      []
-    end
-
-    def self.enabled
-      []
-    end
-
-    def self.disabled
-      []
+      tools = []
+      Reviewer.configuration.tools.each_key do |key|
+        tools << Tool.new(key)
+      end
+      tools
     end
   end
 end

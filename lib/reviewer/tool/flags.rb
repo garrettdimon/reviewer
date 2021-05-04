@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Assembles tool flag settings into a single string or array
 module Reviewer
   class Tool
+    # Assembles tool flag settings into a single string or array
     class Flags
       attr_reader :flag_pairs
 
@@ -19,7 +19,6 @@ module Reviewer
         flag_pairs.each { |key, value| flags << flag(key, value) }
         flags
       end
-
 
       private
 

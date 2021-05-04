@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Converts/casts tool configuration values and provides default values if not set
 module Reviewer
   class Tool
+    # Converts/casts tool configuration values and provides default values if not set
     class Settings
       class MissingReviewCommandError < StandardError; end
 
@@ -14,15 +14,31 @@ module Reviewer
 
         # Ideally, folks would fill out everything, but realistically, the 'review' command is the only required value.
         # If the key is missing, or maybe there was a typo, fail right away.
-        raise MissingReviewCommandError, "'#{name}' does not have a 'review' key under 'commands' in your tools configuration" unless commands.key?(:review)
+        raise MissingReviewCommandError, "'#{key}' does not have a 'review' key under 'commands' in `#{Reviewer.configuration.file}`" unless commands.key?(:review)
       end
 
       def disabled?
-        config.fetch(:disabled) { false }
+        config.fetch(:disabled, false)
       end
 
       def enabled?
         !disabled?
+      end
+
+      def prepare_command?
+        commands.key?(:prepare) && commands[:prepare].present?
+      end
+
+      def install_command?
+        commands.key?(:install) && commands[:install].present?
+      end
+
+      def format_command?
+        commands.key?(:format) && commands[:format].present?
+      end
+
+      def install_link?
+        links.key?(:install) && links[:install].present?
       end
 
       def key
@@ -58,11 +74,11 @@ module Reviewer
       end
 
       def max_exit_status
-        commands.fetch(:max_exit_status) { 0 }
+        commands.fetch(:max_exit_status, 0)
       end
 
-      def quiet_flag
-        commands.fetch(:quiet_flag) { '' }
+      def quiet_option
+        commands.fetch(:quiet_option, '')
       end
     end
   end
