@@ -5,7 +5,7 @@ require 'slop'
 module Reviewer
   # Handles option parsing for `rvw` and `fmt` commands
   class Arguments
-    KEYWORDS = %w[new staged]
+    KEYWORDS = %w[new staged].freeze
 
     attr_accessor :options
 
