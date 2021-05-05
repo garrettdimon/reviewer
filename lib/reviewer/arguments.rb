@@ -26,6 +26,14 @@ module Reviewer
       end
     end
 
+    def inspect
+      {
+        files: files,
+        tags: tags,
+        keywords: keywords
+      }
+    end
+
     def files
       options[:files]
     end
