@@ -21,8 +21,7 @@ module Reviewer
       logger.running(tool)
 
       @elapsed_time = Benchmark.realtime do
-        prepare
-        review
+        tool.format_command? ? run_format : run_review
       end
 
       print_result
@@ -38,15 +37,12 @@ module Reviewer
       logger.command(cmd) unless status.success?
     end
 
-    def prepare
+    def run_review
       shell_out(tool.preparation_command) if tool.prepare_command?
-    end
-
-    def review
       shell_out(tool.review_command(seed: seed))
     end
 
-    def format
+    def run_format
       shell_out(tool.format_command) if tool.format_command?
     end
 
@@ -59,7 +55,6 @@ module Reviewer
 
     def print_result
       if status.success?
-        # Outputs success details
         logger.success(elapsed_time)
       else
         recovery_guidance
