@@ -17,11 +17,10 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :configuration, :logger
+    attr_writer :arguments, :configuration, :logger
   end
 
   def self.review
-    # options = Arguments.new
     elapsed_time = Benchmark.realtime do
       Tools.all.each do |tool|
         next if tool.disabled?
@@ -35,7 +34,6 @@ module Reviewer
   end
 
   def self.format
-    # options = Arguments.new
     Tools.all.each do |tool|
       Runner.run(tool, :format)
     end
@@ -45,11 +43,16 @@ module Reviewer
     @configuration ||= Configuration.new
   end
 
-  def self.reset
-    @configuration = Configuration.new
+  def self.arguments
+    @arguments ||= Arguments.new
   end
 
   def self.configure
     yield(configuration)
+  end
+
+  def self.reset
+    @configuration = Configuration.new
+    @arguments = Arguments.new
   end
 end
