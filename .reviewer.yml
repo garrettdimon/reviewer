@@ -35,3 +35,5 @@ rubocop:
     review: 'bundle exec rubocop --parallel'
     format: 'bundle exec rubocop --auto-correct'
     quiet_option: '--format q'
+    files_flag: ''
+    files_list_separator: ' '

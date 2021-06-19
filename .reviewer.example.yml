@@ -14,14 +14,16 @@
 #    prepare:                   // Optional. Command to run prior to the review phase. ex. 'bundle exec bundle-audit update'
 #    review:                    // Required. The only truly required field because this is the whole point.
 #    format:                    // Optional. Command to auto-update rule violations when possible.
-#    quiet_option:                // Optional, but strongly suggested. Helps keep output under control when running multiple tools.
+#    quiet_option:              // Optional, but strongly suggested. Helps keep output under control when running multiple tools.
 #    max_exit_status:           // Optional, defaults to 0. Some tools like Yarn Audit essentially won't return less than a 3. This specifies the threshold that's still considered passing.
-#   env:                        // Optional. A way to specify necessary environment variables for the tools commands. The key is the variable name, and the value is, well, the value.
-#     example_one: value        //           - The names will automatically be capitalized, so you can freely use lower-case here.
-#     example_one: value        //           - Reviewer is smart enough to handle string values with spaces and automatically quote them.
-#   flags:                      // Optional. A way to specify flags *only for the review command*. The key is the flag name, and the value is, well, the value.
-#     example_one: value        //           - Reviewer is smart enough to handle single-letter (-f) and multi-letter (--format) flags.
-#     example_two: value        //           - It's highly-recommended to use the longer-name format for flags when possible to serve as self-documentation.
+#    files_flag:                // Optional, defaults to '' (empty string). The name of the flag used to pass subsets of files to the command.
+#    files_separator:           // Optional, defaults to ' ' (single space). The character used to separate lists of files and directories.
+#  env:                         // Optional. A way to specify necessary environment variables for the tools commands. The key is the variable name, and the value is, well, the value.
+#    example_one: value         //           - The names will automatically be capitalized, so you can freely use lower-case here.
+#    example_one: value         //           - Reviewer is smart enough to handle string values with spaces and automatically quote them.
+#  flags:                       // Optional. A way to specify flags *only for the review command*. The key is the flag name, and the value is, well, the value.
+#    example_one: value         //           - Reviewer is smart enough to handle single-letter (-f) and multi-letter (--format) flags.
+#    example_two: value         //           - It's highly-recommended to use the longer-name format for flags when possible to serve as self-documentation.
 
 # This is an example for a YAML block for a command-line tool:
 #
