@@ -10,7 +10,6 @@ require_relative 'reviewer/loader'
 require_relative 'reviewer/logger'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/tool'
-require_relative 'reviewer/tools'
 require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
@@ -23,7 +22,7 @@ module Reviewer
 
   def self.review
     elapsed_time = Benchmark.realtime do
-      Tools.all.each do |tool|
+      tools.each do |tool|
         next if tool.disabled?
 
         exit_status = Runner.new(tool, :review).run
@@ -35,10 +34,19 @@ module Reviewer
   end
 
   def self.format
-    Tools.all.each do |tool|
-      Runner.run(tool, :format)
+    elapsed_time = Benchmark.realtime do
+      tools.each do |tool|
+        next if tool.disabled?
+
+        exit_status = Runner.run(tool, :format)
+
+        break unless exit_status <= tool.max_exit_status
+      end
     end
+    puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
   end
+
+  private
 
   def self.arguments
     @arguments ||= Arguments.new
@@ -55,5 +63,13 @@ module Reviewer
   def self.reset
     @configuration = Configuration.new
     @arguments = Arguments.new
+  end
+
+  def self.tools
+    tools = []
+    configuration.tools.each_key do |key|
+      tools << Tool.new(key)
+    end
+    tools
   end
 end
