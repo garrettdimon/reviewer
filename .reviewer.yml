@@ -1,7 +1,7 @@
 bundler_audit:
   tags: [critical, dependencies, ruby]
   name: Bundler Audit
-  description: Audit Gem Dependencies for Security Issues
+  description: Review Gem Dependencies for Security Issues
   links:
     home: https://github.com/rubysec/bundler-audit
     install: https://github.com/rubysec/bundler-audit#install
@@ -23,6 +23,7 @@ tests:
 
 rubocop:
   tags: [ruby, syntax]
+  name: Rubocop
   description: Review Ruby syntax/formatting for consistency
   links:
     home: https://rubocop.org
