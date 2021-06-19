@@ -39,12 +39,12 @@ module Reviewer
     end
   end
 
-  def self.configuration
-    @configuration ||= Configuration.new
-  end
-
   def self.arguments
     @arguments ||= Arguments.new
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
   end
 
   def self.configure
