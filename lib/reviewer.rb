@@ -5,6 +5,7 @@ require 'benchmark'
 
 require_relative 'reviewer/configuration'
 require_relative 'reviewer/arguments'
+require_relative 'reviewer/files'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/logger'
 require_relative 'reviewer/runner'
