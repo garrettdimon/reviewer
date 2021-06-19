@@ -18,58 +18,56 @@ module Reviewer
 
   class << self
     attr_writer :arguments, :configuration, :logger
-  end
 
-  def self.review
-    elapsed_time = Benchmark.realtime do
-      tools.each do |tool|
-        next if tool.disabled?
+    def review
+      elapsed_time = Benchmark.realtime do
+        tools.each do |tool|
+          next if tool.disabled?
 
-        exit_status = Runner.new(tool, :review).run
+          exit_status = Runner.new(tool, :review).run
 
-        break unless exit_status <= tool.max_exit_status
+          break unless exit_status <= tool.max_exit_status
+        end
       end
+      puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
     end
-    puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
-  end
 
-  def self.format
-    elapsed_time = Benchmark.realtime do
-      tools.each do |tool|
-        next if tool.disabled?
+    def format
+      elapsed_time = Benchmark.realtime do
+        tools.each do |tool|
+          next if tool.disabled?
 
-        exit_status = Runner.run(tool, :format)
+          exit_status = Runner.run(tool, :format)
 
-        break unless exit_status <= tool.max_exit_status
+          break unless exit_status <= tool.max_exit_status
+        end
       end
+      puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
     end
-    puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
-  end
 
-  private
-
-  def self.arguments
-    @arguments ||= Arguments.new
-  end
-
-  def self.configuration
-    @configuration ||= Configuration.new
-  end
-
-  def self.configure
-    yield(configuration)
-  end
-
-  def self.reset
-    @configuration = Configuration.new
-    @arguments = Arguments.new
-  end
-
-  def self.tools
-    tools = []
-    configuration.tools.each_key do |key|
-      tools << Tool.new(key)
+    def arguments
+      @arguments ||= Arguments.new
     end
-    tools
+
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    def configure
+      yield(configuration)
+    end
+
+    def reset
+      @configuration = Configuration.new
+      @arguments = Arguments.new
+    end
+
+    def tools
+      tools = []
+      configuration.tools.each_key do |key|
+        tools << Tool.new(key)
+      end
+      tools
+    end
   end
 end
