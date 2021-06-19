@@ -48,15 +48,5 @@ module Reviewer
       # Use git for list of staged fields
       Reviewer::Git::Staged.new.list
     end
-
-    # def untracked
-    #   # Use git for list of untracked fields
-    #   ['*.untracked']
-    # end
-
-    # def recent
-    #   # Get a list of 'recent' files. (But also define what 'recent' means.)
-    #   ['*.recent']
-    # end
   end
 end
