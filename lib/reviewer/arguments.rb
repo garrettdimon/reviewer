@@ -1,12 +1,23 @@
 # frozen_string_literal: true
 
+require_relative 'arguments/keywords'
+require_relative 'arguments/files'
+require_relative 'arguments/tags'
+
 require 'slop'
 
 module Reviewer
   # Handles option parsing for `rvw` and `fmt` commands
+  #
+  # @example
+  #
+  #   `rvw`
+  #   `rvw -t ruby`
+  #   `rvw staged`
+  #   `rvw --files ./example.rb,./example_test.rb --tags syntax`
+  #   `rvw ruby staged`
+  #
   class Arguments
-    KEYWORDS = %w[staged].freeze
-
     attr_accessor :options
 
     def initialize(options = ARGV)
@@ -42,18 +53,8 @@ module Reviewer
       options[:tags]
     end
 
-    def arguments
-      options.arguments
-    end
-
     def keywords
-      arguments.reject { |arg| unrecognized_keyword?(arg) }
-    end
-
-    private
-
-    def unrecognized_keyword?(arg)
-      !KEYWORDS.include?(arg)
+      options.arguments
     end
   end
 end

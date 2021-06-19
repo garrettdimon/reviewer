@@ -5,7 +5,6 @@ require 'benchmark'
 
 require_relative 'reviewer/configuration'
 require_relative 'reviewer/arguments'
-require_relative 'reviewer/files'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/logger'
 require_relative 'reviewer/runner'
@@ -20,29 +19,11 @@ module Reviewer
     attr_writer :arguments, :configuration, :logger
 
     def review
-      elapsed_time = Benchmark.realtime do
-        tools.each do |tool|
-          next if tool.disabled?
-
-          exit_status = Runner.new(tool, :review).run
-
-          break unless exit_status <= tool.max_exit_status
-        end
-      end
-      puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
+      perform(:review)
     end
 
     def format
-      elapsed_time = Benchmark.realtime do
-        tools.each do |tool|
-          next if tool.disabled?
-
-          exit_status = Runner.run(tool, :format)
-
-          break unless exit_status <= tool.max_exit_status
-        end
-      end
-      puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
+      perform(:format)
     end
 
     def arguments
@@ -65,9 +46,26 @@ module Reviewer
     def tools
       tools = []
       configuration.tools.each_key do |key|
-        tools << Tool.new(key)
+        tool = Tool.new(key)
+
+        next if tool.disabled?
+
+        tools << tool
       end
       tools
+    end
+
+    private
+
+    def perform(command_type)
+      elapsed_time = Benchmark.realtime do
+        tools.each do |tool|
+          exit_status = Runner.new(tool, command_type).run
+
+          break unless exit_status <= tool.max_exit_status
+        end
+      end
+      puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
     end
   end
 end
