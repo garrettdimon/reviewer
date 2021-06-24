@@ -6,9 +6,9 @@ module Reviewer
     class Files
       attr_reader :provided, :keywords
 
-      def initialize(provided: nil, keywords: nil)
-        @provided = provided || Reviewer.arguments.files
-        @keywords = keywords || Reviewer.arguments.keywords
+      def initialize(provided: Reviewer.arguments.files, keywords: Reviewer.keywords)
+        @provided = Array(provided)
+        @keywords = Array(keywords)
       end
 
       def to_a
@@ -45,7 +45,7 @@ module Reviewer
 
       def staged
         # Use git for list of staged fields
-        ::Reviewer::Arguments::Keywords::Git::Staged.new.list
+        ::Reviewer::Arguments::Keywords::Git::Staged.list
       end
     end
   end

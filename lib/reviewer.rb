@@ -16,7 +16,7 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :arguments, :configuration, :logger
+    attr_writer :tags, :files, :keywords, :configuration, :logger
 
     def review
       perform(:review)
@@ -28,6 +28,18 @@ module Reviewer
 
     def arguments
       @arguments ||= Arguments.new
+    end
+
+    def tags
+      @tags ||= Arguments::Tags.new
+    end
+
+    def files
+      @files ||= Arguments::Files.new
+    end
+
+    def keywords
+      @keywords ||= Arguments::Keywords.new
     end
 
     def configuration

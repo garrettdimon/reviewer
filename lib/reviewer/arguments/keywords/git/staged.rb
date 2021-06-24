@@ -14,19 +14,44 @@ module Reviewer
 
           attr_reader :stdout, :stderr, :status, :exit_status
 
+          def to_a
+            stdout.present? ? stdout.split("\n") : []
+          end
+
+          def to_s
+            stdout.present? ? stdout : ""
+          end
+
+          def inspect
+            {
+              command: command,
+              stdout: stdout,
+              stderr: stderr,
+              status: status,
+              results: results
+            }
+          end
+
           def list
             @stdout, @stderr, @status = Open3.capture3(command)
-            @exit_status = status.exitstatus
+            @exit_status = @status.exitstatus.to_i
 
-            raise 'Git Problem' unless status.success?
+            @status.success? ? to_a : raise_command_line_error
+          end
 
-            @stdout.split("\n")
+          def self.list
+            new.list
+          end
+
+          def command
+            command_parts.join(' ')
           end
 
           private
 
-          def command
-            command_parts.join(' ')
+          def raise_command_line_error
+            message = "Git Error: #{stderr} (#{command})"
+            raise SystemCallError.new(message, exit_status)
           end
 
           def command_parts

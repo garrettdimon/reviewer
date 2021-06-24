@@ -4,11 +4,11 @@ module Reviewer
   class Arguments
     # Handles the logic of translating tag arguments
     class Tags
-      attr_accessor :provided
+      attr_accessor :provided, :keywords
 
-      def initialize(provided: nil, keywords: nil)
-        @provided = provided || Reviewer.arguments.tags
-        @keywords = keywords || Reviewer.arguments.keywords
+      def initialize(provided: Reviewer.arguments.tags, keywords: Reviewer.keywords.for_tags)
+        @provided = Array(provided)
+        @keywords = Array(keywords)
       end
 
       def to_a
@@ -31,21 +31,8 @@ module Reviewer
       def tag_list
         @tag_list ||= [
           *provided,
-          *from_keywords
+          *keywords
         ].sort.uniq
-      end
-
-      def from_keywords
-        return [] unless keywords.any?
-
-        keywords.map do |keyword|
-          send(keyword) if defined?(keyword)
-        end.flatten.uniq
-      end
-
-      def staged
-        # Use git for list of staged fields
-        ::Reviewer::Arguments::Keywords::Git::Staged.new.list
       end
     end
   end

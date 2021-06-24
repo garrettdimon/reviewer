@@ -12,7 +12,7 @@ module Reviewer
       attr_accessor :provided
 
       def initialize(*provided)
-        @provided = provided
+        @provided = Array(provided.flatten)
       end
 
       def to_a
@@ -35,43 +35,55 @@ module Reviewer
       end
 
       def reserved
-        provided.intersection(RESERVED).uniq.sort
+        intersection_with RESERVED
+      end
+
+      def for_tags
+        intersection_with configured_tags
+      end
+
+      def for_commands
+        intersection_with configured_commands
       end
 
       def recognized
-        provided.intersection(possible).uniq.sort
+        intersection_with possible
       end
 
       def unrecognized
         (provided - recognized).uniq.sort
       end
 
-      def for_tags
-        provided.intersection(configured_tags).uniq.sort
-      end
-
-      def for_commands
-        provided.intersection(configured_commands).uniq.sort
-      end
-
       def possible
         (RESERVED + configured_tags + configured_commands).uniq.sort
       end
 
-      def conflicts
-        []
-      end
-
-      def conflicts?
-        conflicts.any?
+      def self.configured_tools
+        Reviewer.configuration.tools
       end
 
       def configured_tags
-        configuration.tools.map(&:tags).flatten
+        self.class.configured_tags
+      end
+
+      def self.configured_tags
+        configured_tools.values.map do |tool|
+          tool.fetch(:tags) { [] }
+        end.flatten.uniq
       end
 
       def configured_commands
-        configuration.tools.keys.flatten
+        self.class.configured_commands
+      end
+
+      def self.configured_commands
+        configured_tools.keys.flatten.uniq
+      end
+
+      private
+
+      def intersection_with(values)
+        values.intersection(provided).uniq.sort
       end
     end
   end
