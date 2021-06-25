@@ -23,7 +23,7 @@ module Reviewer
     end
 
     def current
-      if tag_arguments.any? && tool_name_keywords.any?
+      if tag_arguments.any? || tool_name_keywords.any?
         enabled.keep_if { |tool| tagged?(tool) || named?(tool) }
       else
         enabled
@@ -40,8 +40,8 @@ module Reviewer
       arguments.tags.to_a
     end
 
-    def tool_name_keywords
-      arguments.keywords.for_tool_names.to_a
+    def tool_name_arguments
+      arguments.tool_names.to_a
     end
 
     def tagged?(tool)
@@ -49,7 +49,7 @@ module Reviewer
     end
 
     def named?(tool)
-      tool_name_keywords.include?(tool.name)
+      tool_name_arguments.include?(tool.key.to_s)
     end
   end
 end
