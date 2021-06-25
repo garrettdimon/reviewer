@@ -5,6 +5,10 @@ require 'test_helper'
 module Reviewer
   class Arguments
     class TagsTest < MiniTest::Test
+      def setup
+        ensure_test_configuration!
+      end
+
       def test_array_casting
         assert_equal [], Tags.new.to_a
         assert_equal %w[css html ruby], Tags.new(provided: %w[css], keywords: %w[ruby html]).to_a

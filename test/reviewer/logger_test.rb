@@ -5,6 +5,8 @@ require 'test_helper'
 module Reviewer
   class LoggerTest < MiniTest::Test
     def setup
+      ensure_test_configuration!
+
       @tool = Tool.new(:enabled_tool)
       @logger = Logger.new
     end

@@ -32,7 +32,7 @@ module Reviewer
           unrecognized: unrecognized,
           reserved: reserved,
           for_tags: for_tags,
-          for_commands: for_commands
+          for_tool_names: for_tool_names
         }
       end
 
@@ -44,8 +44,8 @@ module Reviewer
         intersection_with configured_tags
       end
 
-      def for_commands
-        intersection_with configured_commands
+      def for_tool_names
+        intersection_with configured_tool_names
       end
 
       def recognized
@@ -57,11 +57,11 @@ module Reviewer
       end
 
       def possible
-        (RESERVED + configured_tags + configured_commands).uniq.sort
+        (RESERVED + configured_tags + configured_tool_names).uniq.sort
       end
 
       def self.configured_tools
-        Reviewer.configuration.tools
+        Tools.configured
       end
 
       def configured_tags
@@ -74,11 +74,11 @@ module Reviewer
         end.flatten.uniq
       end
 
-      def configured_commands
-        self.class.configured_commands
+      def configured_tool_names
+        self.class.configured_tool_names
       end
 
-      def self.configured_commands
+      def self.configured_tool_names
         configured_tools.keys.flatten.uniq
       end
 

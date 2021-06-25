@@ -34,14 +34,15 @@ module Reviewer
         @file_list ||= [
           *provided,
           *from_keywords
-        ].sort.uniq
+        ].compact.sort.uniq
       end
 
       def from_keywords
         return [] unless keywords.any?
 
         keywords.map do |keyword|
-          send(keyword) if defined?(keyword)
+          keyword = keyword.to_sym
+          send(keyword) if respond_to?(keyword)
         end.flatten.uniq
       end
 

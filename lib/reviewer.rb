@@ -9,6 +9,7 @@ require_relative 'reviewer/loader'
 require_relative 'reviewer/logger'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/tool'
+require_relative 'reviewer/tools'
 require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
@@ -16,7 +17,7 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :configuration, :logger
+    attr_writer :configuration, :logger, :tools
 
     def review
       perform(:review)
@@ -38,12 +39,8 @@ module Reviewer
       yield(configuration)
     end
 
-    def reset
-      @configuration = Configuration.new
-      @arguments = Arguments.new
-    end
-
     def tools
+      # @tools ||= Tools.new
       tools = []
       configuration.tools.each_key do |key|
         tool = Tool.new(key)

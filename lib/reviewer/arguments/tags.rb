@@ -34,7 +34,7 @@ module Reviewer
         @tag_list ||= [
           *provided,
           *keywords
-        ].sort.uniq
+        ].compact.sort.uniq
       end
     end
   end

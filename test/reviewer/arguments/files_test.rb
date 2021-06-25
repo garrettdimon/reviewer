@@ -5,6 +5,10 @@ require 'test_helper'
 module Reviewer
   class Arguments
     class FilesTest < MiniTest::Test
+      def setup
+        ensure_test_configuration!
+      end
+
       def test_array_casting
         assert_equal [], Files.new.to_a
         assert_equal ['*.css', '*.rb'], Files.new(provided: ['*.rb', '*.css'], keywords: []).to_a

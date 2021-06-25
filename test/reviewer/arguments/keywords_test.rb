@@ -5,6 +5,10 @@ require 'test_helper'
 module Reviewer
   class Arguments
     class KeywordsTest < MiniTest::Test
+      def setup
+        ensure_test_configuration!
+      end
+
       def test_initializes_from_multiple_argument_formats
         keywords = Keywords.new('one')
         assert_equal ['one'], keywords.provided
@@ -22,17 +26,17 @@ module Reviewer
       end
 
       def test_exposes_configured_tools
-        assert_equal Reviewer.configuration.tools.first, Keywords.configured_tools.first
+        assert_equal Tools.configured.first, Keywords.configured_tools.first
       end
 
       def test_exposes_configured_tags
-        first_tool_tags = Reviewer.configuration.tools.first[1].fetch(:tags)
+        first_tool_tags = Tools.configured.first[1].fetch(:tags)
         assert first_tool_tags.include?(Keywords.configured_tags[0])
       end
 
       def test_exposes_configured_tool_keys
-        first_tool_key = Reviewer.configuration.tools.first[0]
-        assert_equal first_tool_key, Keywords.configured_commands.first
+        first_tool_key = Tools.configured.first[0]
+        assert_equal first_tool_key, Keywords.configured_tool_names.first
       end
 
       def test_recognizes_reserved_keywords
@@ -51,13 +55,13 @@ module Reviewer
         assert_equal tag_keywords_array, keywords.for_tags
       end
 
-      def test_recognizes_commands_keywords
-        commands_keywords_array = [Keywords.configured_commands.first]
+      def test_recognizes_tool_names_keywords
+        commands_keywords_array = [Keywords.configured_tool_names.first]
         keywords_array = (commands_keywords_array + ['noise']).sort
         keywords = Keywords.new(keywords_array)
 
         assert_equal keywords_array, keywords.provided
-        assert_equal commands_keywords_array, keywords.for_commands
+        assert_equal commands_keywords_array, keywords.for_tool_names
       end
 
       def test_exposes_all_possible_keywords

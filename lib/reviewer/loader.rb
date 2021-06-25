@@ -10,9 +10,10 @@ module Reviewer
 
     class InvalidConfigurationError < StandardError; end
 
-    attr_reader :configuration
+    attr_reader :configuration, :file
 
-    def initialize
+    def initialize(file)
+      @file = file
       @configuration = HashWithIndifferentAccess.new(configuration_hash)
     end
 
@@ -23,7 +24,7 @@ module Reviewer
     private
 
     def configuration_hash
-      @configuration_hash ||= YAML.load_file(Reviewer.configuration.file)
+      @configuration_hash ||= YAML.load_file(@file)
     rescue Errno::ENOENT
       raise MissingConfigurationError, "Tools configuration file couldn't be found - #{Reviewer.configuration.file}"
     rescue Psych::SyntaxError => e

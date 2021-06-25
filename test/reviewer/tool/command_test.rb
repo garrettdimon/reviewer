@@ -6,6 +6,8 @@ module Reviewer
   class Tool
     class CommandTest < MiniTest::Test
       def setup
+        ensure_test_configuration!
+
         @settings = Settings.new(:enabled_tool)
         @level = :total_silence
       end

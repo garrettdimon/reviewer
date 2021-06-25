@@ -10,10 +10,11 @@ module Reviewer
 
       def initialize(tool, config: nil)
         @tool = tool
-        @config = config || Reviewer.configuration.tools.fetch(tool.to_sym) { {} }
+        @config = config || Tools.configured.fetch(tool.to_sym) { {} }
 
-        # Ideally, folks would fill out everything, but realistically, the 'review' command is the only required value.
-        # If the key is missing, or maybe there was a typo, fail right away.
+        # Ideally, folks would want to fill out everything to receive the most benefit,
+        # but realistically, the 'review' command is the only required value. If the key
+        # is missing, or maybe there was a typo, fail right away.
         raise MissingReviewCommandError, "'#{key}' does not have a 'review' key under 'commands' in `#{Reviewer.configuration.file}`" unless commands.key?(:review)
       end
 
