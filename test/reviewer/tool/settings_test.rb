@@ -6,8 +6,6 @@ module Reviewer
   class Tool
     class SettingsTest < MiniTest::Test
       def setup
-        ensure_test_configuration!
-
         @tool = :example
         @config = {
           commands: {

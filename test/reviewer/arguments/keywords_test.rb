@@ -5,10 +5,6 @@ require 'test_helper'
 module Reviewer
   class Arguments
     class KeywordsTest < MiniTest::Test
-      def setup
-        ensure_test_configuration!
-      end
-
       def test_initializes_from_multiple_argument_formats
         keywords = Keywords.new('one')
         assert_equal ['one'], keywords.provided

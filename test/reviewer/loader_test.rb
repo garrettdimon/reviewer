@@ -5,7 +5,6 @@ require 'test_helper'
 module Reviewer
   class LoaderTest < MiniTest::Test
     def setup
-      ensure_test_configuration!
       @file = Reviewer.configuration.file
     end
 

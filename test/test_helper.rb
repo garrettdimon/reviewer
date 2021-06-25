@@ -6,10 +6,10 @@ require 'reviewer'
 require 'minitest/autorun'
 require 'minitest/color'
 
+
+# Ensure it's using the test configuration file since some tests intentionally
+# change it to test how it recovers when misconfigured
 def ensure_test_configuration!
-  # Ensure it's using the test configuration file since
-  # some tests intentionally change it to test how it
-  # recovers when misconfigured
   test_configuration_file = 'test/fixtures/files/test_commands.yml'
 
   return if Reviewer.configuration.file == test_configuration_file

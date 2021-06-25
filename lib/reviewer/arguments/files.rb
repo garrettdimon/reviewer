@@ -41,8 +41,9 @@ module Reviewer
         return [] unless keywords.any?
 
         keywords.map do |keyword|
-          keyword = keyword.to_sym
-          send(keyword) if respond_to?(keyword)
+          next unless respond_to?(keyword.to_sym, true)
+
+          send(keyword.to_sym)
         end.flatten.uniq
       end
 

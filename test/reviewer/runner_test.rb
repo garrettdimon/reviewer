@@ -4,10 +4,6 @@ require 'test_helper'
 
 module Reviewer
   class RunnerTest < MiniTest::Test
-    def setup
-      ensure_test_configuration!
-    end
-
     def test_run_exits_cleanly_and_displays_tool_name
       tool = Tool.new(:minimum_viable_tool)
       runner = Runner.new(tool, :review)

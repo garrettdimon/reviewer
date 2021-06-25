@@ -26,10 +26,6 @@ module Reviewer
       @tools = Tools.new(tools: @tools_hash)
     end
 
-    def teardown
-      ensure_test_configuration!
-    end
-
     def test_exposes_all_configured_tools
       assert_equal @tools_hash, @tools.all
     end

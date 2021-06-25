@@ -4,10 +4,6 @@ require 'test_helper'
 
 module Reviewer
   class ArgumentsTest < MiniTest::Test
-    def setup
-      ensure_test_configuration!
-    end
-
     def test_has_an_empty_array_of_tags_by_default
       args = %w[]
       command = Arguments.new(args)

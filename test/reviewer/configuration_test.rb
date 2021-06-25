@@ -4,10 +4,6 @@ require 'test_helper'
 
 module Reviewer
   class ConfigurationTest < Minitest::Test
-    def setup
-      ensure_test_configuration!
-    end
-
     def test_uses_default_configuration_file
       assert_equal Configuration::DEFAULT_FILE, Configuration.new.file
     end
