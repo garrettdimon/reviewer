@@ -23,32 +23,31 @@ module Reviewer
           },
         },
       }
-      @tools = Tools.new(tools: @tools_hash)
+      @tools = Tools.new(tools_hash: @tools_hash)
     end
 
     def test_exposes_all_configured_tools
-      assert_equal @tools_hash, @tools.all
+      assert_equal @tools_hash.keys, @tools.all.map(&:key)
     end
 
     def test_exposes_all_enabled_tools
-      @tools.enabled.each do |key, value|
-        refute value[:disabled], "`#{key}` is disabled but included in the enabled tools list"
+      @tools.enabled.each do |tool|
+        assert tool.enabled?, "`#{tool.name}` is disabled but included in the enabled tools list"
       end
     end
 
     def test_exposes_all_disabled_tools
-      @tools.disabled.each do |key, value|
-        assert value[:disabled], "`#{key}` is enabled but included in the disabled tools list"
+      @tools.disabled.each do |tool|
+        assert tool.disabled?, "`#{tool.name}` is enabled but included in the disabled tools list"
       end
     end
 
-    def test_exposes_tagged_tools
-      @tools.enabled.each do |key, value|
-        refute value[:disabled], "`#{key}` is disabled but included in the enabled tools list"
-      end
-      @tools.disabled.each do |key, value|
-        assert value[:disabled], "`#{key}` is enabled but included in the disabled tools list"
-      end
+    def test_includes_enabled_tagged_tools
+      skip "Needs a test!"
+    end
+
+    def test_excludes_disabled_tagged_tools
+      skip "Needs a test!"
     end
   end
 end

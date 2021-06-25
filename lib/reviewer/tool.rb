@@ -13,6 +13,8 @@ module Reviewer
 
     delegate :name,
              :description,
+             :tags,
+             :key,
              :enabled?,
              :disabled?,
              :max_exit_status,
