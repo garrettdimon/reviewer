@@ -6,7 +6,9 @@ module Reviewer
     class Tags
       attr_accessor :provided, :keywords
 
-      def initialize(provided: Reviewer.arguments.tags, keywords: Reviewer.keywords.for_tags)
+      alias raw provided
+
+      def initialize(provided: Reviewer.arguments.tags.raw, keywords: Reviewer.arguments.keywords.for_tags)
         @provided = Array(provided)
         @keywords = Array(keywords)
       end
@@ -22,7 +24,7 @@ module Reviewer
       def inspect
         {
           provided: provided,
-          from_keywords: from_keywords
+          from_keywords: keywords
         }
       end
 

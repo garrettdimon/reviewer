@@ -6,7 +6,9 @@ module Reviewer
     class Files
       attr_reader :provided, :keywords
 
-      def initialize(provided: Reviewer.arguments.files, keywords: Reviewer.keywords)
+      alias raw provided
+
+      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords)
         @provided = Array(provided)
         @keywords = Array(keywords)
       end

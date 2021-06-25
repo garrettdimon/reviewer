@@ -10,18 +10,27 @@ module Reviewer
         assert_equal ['one'], keywords.provided
 
         keywords = Keywords.new('one', 'two')
-        assert_equal ['one', 'two'].sort, keywords.provided
+        assert_equal %w[one two].sort, keywords.provided
 
-        keywords = Keywords.new(['one', 'two'])
-        assert_equal ['one', 'two'].sort, keywords.provided
+        keywords = Keywords.new(%w[one two])
+        assert_equal %w[one two].sort, keywords.provided
+      end
+
+      def test_raw_aliases_provided
+        keywords = Keywords.new
+        assert_equal keywords.provided, keywords.raw
       end
 
       def test_exposes_configured_tools
         assert_equal Reviewer.configuration.tools.first, Keywords.configured_tools.first
+      end
 
+      def test_exposes_configured_tags
         first_tool_tags = Reviewer.configuration.tools.first[1].fetch(:tags)
         assert first_tool_tags.include?(Keywords.configured_tags[0])
+      end
 
+      def test_exposes_configured_tool_keys
         first_tool_key = Reviewer.configuration.tools.first[0]
         assert_equal first_tool_key, Keywords.configured_commands.first
       end
@@ -53,7 +62,7 @@ module Reviewer
 
       def test_exposes_all_possible_keywords
         keywords = Keywords.new(['one'])
-        assert_equal ["disabled", "disabled_tool", "dynamic_seed_tool", "enabled_tool", "failing_command", "fixture", "minimum_viable_tool", "missing_command", "staged", "test"], keywords.possible
+        assert_equal %w[disabled disabled_tool dynamic_seed_tool enabled_tool failing_command fixture minimum_viable_tool missing_command staged test], keywords.possible
       end
 
       def test_exposes_recognized_and_unrecognized_keywords

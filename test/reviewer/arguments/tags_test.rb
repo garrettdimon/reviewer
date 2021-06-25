@@ -7,12 +7,17 @@ module Reviewer
     class TagsTest < MiniTest::Test
       def test_array_casting
         assert_equal [], Tags.new.to_a
-        assert_equal ["css", "html", "ruby"], Tags.new(provided: %w[css], keywords: %w[ruby html]).to_a
+        assert_equal %w[css html ruby], Tags.new(provided: %w[css], keywords: %w[ruby html]).to_a
       end
 
       def test_string_casting
         assert_equal '', Tags.new.to_s
-        assert_equal "css,html,ruby", Tags.new(provided: %w[css], keywords: %w[ruby html]).to_s
+        assert_equal 'css,html,ruby', Tags.new(provided: %w[css], keywords: %w[ruby html]).to_s
+      end
+
+      def test_raw_aliases_provided
+        tags = Tags.new
+        assert_equal tags.provided, tags.raw
       end
 
       def test_generating_tags_from_flags

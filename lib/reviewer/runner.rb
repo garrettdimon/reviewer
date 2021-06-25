@@ -3,7 +3,7 @@
 require 'open3'
 
 module Reviewer
-  # Handles running, benchmarking, and printing output for a command
+  # Handles running, benchmarking, and printing output for a single command
   class Runner
     COMMAND_NOT_FOUND_EXIT_STATUS_CODE = 127
 

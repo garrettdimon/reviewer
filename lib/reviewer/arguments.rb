@@ -39,22 +39,22 @@ module Reviewer
 
     def inspect
       {
-        files: files,
-        tags: tags,
-        keywords: keywords
+        files: files.raw,
+        tags: tags.raw,
+        keywords: keywords.raw
       }
     end
 
-    def files
-      options[:files]
+    def tags
+      @tags ||= Arguments::Tags.new(provided: options[:tags])
     end
 
-    def tags
-      options[:tags]
+    def files
+      @files ||= Arguments::Files.new(provided: options[:files])
     end
 
     def keywords
-      options.arguments
+      @keywords ||= Arguments::Keywords.new(options.arguments)
     end
   end
 end

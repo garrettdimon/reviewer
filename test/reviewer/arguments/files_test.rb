@@ -12,7 +12,12 @@ module Reviewer
 
       def test_string_casting
         assert_equal '', Files.new.to_s
-        assert_equal "*.css,*.rb", Files.new(provided: ['*.rb', '*.css'], keywords: []).to_s
+        assert_equal '*.css,*.rb', Files.new(provided: ['*.rb', '*.css'], keywords: []).to_s
+      end
+
+      def test_raw_aliases_provided
+        files = Files.new
+        assert_equal files.provided, files.raw
       end
 
       def test_generating_files_from_flags

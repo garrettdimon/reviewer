@@ -19,7 +19,7 @@ module Reviewer
           end
 
           def to_s
-            stdout.present? ? stdout : ""
+            stdout.present? ? stdout : ''
           end
 
           def inspect

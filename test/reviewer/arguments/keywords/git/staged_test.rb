@@ -43,7 +43,7 @@ module Reviewer
           def test_raises_exception_on_git_failure
             assert_raises(SystemCallError) do
               # Instead of staging files, stub the Open3 call.
-              Open3.stub :capture3, [nil, "Error", ProcessStatus.new(false)] do
+              Open3.stub :capture3, [nil, 'Error', ProcessStatus.new(false)] do
                 Staged.new.list
               end
             end

@@ -11,6 +11,8 @@ module Reviewer
 
       attr_accessor :provided
 
+      alias raw provided
+
       def initialize(*provided)
         @provided = Array(provided.flatten)
       end
