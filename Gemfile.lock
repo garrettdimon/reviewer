@@ -63,7 +63,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler-audit
-  minitest (~> 5.0)
+  minitest (~> 5.14.4)
   minitest-color (~> 0.0.2)
   rake (~> 13.0)
   reviewer!
