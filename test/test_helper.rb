@@ -4,6 +4,7 @@ $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'reviewer'
 
 require 'minitest/autorun'
+require 'minitest/color'
 
 def apply_test_configuration!
   # Ensure it's using the test configuration file since
