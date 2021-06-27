@@ -7,21 +7,21 @@ module Reviewer
     def setup
       @tools_hash = {
         enabled_tool: {
-          name: "Enabled Tool",
-          tags: ["disabled", "test", "fixture"],
+          name: 'Enabled Tool',
+          tags: %w[disabled test fixture],
           commands: {
-            review: "bundle exec example review",
-            format: "bundle exec example format",
-          },
+            review: 'bundle exec example review',
+            format: 'bundle exec example format'
+          }
         },
         disabled_tool: {
-          name: "Enabled Tool",
-          tags: ["disabled", "test", "fixture"],
+          name: 'Enabled Tool',
+          tags: %w[disabled test fixture"],
           commands: {
-            review: "bundle exec example review",
-            format: "bundle exec example format",
-          },
-        },
+            review: 'bundle exec example review',
+            format: 'bundle exec example format'
+          }
+        }
       }
       @tools = Tools.new(tools_hash: @tools_hash)
     end
@@ -43,11 +43,11 @@ module Reviewer
     end
 
     def test_includes_enabled_tagged_tools
-      skip "Needs a test!"
+      skip 'Needs a test!'
     end
 
     def test_excludes_disabled_tagged_tools
-      skip "Needs a test!"
+      skip 'Needs a test!'
     end
   end
 end

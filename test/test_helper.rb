@@ -6,7 +6,6 @@ require 'reviewer'
 require 'minitest/autorun'
 require 'minitest/color'
 
-
 # Ensure it's using the test configuration file since some tests intentionally
 # change it to test how it recovers when misconfigured
 def ensure_test_configuration!

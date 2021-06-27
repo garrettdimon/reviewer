@@ -15,15 +15,15 @@ module Reviewer
     end
 
     def enabled
-      @enabled ||= all.keep_if { |tool| tool.enabled? }
+      @enabled ||= all.keep_if(&:enabled?)
     end
 
     def disabled
-      @disabled ||= all.keep_if { |tool| tool.disabled? }
+      @disabled ||= all.keep_if(&:disabled?)
     end
 
     def current
-      if tag_arguments.any? || tool_name_keywords.any?
+      if tag_arguments.any? || tool_name_arguments.any?
         enabled.keep_if { |tool| tagged?(tool) || named?(tool) }
       else
         enabled

@@ -40,23 +40,14 @@ module Reviewer
     end
 
     def tools
-      # @tools ||= Tools.new
-      tools = []
-      configuration.tools.each_key do |key|
-        tool = Tool.new(key)
-
-        next if tool.disabled?
-
-        tools << tool
-      end
-      tools
+      @tools ||= Tools.new
     end
 
     private
 
     def perform(command_type)
       elapsed_time = Benchmark.realtime do
-        tools.each do |tool|
+        tools.current.each do |tool|
           exit_status = Runner.new(tool, command_type).run
 
           break unless exit_status <= tool.max_exit_status
