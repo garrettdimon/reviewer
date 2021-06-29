@@ -3,15 +3,21 @@
 module Reviewer
   # Provides convenient access to subsets of configured tools
   class Tools
-    attr_reader :tools_hash, :tools, :arguments
+    attr_reader :configured, :tags, :tool_names
 
-    def initialize(tools_hash: self.class.configured, arguments: Reviewer.arguments)
-      @tools_hash = tools_hash
-      @arguments = arguments
+    def initialize(tags: nil, tool_names: nil)
+      @configured = Reviewer.configuration.tools
+      @tags       = Array(tags)       || Reviewer.arguments.tags.to_a
+      @tool_names = Array(tool_names) || Reviewer.arguments.tool_names.to_a
     end
 
     def all
-      tools_hash.keys.map { |tool_name| Tool.new(tool_name) }
+      configured.keys.map { |tool_name| Tool.new(tool_name) }
+    end
+    alias to_a all
+
+    def to_h
+      configured
     end
 
     def enabled
@@ -23,33 +29,21 @@ module Reviewer
     end
 
     def current
-      if tag_arguments.any? || tool_name_arguments.any?
-        enabled.keep_if { |tool| tagged?(tool) || named?(tool) }
+      if tags.any? || tool_names.any?
+        all.keep_if { |tool| tagged?(tool) || named?(tool) }
       else
         enabled
       end
     end
 
-    def self.configured
-      Loader.new(Reviewer.configuration.file).configuration
-    end
-
     private
 
-    def tag_arguments
-      arguments.tags.to_a
-    end
-
-    def tool_name_arguments
-      arguments.tool_names.to_a
-    end
-
     def tagged?(tool)
-      tag_arguments.intersection(tool.tags).any?
+      tool.enabled? && tags.intersection(tool.tags).any?
     end
 
     def named?(tool)
-      tool_name_arguments.include?(tool.key.to_s)
+      tool_names.map(&:to_s).include?(tool.key.to_s)
     end
   end
 end

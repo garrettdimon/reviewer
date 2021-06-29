@@ -31,16 +31,16 @@ module Reviewer
       @arguments ||= Arguments.new
     end
 
+    def tools
+      @tools ||= Tools.new
+    end
+
     def configuration
       @configuration ||= Configuration.new
     end
 
     def configure
       yield(configuration)
-    end
-
-    def tools
-      @tools ||= Tools.new
     end
 
     private

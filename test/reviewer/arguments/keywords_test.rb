@@ -21,18 +21,17 @@ module Reviewer
         assert_equal keywords.provided, keywords.raw
       end
 
-      def test_exposes_configured_tools
-        assert_equal Tools.configured.first, Keywords.configured_tools.first
-      end
-
       def test_exposes_configured_tags
-        first_tool_tags = Tools.configured.first[1].fetch(:tags)
-        assert first_tool_tags.include?(Keywords.configured_tags[0])
+        first_tool_tags = Reviewer.configuration.tools.first[1].fetch(:tags)
+        keywords = Keywords.new
+        assert keywords.configured_tags.any?
+        assert_equal first_tool_tags, first_tool_tags.intersection(keywords.configured_tags)
       end
 
-      def test_exposes_configured_tool_keys
-        first_tool_key = Tools.configured.first[0]
-        assert_equal first_tool_key, Keywords.configured_tool_names.first
+      def test_exposes_configured_tool_names
+        first_tool_key = Reviewer.configuration.tools.first[0]
+        keywords = Keywords.new
+        assert_equal first_tool_key, keywords.configured_tool_names.first
       end
 
       def test_recognizes_reserved_keywords
@@ -43,7 +42,8 @@ module Reviewer
       end
 
       def test_recognizes_tag_keywords
-        tag_keywords_array = [Keywords.configured_tags.first]
+        keywords = Keywords.new
+        tag_keywords_array = [keywords.configured_tags.first]
         keywords_array = (tag_keywords_array + ['noise']).sort
         keywords = Keywords.new(keywords_array)
 
@@ -52,7 +52,8 @@ module Reviewer
       end
 
       def test_recognizes_tool_names_keywords
-        commands_keywords_array = [Keywords.configured_tool_names.first]
+        keywords = Keywords.new
+        commands_keywords_array = [keywords.configured_tool_names.first]
         keywords_array = (commands_keywords_array + ['noise']).sort
         keywords = Keywords.new(keywords_array)
 
@@ -61,8 +62,16 @@ module Reviewer
       end
 
       def test_exposes_all_possible_keywords
-        keywords = Keywords.new(['one'])
-        assert_equal %w[disabled disabled_tool dynamic_seed_tool enabled_tool failing_command fixture minimum_viable_tool missing_command staged test], keywords.possible
+        keywords = Keywords.new
+
+        assert keywords.possible.include?(Keywords::RESERVED.first)
+        assert_equal Keywords::RESERVED.size, keywords.possible.intersection(Keywords::RESERVED).size
+
+        assert keywords.possible.include?(keywords.configured_tags.first)
+        assert_equal keywords.configured_tags.size, keywords.possible.intersection(keywords.configured_tags).size
+
+        assert keywords.possible.include?(keywords.configured_tool_names.first)
+        assert_equal keywords.configured_tool_names.size, keywords.possible.intersection(keywords.configured_tool_names).size
       end
 
       def test_exposes_recognized_and_unrecognized_keywords

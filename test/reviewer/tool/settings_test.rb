@@ -17,7 +17,7 @@ module Reviewer
 
       def test_uses_reviewer_configuration_when_config_not_provided
         settings = Settings.new(:enabled_tool)
-        assert_equal 'Enabled Tool', settings.name
+        assert_equal 'Enabled Test Tool', settings.name
       end
 
       def test_exposes_enabled_or_disbled_status_with_enabled_as_default

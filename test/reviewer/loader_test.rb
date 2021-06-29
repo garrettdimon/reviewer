@@ -4,23 +4,19 @@ require 'test_helper'
 
 module Reviewer
   class LoaderTest < MiniTest::Test
-    def setup
-      @file = Reviewer.configuration.file
-    end
-
     def test_reads_the_yaml_configuration_file
-      loader = Loader.new(@file)
+      loader = Loader.new
       assert loader.configuration.is_a? Hash
     end
 
     def test_hashes_configuration_with_indiffferent_access
-      loader = Loader.new(@file)
+      loader = Loader.new
       assert loader.configuration.key?(:enabled_tool)
       assert loader.configuration.key?('enabled_tool')
     end
 
     def test_to_h
-      loader_hash = Loader.new(@file).to_h
+      loader_hash = Loader.new.to_h
       assert loader_hash.is_a? Hash
       assert loader_hash.key? :enabled_tool
     end

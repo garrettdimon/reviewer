@@ -47,7 +47,6 @@ module Reviewer
           keywords: keywords_array
         )
         tag_list = tags_array + keywords_array
-
         assert_equal tag_list.sort, tags.to_a
       end
     end

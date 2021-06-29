@@ -58,7 +58,7 @@ module Reviewer
     end
 
     def tool_names
-      @tool_names || keywords.for_tool_names.to_a
+      @tool_names ||= keywords.for_tool_names.to_a
     end
   end
 end

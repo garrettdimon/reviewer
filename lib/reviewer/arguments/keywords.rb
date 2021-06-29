@@ -60,26 +60,14 @@ module Reviewer
         (RESERVED + configured_tags + configured_tool_names).uniq.sort
       end
 
-      def self.configured_tools
-        Tools.configured
-      end
-
       def configured_tags
-        self.class.configured_tags
-      end
-
-      def self.configured_tags
-        configured_tools.values.map do |tool|
+        Reviewer.configuration.tools.values.map do |tool|
           tool.fetch(:tags) { [] }
         end.flatten.uniq
       end
 
       def configured_tool_names
-        self.class.configured_tool_names
-      end
-
-      def self.configured_tool_names
-        configured_tools.keys.flatten.uniq
+        Reviewer.configuration.tools.keys.flatten.uniq
       end
 
       private

@@ -22,9 +22,10 @@ tests:
     quiet_option: '--silent'
 
 rubocop:
-  tags: [ruby, syntax]
+  disabled: true
   name: Rubocop
   description: Review Ruby syntax/formatting for consistency
+  tags: [ruby, syntax]
   links:
     home: https://rubocop.org
     install: https://docs.rubocop.org/rubocop/1.13/installation.html

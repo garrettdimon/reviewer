@@ -12,7 +12,7 @@ module Reviewer
 
     attr_reader :configuration, :file
 
-    def initialize(file)
+    def initialize(file = Reviewer.configuration.file)
       @file = file
       @configuration = HashWithIndifferentAccess.new(configuration_hash)
     end
