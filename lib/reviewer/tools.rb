@@ -24,16 +24,16 @@ module Reviewer
       @enabled ||= all.keep_if(&:enabled?)
     end
 
-    def current
-      subset? ? specified + tagged : enabled
-    end
-
     def specified
       all.keep_if { |tool| named?(tool) }
     end
 
     def tagged
       enabled.keep_if { |tool| tagged?(tool) }
+    end
+
+    def current
+      subset? ? specified + tagged : enabled
     end
 
     private
