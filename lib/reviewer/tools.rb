@@ -25,22 +25,22 @@ module Reviewer
     end
 
     def current
-      if tool_names.any? || tags.any?
-        specified_tools + tagged_tools
-      else
-        enabled
-      end
+      subset? ? specified + tagged : enabled
     end
 
-    def specified_tools
+    def specified
       all.keep_if { |tool| named?(tool) }
     end
 
-    def tagged_tools
+    def tagged
       enabled.keep_if { |tool| tagged?(tool) }
     end
 
     private
+
+    def subset?
+      tool_names.any? || tags.any?
+    end
 
     def tagged?(tool)
       tool.enabled? && tags.intersection(tool.tags).any?
