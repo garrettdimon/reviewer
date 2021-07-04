@@ -16,13 +16,6 @@ module Reviewer
       end
     end
 
-    def test_exposes_all_disabled_tools
-      @tools = Tools.new
-      @tools.disabled.each do |tool|
-        assert tool.disabled?, "`#{tool.name}` is enabled but included in the disabled tools list"
-      end
-    end
-
     def test_includes_enabled_tagged_tools
       @tools = Tools.new(tags: %w[ruby css], tool_names: [])
       assert_equal 1, @tools.current.size

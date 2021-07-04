@@ -22,7 +22,7 @@ tests:
     quiet_option: '--silent'
 
 rubocop:
-  disabled: true
+  # disabled: true
   name: Rubocop
   description: Review Ruby syntax/formatting for consistency
   tags: [ruby, syntax]

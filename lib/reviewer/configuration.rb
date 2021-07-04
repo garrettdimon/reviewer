@@ -17,8 +17,8 @@ module Reviewer
       @tools ||= Loader.new(file).configuration
     end
 
-    def self.tools
-      new.tools
-    end
+    # def self.tools
+    #   new.tools
+    # end
   end
 end

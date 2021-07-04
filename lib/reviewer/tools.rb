@@ -7,8 +7,8 @@ module Reviewer
 
     def initialize(tags: nil, tool_names: nil)
       @configured = Reviewer.configuration.tools
-      @tags       = Array(tags)       || Reviewer.arguments.tags.to_a
-      @tool_names = Array(tool_names) || Reviewer.arguments.tool_names.to_a
+      @tags       = Array(tags || Reviewer.arguments.tags)
+      @tool_names = Array(tool_names || Reviewer.arguments.tool_names)
     end
 
     def all
@@ -24,16 +24,20 @@ module Reviewer
       @enabled ||= all.keep_if(&:enabled?)
     end
 
-    def disabled
-      @disabled ||= all.keep_if(&:disabled?)
-    end
-
     def current
-      if tags.any? || tool_names.any?
-        all.keep_if { |tool| tagged?(tool) || named?(tool) }
+      if tool_names.any? || tags.any?
+        specified_tools + tagged_tools
       else
         enabled
       end
+    end
+
+    def specified_tools
+      all.keep_if { |tool| named?(tool) }
+    end
+
+    def tagged_tools
+      enabled.keep_if { |tool| tagged?(tool) }
     end
 
     private

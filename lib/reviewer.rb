@@ -17,7 +17,7 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :configuration, :logger, :tools
+    attr_writer :configuration
 
     def review
       perform(:review)
@@ -35,6 +35,10 @@ module Reviewer
       @tools ||= Tools.new
     end
 
+    def logger
+      @logger ||= Logger.new
+    end
+
     def configuration
       @configuration ||= Configuration.new
     end
@@ -46,14 +50,21 @@ module Reviewer
     private
 
     def perform(command_type)
+      results = {}
+
       elapsed_time = Benchmark.realtime do
         tools.current.each do |tool|
-          exit_status = Runner.new(tool, command_type).run
+          runner = Runner.new(tool, command_type, logger: logger)
+          exit_status = runner.run
+          results[tool.key] = exit_status
 
+          # If a single tool fails, stop there.
           break unless exit_status <= tool.max_exit_status
         end
       end
-      puts "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
+      logger.total_time(elapsed_time)
+
+      results
     end
   end
 end

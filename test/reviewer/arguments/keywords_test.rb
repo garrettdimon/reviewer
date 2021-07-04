@@ -61,15 +61,20 @@ module Reviewer
         assert_equal commands_keywords_array, keywords.for_tool_names
       end
 
-      def test_exposes_all_possible_keywords
+      def test_exposes_all_possible_keywords_from_reserved
         keywords = Keywords.new
-
         assert keywords.possible.include?(Keywords::RESERVED.first)
         assert_equal Keywords::RESERVED.size, keywords.possible.intersection(Keywords::RESERVED).size
+      end
 
+      def test_exposes_all_possible_keywords_from_configured_tags
+        keywords = Keywords.new
         assert keywords.possible.include?(keywords.configured_tags.first)
         assert_equal keywords.configured_tags.size, keywords.possible.intersection(keywords.configured_tags).size
+      end
 
+      def test_exposes_all_possible_keywords_from_configured_tool_names
+        keywords = Keywords.new
         assert keywords.possible.include?(keywords.configured_tool_names.first)
         assert_equal keywords.configured_tool_names.size, keywords.possible.intersection(keywords.configured_tool_names).size
       end

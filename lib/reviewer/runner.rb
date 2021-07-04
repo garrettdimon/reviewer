@@ -5,7 +5,7 @@ require 'open3'
 module Reviewer
   # Handles running, benchmarking, and printing output for a single command
   class Runner
-    COMMAND_NOT_FOUND_EXIT_STATUS_CODE = 127
+    EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE = 127
 
     attr_accessor :tool, :command
 
@@ -84,7 +84,7 @@ module Reviewer
     end
 
     def missing_executable?
-      (@exit_status == COMMAND_NOT_FOUND_EXIT_STATUS_CODE) ||
+      (@exit_status == EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE) ||
         stderr.include?("can't find executable")
     end
 

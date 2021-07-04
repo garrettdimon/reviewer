@@ -46,6 +46,12 @@ module Reviewer
       assert_equal %w[staged invalid], command.keywords.raw
     end
 
+    def test_exposes_flagless_arguments_as_keywords
+      args = %w[enabled_tool]
+      command = Arguments.new(args)
+      assert_equal args, command.keywords.raw
+    end
+
     def test_gracefully_handles_robust_sets_of_arguments
       args = %w[staged --tags ruby,css --files ./app/**/*.rb,./test/**/*.rb]
       command = Arguments.new(args)

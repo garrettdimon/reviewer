@@ -38,7 +38,11 @@ module Reviewer
     end
 
     def failure(message)
-      info "#{FAILURE} #{message}".red.bold
+      error "#{FAILURE} #{message}".red.bold
+    end
+
+    def total_time(elapsed_time)
+      info "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
     end
 
     def guidance(summary, details)
