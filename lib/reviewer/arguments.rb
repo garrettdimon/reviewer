@@ -13,6 +13,7 @@ module Reviewer
   #
   #   `rvw`
   #   `rvw -t ruby`
+  #   `rvw -f ./example.rb,./example_test.rb`
   #   `rvw staged`
   #   `rvw --files ./example.rb,./example_test.rb --tags syntax`
   #   `rvw ruby staged`
