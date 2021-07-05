@@ -24,7 +24,7 @@ tests:
 rubocop:
   # disabled: true
   name: Rubocop
-  description: Review Ruby syntax/formatting for consistency
+  description: Review Ruby Syntax & Formatting for Consistency
   tags: [ruby, syntax]
   links:
     home: https://rubocop.org
@@ -38,3 +38,13 @@ rubocop:
     quiet_option: '--format q'
     files_flag: ''
     files_list_separator: ' '
+
+inch:
+  tags: [docs, ruby]
+  name: Inch
+  description: Review Ruby Documentation
+  links:
+    home: https://rrrene.org/inch/
+  commands:
+    install: 'bundle exec gem install inch'
+    review: 'bundle exec inch'

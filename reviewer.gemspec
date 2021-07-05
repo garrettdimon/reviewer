@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'slop'
 
   spec.add_development_dependency 'bundler-audit'
+  spec.add_development_dependency 'inch'
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'rubocop-minitest'
   spec.add_development_dependency 'rubocop-rake'
