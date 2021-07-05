@@ -26,7 +26,7 @@ module Reviewer
     end
 
     def self.configuration
-      self.new.configuration
+      new.configuration
     end
 
     private

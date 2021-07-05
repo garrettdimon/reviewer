@@ -3,10 +3,7 @@
 module Reviewer
   # Provides convenient access to subsets of configured tools
   class Tools
-    attr_reader :configured
-
     def initialize(tags: nil, tool_names: nil)
-      @configured = Loader.configuration
       @tags       = tags
       @tool_names = tool_names
     end
@@ -40,6 +37,10 @@ module Reviewer
 
     def subset?
       tool_names.any? || tags.any?
+    end
+
+    def configured
+      @configured ||= Loader.configuration
     end
 
     def tags

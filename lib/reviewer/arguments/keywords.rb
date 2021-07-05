@@ -36,7 +36,6 @@ module Reviewer
         }
       end
 
-
       # Extracts reserved keywords from the provided arguments
       #
       # @return [Array<String>] intersection of reserved keywords and provided arguments
@@ -68,16 +67,18 @@ module Reviewer
       end
 
       def configured_tags
-        Reviewer.tools.enabled.map do |tool|
-          tool.tags
-        end.flatten.uniq
+        enabled_tools.map(&:tags).flatten.uniq
       end
 
       def configured_tool_names
-        Reviewer.tools.enabled.map { |tool| tool.key.to_s }.flatten.uniq
+        enabled_tools.map { |tool| tool.key.to_s }.flatten.uniq
       end
 
       private
+
+      def enabled_tools
+        @enabled_tools ||= Reviewer.tools.enabled
+      end
 
       def intersection_with(values)
         values.intersection(provided).uniq.sort

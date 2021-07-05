@@ -57,7 +57,7 @@ module Reviewer
       @logger ||= Logger.new
     end
 
-    # Exposes the configuration options for Reviewer—primarily the path to the configuration file.
+    # Exposes the configuration options for Reviewer.
     #
     # @return [Reviewer::Configuration] configuration settings instance
     def configuration
