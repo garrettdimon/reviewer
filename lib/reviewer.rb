@@ -19,6 +19,9 @@ module Reviewer
   class << self
     attr_writer :configuration
 
+    # Runs the `review` command specified for each tool
+    #
+    # @return [void] Prints output to the console
     def review
       perform(:review)
     end

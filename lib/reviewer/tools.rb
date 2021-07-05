@@ -33,7 +33,7 @@ module Reviewer
     end
 
     def current
-      subset? ? specified + tagged : enabled
+      subset? ? (specified + tagged).uniq : enabled
     end
 
     private

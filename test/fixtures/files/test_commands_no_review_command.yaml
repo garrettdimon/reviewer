@@ -1,0 +1,7 @@
+# For Testing Enabled Tool Option Loading
+enabled_tool:
+  name: 'Enabled Test Tool'
+  description: 'Run the tests.'
+  tags: [enabled, ruby]
+  commands:
+    format: 'bundle exec example format'

@@ -32,6 +32,10 @@ module Reviewer
       name
     end
 
+    def ==(other)
+      settings == other.settings
+    end
+
     def installation_command(verbosity_level = :no_silence)
       command_string(:install, verbosity_level: verbosity_level)
     end

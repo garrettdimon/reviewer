@@ -38,5 +38,14 @@ module Reviewer
       assert_raises(Loader::InvalidConfigurationError) { Loader.new(file) }
       ensure_test_configuration!
     end
+
+    def test_raises_error_without_command_for_review
+      file = 'test/fixtures/files/test_commands_no_review_command.yaml'
+      Reviewer.configure do |config|
+        config.file = file
+      end
+      assert_raises(Loader::MissingReviewCommandError) { Loader.new(file) }
+      ensure_test_configuration!
+    end
   end
 end
