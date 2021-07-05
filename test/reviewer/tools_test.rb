@@ -6,7 +6,7 @@ module Reviewer
   class ToolsTest < Minitest::Test
     def test_exposes_all_configured_tools
       @tools = Tools.new
-      assert_equal Reviewer.configuration.tools.keys.map(&:to_sym), @tools.all.map(&:key)
+      assert_equal Reviewer.tools.all.map(&:key), @tools.all.map(&:key)
     end
 
     def test_exposes_all_enabled_tools

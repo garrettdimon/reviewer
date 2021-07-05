@@ -9,6 +9,11 @@ module Reviewer
       assert loader.configuration.is_a? Hash
     end
 
+    def test_provides_class_method_for_loading_configuration
+      loader = Loader.configuration
+      assert loader.is_a? Hash
+    end
+
     def test_hashes_configuration_with_indiffferent_access
       loader = Loader.new
       assert loader.configuration.key?(:enabled_tool)

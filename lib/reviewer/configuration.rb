@@ -12,9 +12,5 @@ module Reviewer
     def initialize
       @file = DEFAULT_FILE
     end
-
-    def tools
-      @tools ||= Loader.new(file).configuration
-    end
   end
 end

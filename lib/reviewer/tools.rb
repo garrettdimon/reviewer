@@ -3,22 +3,22 @@
 module Reviewer
   # Provides convenient access to subsets of configured tools
   class Tools
-    attr_reader :configured, :tags, :tool_names
+    attr_reader :configured
 
     def initialize(tags: nil, tool_names: nil)
-      @configured = Reviewer.configuration.tools
-      @tags       = Array(tags || Reviewer.arguments.tags)
-      @tool_names = Array(tool_names || Reviewer.arguments.tool_names)
+      @configured = Loader.configuration
+      @tags       = tags
+      @tool_names = tool_names
+    end
+
+    def to_h
+      configured
     end
 
     def all
       configured.keys.map { |tool_name| Tool.new(tool_name) }
     end
     alias to_a all
-
-    def to_h
-      configured
-    end
 
     def enabled
       @enabled ||= all.keep_if(&:enabled?)
@@ -40,6 +40,14 @@ module Reviewer
 
     def subset?
       tool_names.any? || tags.any?
+    end
+
+    def tags
+      Array(@tags || Reviewer.arguments.tags)
+    end
+
+    def tool_names
+      Array(@tool_names || Reviewer.arguments.tool_names)
     end
 
     def tagged?(tool)

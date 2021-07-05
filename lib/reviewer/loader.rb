@@ -25,6 +25,10 @@ module Reviewer
       configuration
     end
 
+    def self.configuration
+      self.new.configuration
+    end
+
     private
 
     def validate_configuration!

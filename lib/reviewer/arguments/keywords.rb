@@ -36,10 +36,17 @@ module Reviewer
         }
       end
 
+
+      # Extracts reserved keywords from the provided arguments
+      #
+      # @return [Array<String>] intersection of reserved keywords and provided arguments
       def reserved
         intersection_with RESERVED
       end
 
+      # Extracts keywords that match configured tags for enabled tools
+      #
+      # @return [type] [description]
       def for_tags
         intersection_with configured_tags
       end
@@ -61,13 +68,13 @@ module Reviewer
       end
 
       def configured_tags
-        Reviewer.configuration.tools.values.map do |tool|
-          tool.fetch(:tags) { [] }
+        Reviewer.tools.enabled.map do |tool|
+          tool.tags
         end.flatten.uniq
       end
 
       def configured_tool_names
-        Reviewer.configuration.tools.keys.flatten.uniq
+        Reviewer.tools.enabled.map { |tool| tool.key.to_s }.flatten.uniq
       end
 
       private

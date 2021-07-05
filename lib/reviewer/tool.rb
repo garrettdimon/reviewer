@@ -32,6 +32,10 @@ module Reviewer
       name
     end
 
+    def to_sym
+      key
+    end
+
     def ==(other)
       settings == other.settings
     end

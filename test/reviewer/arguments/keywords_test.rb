@@ -22,14 +22,14 @@ module Reviewer
       end
 
       def test_exposes_configured_tags
-        first_tool_tags = Reviewer.configuration.tools.first[1].fetch(:tags)
+        first_tool_tags = Reviewer.tools.all.first.tags
         keywords = Keywords.new
         assert keywords.configured_tags.any?
         assert_equal first_tool_tags, first_tool_tags.intersection(keywords.configured_tags)
       end
 
-      def test_exposes_configured_tool_names
-        first_tool_key = Reviewer.configuration.tools.first[0]
+      def test_exposes_configured_tool_keys_as_name_strings
+        first_tool_key = Reviewer.tools.all.first.key.to_s
         keywords = Keywords.new
         assert_equal first_tool_key, keywords.configured_tool_names.first
       end
