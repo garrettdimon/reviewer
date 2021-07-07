@@ -1,5 +1,5 @@
 bundler_audit:
-  tags: [critical, dependencies, ruby]
+  tags: [critical, dependencies, ruby, dev]
   name: Bundler Audit
   description: Review Gem Dependencies for Security Issues
   links:
@@ -14,7 +14,7 @@ bundler_audit:
 tests:
   name: Minitest
   description: Unit Tests
-  tags: [ruby, tests]
+  tags: [ruby, tests, dev]
   links:
     home:
   commands:
@@ -22,7 +22,6 @@ tests:
     quiet_option: '--silent'
 
 rubocop:
-  # disabled: true
   name: Rubocop
   description: Review Ruby Syntax & Formatting for Consistency
   tags: [ruby, syntax]
@@ -40,7 +39,8 @@ rubocop:
     files_list_separator: ' '
 
 inch:
-  tags: [docs, ruby]
+  disabled: true # Inch provides guidance and is generally run solo
+  tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation
   links:
