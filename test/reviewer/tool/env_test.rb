@@ -23,7 +23,7 @@ module Reviewer
         assert_includes @env.to_a, 'VERBOSE=true;'
       end
 
-      def test_casts_to_a_string
+      def test_handles_values_with_spaces
         @env_pairs = {
           environment: 'production env'
         }
