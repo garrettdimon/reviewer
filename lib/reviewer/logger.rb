@@ -33,11 +33,13 @@ module Reviewer
     end
 
     def command(cmd)
-      info "#{PROMPT} #{cmd}".light_black
+      info "\nReviewer ran this command:"
+      info cmd.to_s.light_black
     end
 
-    def rerunning(tool)
-      info "\n\nRe-running #{tool.name} verbosely:"
+    def rerunning(tool, cmd)
+      info "\nRe-running #{tool.name} verbosely:"
+      info cmd.to_s.light_black
     end
 
     def success(elapsed_time)
@@ -53,8 +55,8 @@ module Reviewer
     end
 
     def guidance(summary, details)
-      info "  #{summary}" if summary
-      info "  #{details}".light_black if details
+      info "\n#{summary}" if summary
+      info details.to_s.light_black if details
     end
   end
 end
