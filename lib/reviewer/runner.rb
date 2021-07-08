@@ -10,6 +10,7 @@ module Reviewer
     attr_accessor :tool, :command_type
 
     attr_reader :elapsed_time,
+                :prep_time,
                 :last_command_run,
                 :stdout,
                 :stderr,
@@ -27,7 +28,6 @@ module Reviewer
       logger.running(tool)
       @elapsed_time = Benchmark.realtime { format? ? format! : review! }
       print_result
-
       exit_status
     end
 
@@ -47,9 +47,14 @@ module Reviewer
       @last_command_run = cmd
     end
 
+    def prepare!
+      tool.last_prepared_at = Time.current.utc
+      @prep_time = Benchmark.realtime { shell_out(tool.preparation_command) }
+    end
+
     def review!
+      prepare! if tool.stale?
       verbosity = solo_tool_run? ? :no_silence : :total_silence
-      shell_out(tool.preparation_command) if tool.prepare_command?
       shell_out(tool.review_command(verbosity, seed: seed))
     end
 
@@ -72,7 +77,7 @@ module Reviewer
     end
 
     def show_benchmark
-      logger.success(elapsed_time)
+      logger.success(elapsed_time, prep_time)
     end
 
     def show_missing_executable_guidance
@@ -88,11 +93,11 @@ module Reviewer
     end
 
     def show_tool_output
-      logger.last_command(last_command_run)
-
       logger.output do
         stdout.blank? ? rerun_verbosely : show_stdout_results
       end
+
+      logger.last_command(last_command_run)
     end
 
     def rerun_verbosely

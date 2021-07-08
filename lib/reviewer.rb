@@ -16,6 +16,8 @@ require_relative 'reviewer/version'
 module Reviewer
   class Error < StandardError; end
 
+  HISTORY_STORE_LOCATION = '.reviewer_history.yml'
+
   class << self
     attr_writer :configuration
 
@@ -23,15 +25,15 @@ module Reviewer
     # commands that are not disabled to have an entry for the `review` command.
     #
     # @return [void] Prints output to the console
-    def review
-      perform(:review)
+    def review(clear_screen: false)
+      perform(:review, clear_screen: clear_screen)
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
     #
     # @return [void] Prints output to the console
-    def format
-      perform(:format)
+    def format(clear_screen: false)
+      perform(:format, clear_screen: clear_screen)
     end
 
     # The collection of arguments that were passed via the command line.
@@ -55,6 +57,10 @@ module Reviewer
     # @return [Reviewer::Logger] prints formatted output to the command line.
     def logger
       @logger ||= Logger.new
+    end
+
+    def history_store
+      @history_store ||= YAML::Store.new(HISTORY_STORE_LOCATION)
     end
 
     # Exposes the configuration options for Reviewer.
@@ -86,22 +92,24 @@ module Reviewer
     #   perform(:review)
     #
     # @return [Hash] the exit status (in integer format) for each command run
-    def perform(command_type)
+    def perform(command_type, clear_screen: false)
+      system('clear') if clear_screen
       results = {}
-
-      elapsed_time = Benchmark.realtime do
+      benchmark_suite do
         tools.current.each do |tool|
           runner = Runner.new(tool, command_type, logger: logger)
           exit_status = runner.run
           results[tool.key] = exit_status
 
-          # If a single tool fails, stop there.
+          # If the tool fails, stop running other tools
           break unless exit_status <= tool.max_exit_status
         end
       end
-      logger.total_time(elapsed_time)
-
       results
+    end
+
+    def benchmark_suite(&block)
+      logger.total_time(Benchmark.realtime(&block))
     end
   end
 end

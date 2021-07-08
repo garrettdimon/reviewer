@@ -39,7 +39,7 @@ module Reviewer
         @logger.success(elapsed_time)
       end
       assert_includes(out, Reviewer::Logger::SUCCESS)
-      assert_match(/#{elapsed_time.round(3)}s/i, out)
+      assert_match(/#{elapsed_time.round(2)}s/i, out)
     end
 
     def test_failure_context

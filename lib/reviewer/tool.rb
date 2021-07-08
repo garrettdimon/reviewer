@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'yaml/store'
+
 require_relative 'tool/command'
 require_relative 'tool/env'
 require_relative 'tool/flags'
@@ -9,7 +11,9 @@ require_relative 'tool/verbosity'
 module Reviewer
   # Provides an instance of a specific tool
   class Tool
-    attr_reader :settings
+    TWENTY_FOUR_HOURS_IN_SECONDS = 60 * 60 * 24
+
+    attr_reader :settings, :history
 
     delegate :name,
              :description,
@@ -26,6 +30,7 @@ module Reviewer
 
     def initialize(tool)
       @settings = Settings.new(tool)
+      @history = load_history
     end
 
     def to_s
@@ -34,6 +39,20 @@ module Reviewer
 
     def to_sym
       key
+    end
+
+    def last_prepared_at
+      history.fetch(:last_prepared_at, nil)
+    end
+
+    def last_prepared_at=(last_prepared_at)
+      history.transaction { |s| s[key][:last_prepared_at] == last_prepared_at }
+    end
+
+    def stale?
+      return false unless prepare_command?
+
+      last_prepared_at.nil? || last_prepared_at < Time.current.utc - TWENTY_FOUR_HOURS_IN_SECONDS
     end
 
     def ==(other)
@@ -63,6 +82,10 @@ module Reviewer
     end
 
     private
+
+    def load_history
+      Reviewer.history_store.transaction { |s| s[key] || {} }
+    end
 
     def command_string(command_type, verbosity_level: :no_silence)
       Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
