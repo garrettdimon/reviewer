@@ -22,7 +22,7 @@ module Reviewer
         assert_equal 1, exit_status
       end
       assert_match(/Exit Status/i, out)
-      assert_match(/Re-running/i, out)
+      assert_match(/Running/i, out)
     end
 
     def test_missing_command_returns_exit_status_and_does_not_retry

@@ -22,6 +22,7 @@ module Reviewer
     SUCCESS = 'Success'
     FAILURE = 'Failure ·'
     PROMPT  = '$'
+    DIVIDER = ('-' * 60).to_s
 
     def initialize(formatter = StandardOutFormatter.new)
       super($stdout)
@@ -33,13 +34,18 @@ module Reviewer
     end
 
     def command(cmd)
-      info "\nReviewer ran this command:"
+      info "\nNow running:"
       info cmd.to_s.light_black
     end
 
-    def rerunning(tool, cmd)
-      info "\nRe-running #{tool.name} verbosely:"
+    def last_command(cmd)
+      info "\nReviewer ran:"
       info cmd.to_s.light_black
+    end
+
+    def divider
+      info # Blank Lane
+      info DIVIDER.light_black
     end
 
     def success(elapsed_time)
@@ -55,6 +61,8 @@ module Reviewer
     end
 
     def guidance(summary, details)
+      return unless details.present?
+
       info "\n#{summary}" if summary
       info details.to_s.light_black if details
     end

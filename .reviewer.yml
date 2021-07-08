@@ -12,6 +12,7 @@ bundler_audit:
     quiet_option: '--quiet'
 
 flog:
+  disabled: true # Flog provides guidance and is generally run solo
   name: Flog
   description: Reports your most tortured ruby code in an easy to read pain report.
   tags: [ruby, quality, dev]
@@ -22,9 +23,11 @@ flog:
     install: 'bundle exec gem install flog'
     review: 'bundle exec flog'
   flags:
-    threshold: 20
+    threshold: 10 # Percentage. i.e. Show the most concerning 10% of results
+    group: nil
 
 flay:
+  disabled: true # Flay provides guidance and is generally run solo
   name: Flay
   description: Review ruby code for structural similarities and refactoring opportunities.
   tags: [ruby, quality, dev]

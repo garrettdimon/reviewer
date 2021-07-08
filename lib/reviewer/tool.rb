@@ -41,10 +41,14 @@ module Reviewer
     end
 
     def installation_command(verbosity_level = :no_silence)
+      return nil unless install_command?
+
       command_string(:install, verbosity_level: verbosity_level)
     end
 
     def preparation_command(verbosity_level = :total_silence)
+      return nil unless prepare_command?
+
       command_string(:prepare, verbosity_level: verbosity_level)
     end
 
@@ -53,15 +57,15 @@ module Reviewer
     end
 
     def format_command(verbosity_level = :no_silence)
+      return nil unless format_command?
+
       command_string(:format, verbosity_level: verbosity_level)
     end
 
     private
 
     def command_string(command_type, verbosity_level: :no_silence)
-      cmd = Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level)
-
-      cmd.to_s
+      Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
     end
   end
 end
