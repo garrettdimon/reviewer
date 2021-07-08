@@ -6,4 +6,5 @@
 /pkg/
 /spec/reports/
 /tmp/
+/rubocop_cache/
 .reviewer_history.yml

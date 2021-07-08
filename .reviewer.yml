@@ -24,7 +24,7 @@ flog:
     review: 'bundle exec flog'
   flags:
     threshold: 10 # Percentage. i.e. Show the most concerning 10% of results
-    group: nil
+    group:
 
 flay:
   disabled: true # Flay provides guidance and is generally run solo
@@ -64,6 +64,8 @@ rubocop:
     quiet_option: '--format q'
     files_flag: ''
     files_list_separator: ' '
+  flags:
+    color:
 
 inch:
   disabled: true # Inch provides guidance and is generally run solo
