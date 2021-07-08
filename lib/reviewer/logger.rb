@@ -44,8 +44,14 @@ module Reviewer
     end
 
     def divider
-      info # Blank Lane
       info DIVIDER.light_black
+    end
+
+    def output
+      info # Blank Lane
+      divider
+      yield
+      divider
     end
 
     def success(elapsed_time)
@@ -57,7 +63,7 @@ module Reviewer
     end
 
     def total_time(elapsed_time)
-      info "\n➤ Total Time: #{elapsed_time.round(3)}s\n"
+      info "\n#{elapsed_time.round(1)}s ".bold + 'total'.white
     end
 
     def guidance(summary, details)

@@ -90,9 +90,9 @@ module Reviewer
     def show_tool_output
       logger.last_command(last_command_run)
 
-      logger.divider
-      stdout.blank? ? rerun_verbosely : show_stdout_results
-      logger.divider
+      logger.output do
+        stdout.blank? ? rerun_verbosely : show_stdout_results
+      end
     end
 
     def rerun_verbosely
@@ -106,7 +106,7 @@ module Reviewer
     end
 
     def missing_executable?
-      (@exit_status == EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE) ||
+      @exit_status == EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE ||
         stderr.include?("can't find executable")
     end
 
