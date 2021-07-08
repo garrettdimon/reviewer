@@ -4,13 +4,8 @@ require 'test_helper'
 
 module Reviewer
   class ConfigurationTest < Minitest::Test
-    def teardown
-      apply_test_configuration!
-    end
-
-    def test_file_has_default
-      config = Configuration.new
-      assert_equal config.file, "#{Configuration::DEFAULT_CONFIGURATION_PATH}/#{Configuration::DEFAULT_CONFIGURATION_FILE}"
+    def test_uses_default_configuration_file
+      assert_equal Configuration::DEFAULT_FILE, Configuration.new.file
     end
 
     def test_file_can_be_set
@@ -19,12 +14,7 @@ module Reviewer
         config.file = overridden_file
       end
       assert_equal overridden_file, Reviewer.configuration.file
-    end
-
-    def test_loads_tool_configuration_settings
-      tools_settings = Reviewer.configuration.tools
-      assert tools_settings.is_a? Hash
-      assert tools_settings.key?(:enabled_tool)
+      ensure_test_configuration!
     end
   end
 end

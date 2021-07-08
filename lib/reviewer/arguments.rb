@@ -1,9 +1,23 @@
 # frozen_string_literal: true
 
+require_relative 'arguments/keywords'
+require_relative 'arguments/files'
+require_relative 'arguments/tags'
+
 require 'slop'
 
 module Reviewer
-  # Handles option parsing for bin/review
+  # Handles option parsing for `rvw` and `fmt` commands
+  #
+  # @example
+  #
+  #   `rvw`
+  #   `rvw -t ruby`
+  #   `rvw -f ./example.rb,./example_test.rb`
+  #   `rvw staged`
+  #   `rvw --files ./example.rb,./example_test.rb --tags syntax`
+  #   `rvw ruby staged`
+  #
   class Arguments
     attr_accessor :options
 
@@ -24,21 +38,28 @@ module Reviewer
       end
     end
 
-    def files
-      options[:files]
+    def inspect
+      {
+        files: files.raw,
+        tags: tags.raw,
+        keywords: keywords.raw
+      }
     end
 
     def tags
-      options[:tags]
+      @tags ||= Arguments::Tags.new(provided: options[:tags])
     end
 
-    def arguments
-      options.arguments
+    def files
+      @files ||= Arguments::Files.new(provided: options[:files])
     end
 
     def keywords
-      # TODO: Filter arguments to only for allowed keywords to be defined later.
-      arguments
+      @keywords ||= Arguments::Keywords.new(options.arguments)
+    end
+
+    def tool_names
+      @tool_names ||= keywords.for_tool_names.to_a
     end
   end
 end

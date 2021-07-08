@@ -15,9 +15,19 @@ module Reviewer
         @settings = Settings.new(@tool, config: @config)
       end
 
+      def test_compares_settings_values_for_equality
+        settings_one = Settings.new(:enabled_tool)
+        settings_two = Settings.new(:enabled_tool)
+        settings_three = Settings.new(:disabled_tool)
+        assert settings_one == settings_two
+        assert settings_one.eql?(settings_two)
+        refute settings_one == settings_three
+        refute settings_one.eql?(settings_three)
+      end
+
       def test_uses_reviewer_configuration_when_config_not_provided
         settings = Settings.new(:enabled_tool)
-        assert_equal 'Enabled Tool', settings.name
+        assert_equal 'Enabled Test Tool', settings.name
       end
 
       def test_exposes_enabled_or_disbled_status_with_enabled_as_default
@@ -117,12 +127,6 @@ module Reviewer
         }
         @settings = Settings.new(@tool, config: @config)
         assert_equal @config[:commands], @settings.commands
-      end
-
-      def test_raises_error_without_command_for_review
-        assert_raises(Settings::MissingReviewCommandError) do
-          Settings.new(@tool, config: { commands: { format: 'example' } })
-        end
       end
     end
   end

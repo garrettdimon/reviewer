@@ -4,18 +4,18 @@ module Reviewer
   class Tool
     # Converts/casts tool configuration values and provides default values if not set
     class Settings
-      class MissingReviewCommandError < StandardError; end
-
-      attr_reader :tool, :config
+      attr_reader :tool
 
       def initialize(tool, config: nil)
         @tool = tool
-        @config = config || Reviewer.configuration.tools.fetch(tool.to_sym) { {} }
-
-        # Ideally, folks would fill out everything, but realistically, the 'review' command is the only required value.
-        # If the key is missing, or maybe there was a typo, fail right away.
-        raise MissingReviewCommandError, "'#{key}' does not have a 'review' key under 'commands' in `#{Reviewer.configuration.file}`" unless commands.key?(:review)
+        @config = config
       end
+
+      def ==(other)
+        self.class == other.class &&
+          state == other.state
+      end
+      alias eql? ==
 
       def disabled?
         config.fetch(:disabled, false)
@@ -79,6 +79,16 @@ module Reviewer
 
       def quiet_option
         commands.fetch(:quiet_option, '')
+      end
+
+      protected
+
+      def config
+        @config || Reviewer.tools.to_h.fetch(tool.to_sym) { {} }
+      end
+
+      def state
+        config.to_hash
       end
     end
   end

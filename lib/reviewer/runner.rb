@@ -3,13 +3,19 @@
 require 'open3'
 
 module Reviewer
-  # Handles running, benchmarking, and printing output for a command
+  # Handles running, benchmarking, and printing output for a single command
   class Runner
-    COMMAND_NOT_FOUND_EXIT_STATUS_CODE = 127
+    EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE = 127
 
     attr_accessor :tool, :command
 
-    attr_reader :elapsed_time, :stdout, :stderr, :status, :exit_status, :logger
+    attr_reader :elapsed_time,
+                :last_command_run,
+                :stdout,
+                :stderr,
+                :status,
+                :exit_status,
+                :logger
 
     def initialize(tool, command, logger: Logger.new)
       @tool = tool
@@ -21,8 +27,7 @@ module Reviewer
       logger.running(tool)
 
       @elapsed_time = Benchmark.realtime do
-        prepare
-        review
+        tool.format_command? ? run_format : run_review
       end
 
       print_result
@@ -34,32 +39,26 @@ module Reviewer
     def shell_out(cmd)
       @stdout, @stderr, @status = Open3.capture3(cmd)
       @exit_status = status.exitstatus
-
-      logger.command(cmd) unless status.success?
+      @last_command_run = cmd
     end
 
-    def prepare
+    def run_review
       shell_out(tool.preparation_command) if tool.prepare_command?
-    end
-
-    def review
       shell_out(tool.review_command(seed: seed))
     end
 
-    def format
+    def run_format
       shell_out(tool.format_command) if tool.format_command?
     end
 
     def review_verbosely
       cmd = tool.review_command(:no_silence, seed: seed)
-      logger.rerunning(tool)
-      logger.command(cmd)
+      logger.rerunning(tool, cmd)
       system(cmd)
     end
 
     def print_result
       if status.success?
-        # Outputs success details
         logger.success(elapsed_time)
       else
         recovery_guidance
@@ -68,6 +67,7 @@ module Reviewer
 
     def recovery_guidance
       logger.failure(error_message)
+      logger.command(last_command_run)
       if missing_executable?
         missing_executable_guidance
       else
@@ -84,12 +84,12 @@ module Reviewer
     end
 
     def missing_executable_guidance
-      logger.guidance('Installation Command:', tool.installation_command) if tool.install_command?
-      logger.guidance('Installation Help:', tool.settings.links[:install]) if tool.install_link?
+      logger.guidance('Try installing the tool:', tool.installation_command) if tool.install_command?
+      logger.guidance('Read the installation guidance:', tool.settings.links[:install]) if tool.install_link?
     end
 
     def missing_executable?
-      (@exit_status == COMMAND_NOT_FOUND_EXIT_STATUS_CODE) ||
+      (@exit_status == EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE) ||
         stderr.include?("can't find executable")
     end
 

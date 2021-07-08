@@ -1,10 +1,22 @@
 ## [Unreleased]
 
-- TODO: Standardize the commands and installation
-- TODO: Add Targets to handle targeting specific files
-- TODO: Add support for Targets in Tool/Command generator
+- TODO: Improve and streamline installation
+- TODO: Add support for targeting specific files
 
-## [0.1.2] - 2021-05-4
+## [0.1.3] - 2021-07-07
+
+The most significant update to how the core commands work and how the command-line arguments are handled. Most of the overall structure is starting to feel stable enough to begin documenting and adding comments.
+
+- Commands are now `rvw` and `fmt`
+- Adds command-line arguments support
+- Adds support for specifying tags via the command-line
+- Adds support for specifying files via the command-line
+- Adds support for handling keywords via the command-line
+- Improved configuration and loading
+- Adds Tools class for more convenient filtering of tools based on arguments
+- Begins the process of adding documentation comments
+
+## [0.1.2] - 2021-05-04
 
 The bare minimum works now, but it's not quite there for day-to-day use. It works well enough that it's being used to review this project, but there's much more to do.
 

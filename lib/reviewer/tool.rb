@@ -13,6 +13,8 @@ module Reviewer
 
     delegate :name,
              :description,
+             :tags,
+             :key,
              :enabled?,
              :disabled?,
              :max_exit_status,
@@ -28,6 +30,14 @@ module Reviewer
 
     def to_s
       name
+    end
+
+    def to_sym
+      key
+    end
+
+    def ==(other)
+      settings == other.settings
     end
 
     def installation_command(verbosity_level = :no_silence)

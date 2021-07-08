@@ -17,10 +17,10 @@ bundle exec rake notes
 
 You run...
 ```
-./bin/rvw
+rvw
 ```
 
-Having a simpler command is just the beginning through. It also cleans up the output and lets you run subsets of commands.
+But that's just the beginning. It also cleans up the output and lets easily you run subsets of commands for different contexts.
 
 For more detailed information, take a look at the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) and [Usage](https://github.com/garrettdimon/reviewer/wiki/Usage) pages in the wiki.
 
