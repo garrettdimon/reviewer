@@ -11,7 +11,7 @@ require_relative 'tool/verbosity'
 module Reviewer
   # Provides an instance of a specific tool
   class Tool
-    TWENTY_FOUR_HOURS_IN_SECONDS = 60 * 60 * 24
+    SIX_HOURS_IN_SECONDS = 60 * 60 * 6
 
     attr_reader :settings, :history
 
@@ -52,7 +52,7 @@ module Reviewer
     def stale?
       return false unless prepare_command?
 
-      last_prepared_at.nil? || last_prepared_at < Time.current.utc - TWENTY_FOUR_HOURS_IN_SECONDS
+      last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
     end
 
     def ==(other)
