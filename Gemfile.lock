@@ -22,6 +22,16 @@ GEM
     coderay (1.1.3)
     colorize (0.8.1)
     concurrent-ruby (1.1.8)
+    erubis (2.7.0)
+    flay (2.12.1)
+      erubis (~> 2.7.0)
+      path_expander (~> 1.0)
+      ruby_parser (~> 3.0)
+      sexp_processor (~> 4.0)
+    flog (4.6.4)
+      path_expander (~> 1.0)
+      ruby_parser (~> 3.1, > 3.1.0)
+      sexp_processor (~> 4.8)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
     inch (0.8.0)
@@ -36,6 +46,7 @@ GEM
     parallel (1.20.1)
     parser (3.0.1.0)
       ast (~> 2.4.1)
+    path_expander (1.1.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -59,6 +70,9 @@ GEM
     rubocop-rake (0.5.1)
       rubocop
     ruby-progressbar (1.11.0)
+    ruby_parser (3.16.0)
+      sexp_processor (~> 4.15, >= 4.15.1)
+    sexp_processor (4.15.3)
     slop (4.8.2)
     sparkr (0.4.1)
     sync (0.5.0)
@@ -80,6 +94,8 @@ PLATFORMS
 
 DEPENDENCIES
   bundler-audit
+  flay
+  flog
   inch
   minitest (~> 5.14.4)
   minitest-color (~> 0.0.2)

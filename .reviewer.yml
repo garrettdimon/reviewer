@@ -1,7 +1,7 @@
 bundler_audit:
-  tags: [critical, dependencies, ruby, dev]
   name: Bundler Audit
   description: Review Gem Dependencies for Security Issues
+  tags: [critical, dependencies, ruby, dev]
   links:
     home: https://github.com/rubysec/bundler-audit
     install: https://github.com/rubysec/bundler-audit#install
@@ -10,6 +10,30 @@ bundler_audit:
     prepare: 'bundle exec bundle-audit update'
     review: 'bundle exec bundle-audit check --no-update'
     quiet_option: '--quiet'
+
+flog:
+  name: Flog
+  description: Reports your most tortured ruby code in an easy to read pain report.
+  tags: [ruby, quality, dev]
+  links:
+    home: https://ruby.sadi.st/Flog.html
+    install: https://ruby.sadi.st/Flog.html
+  commands:
+    install: 'bundle exec gem install flog'
+    review: 'bundle exec flog'
+  flags:
+    threshold: 20
+
+flay:
+  name: Flay
+  description: Review ruby code for structural similarities and refactoring opportunities.
+  tags: [ruby, quality, dev]
+  links:
+    home: https://ruby.sadi.st/Flay.html
+    install: https://ruby.sadi.st/Flay.html
+  commands:
+    install: 'bundle exec gem install flay'
+    review: 'bundle exec flay'
 
 tests:
   name: Minitest
