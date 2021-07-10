@@ -34,5 +34,16 @@ module Reviewer
       cmd = tool.review_command(seed: seed)
       assert_equal "bundle exec example review --seed #{seed} > /dev/null", cmd
     end
+
+    def test_can_track_last_prepared_at_across_runs
+      timestamp = Time.current
+
+      tool_one = Tool.new(:enabled_tool)
+      tool_two = Tool.new(:enabled_tool)
+      tool_one.last_prepared_at = timestamp
+
+      assert_equal timestamp, tool_one.last_prepared_at
+      assert_equal tool_one.last_prepared_at, tool_two.last_prepared_at
+    end
   end
 end

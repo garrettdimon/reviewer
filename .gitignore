@@ -8,3 +8,4 @@
 /tmp/
 /rubocop_cache/
 .reviewer_history.yml
+.reviewer_history_test.yml

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'yaml/store'
-
 require_relative 'tool/command'
 require_relative 'tool/env'
 require_relative 'tool/flags'
@@ -30,7 +28,6 @@ module Reviewer
 
     def initialize(tool)
       @settings = Settings.new(tool)
-      @history = load_history
     end
 
     def to_s
@@ -42,11 +39,11 @@ module Reviewer
     end
 
     def last_prepared_at
-      history.fetch(:last_prepared_at, nil)
+      Reviewer.history.get(key, :last_prepared_at)
     end
 
     def last_prepared_at=(last_prepared_at)
-      history.transaction { |s| s[key][:last_prepared_at] == last_prepared_at }
+      Reviewer.history.set(key, :last_prepared_at, last_prepared_at)
     end
 
     def stale?
@@ -82,10 +79,6 @@ module Reviewer
     end
 
     private
-
-    def load_history
-      Reviewer.history_store.transaction { |s| s[key] || {} }
-    end
 
     def command_string(command_type, verbosity_level: :no_silence)
       Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s

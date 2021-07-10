@@ -5,6 +5,7 @@ require 'benchmark'
 
 require_relative 'reviewer/arguments'
 require_relative 'reviewer/configuration'
+require_relative 'reviewer/history'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/logger'
 require_relative 'reviewer/runner'
@@ -16,13 +17,12 @@ require_relative 'reviewer/version'
 module Reviewer
   class Error < StandardError; end
 
-  HISTORY_STORE_LOCATION = '.reviewer_history.yml'
-
   class << self
     attr_writer :configuration
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     # commands that are not disabled to have an entry for the `review` command.
+    # @param clear_streen [boolean] clears the screen to reduce noise when true
     #
     # @return [void] Prints output to the console
     def review(clear_screen: false)
@@ -30,6 +30,7 @@ module Reviewer
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
+    # @param clear_streen [boolean] clears the screen to reduce noise when true
     #
     # @return [void] Prints output to the console
     def format(clear_screen: false)
@@ -59,8 +60,11 @@ module Reviewer
       @logger ||= Logger.new
     end
 
-    def history_store
-      @history_store ||= YAML::Store.new(HISTORY_STORE_LOCATION)
+    # A file store for sharing information across runs
+    #
+    # @return [Reviewer::History] a YAML::Store (or Pstore) containing data on tools
+    def history
+      @history ||= History.new
     end
 
     # Exposes the configuration options for Reviewer.
