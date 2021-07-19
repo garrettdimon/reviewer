@@ -30,6 +30,10 @@ module Reviewer
       @settings = Settings.new(tool)
     end
 
+    def hash
+      settings.hash
+    end
+
     def to_s
       name
     end
@@ -52,9 +56,10 @@ module Reviewer
       last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
     end
 
-    def ==(other)
+    def eql?(other)
       settings == other.settings
     end
+    alias :== eql?
 
     def installation_command(verbosity_level = :no_silence)
       return nil unless install_command?

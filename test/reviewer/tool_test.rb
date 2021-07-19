@@ -8,6 +8,16 @@ module Reviewer
       @tool = Tool.new(:enabled_tool)
     end
 
+    def test_compares_settings_values_for_equality
+      tool_one = Tool.new(:enabled_tool)
+      tool_two = Tool.new(:enabled_tool)
+      tool_three = Tool.new(:disabled_tool)
+      assert tool_one == tool_two
+      assert tool_one.eql?(tool_two)
+      refute tool_one == tool_three
+      refute tool_one.eql?(tool_three)
+    end
+
     def test_installation_command
       cmd = @tool.installation_command
       assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec gem install example", cmd

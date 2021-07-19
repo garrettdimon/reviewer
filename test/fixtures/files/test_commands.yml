@@ -48,6 +48,12 @@ disabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
+# For Testing Tagged & Named
+tagged:
+  tags: [tagged]
+  commands:
+    review: 'ls'
+
 # For Testing Defaults and Runner
 minimum_viable_tool:
   commands:

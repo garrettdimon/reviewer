@@ -38,5 +38,11 @@ module Reviewer
       assert_equal 1, @tools.current.size
       assert_equal 'Disabled Test Tool', @tools.current.first.name
     end
+
+    def test_removes_duplicate_tools
+      @tools = Tools.new(tags: %w[tagged], tool_names: %w[tagged])
+      assert_equal 1, @tools.current.size
+      assert_equal 'Tagged', @tools.current.first.name
+    end
   end
 end

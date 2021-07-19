@@ -11,11 +11,15 @@ module Reviewer
         @config = config
       end
 
-      def ==(other)
+      def hash
+        state.hash
+      end
+
+      def eql?(other)
         self.class == other.class &&
           state == other.state
       end
-      alias eql? ==
+      alias :== eql?
 
       def disabled?
         config.fetch(:disabled, false)
