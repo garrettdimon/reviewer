@@ -34,5 +34,18 @@ module Reviewer
       end
       assert_match(/Missing executable/i, out)
     end
+
+    def test_maintains_seed_value_when_rerunning
+      tool = Tool.new(:failing_dynamic_seed_tool)
+      runner = Runner.new(tool, :review)
+      first_run_seed = runner.seed
+      _out, _err = capture_subprocess_io do
+        exit_status = runner.run
+        assert_equal 1, exit_status
+        second_run_seed = runner.seed
+
+        assert_equal first_run_seed, second_run_seed
+      end
+    end
   end
 end

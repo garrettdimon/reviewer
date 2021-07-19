@@ -40,7 +40,7 @@ flay:
 
 tests:
   name: Minitest
-  description: Unit Tests
+  description: Unit Tests & Coverage
   tags: [ruby, tests, dev]
   links:
     home:

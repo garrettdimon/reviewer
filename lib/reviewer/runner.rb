@@ -31,6 +31,12 @@ module Reviewer
       exit_status
     end
 
+    def seed
+      # Keep the same seed for each instance so re-running generates the same results as the failure.
+      # Otherwise, re-running after the failure will change the seed and show different results.
+      @seed ||= Random.rand(100_000)
+    end
+
     private
 
     def format?
@@ -113,12 +119,6 @@ module Reviewer
     def missing_executable?
       @exit_status == EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE ||
         stderr.include?("can't find executable")
-    end
-
-    def seed
-      # Keep the same seed for each instance so re-running generates the same results as the failure.
-      # Otherwise, re-running after the failure will change the seed and show different results.
-      @seed ||= Random.rand(100_000)
     end
   end
 end

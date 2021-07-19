@@ -45,6 +45,13 @@ module Reviewer
       assert_equal "bundle exec example review --seed #{seed} > /dev/null", cmd
     end
 
+    def test_records_last_used_seed_value_to_history
+      tool = Tool.new(:dynamic_seed_tool)
+      seed = 123
+      tool.review_command(seed: seed)
+      assert_equal Reviewer.history.get(tool.key, :last_seed), seed
+    end
+
     def test_can_track_last_prepared_at_across_runs
       timestamp = Time.current
 

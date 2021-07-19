@@ -9,6 +9,7 @@ require_relative 'tool/verbosity'
 module Reviewer
   # Provides an instance of a specific tool
   class Tool
+    SEED_SUBSTITUTION_VALUE = '$SEED'
     SIX_HOURS_IN_SECONDS = 60 * 60 * 6
 
     attr_reader :settings, :history
@@ -74,7 +75,12 @@ module Reviewer
     end
 
     def review_command(verbosity_level = :total_silence, seed: nil)
-      command_string(:review, verbosity_level: verbosity_level).gsub('$SEED', seed.to_s)
+      cmd = command_string(:review, verbosity_level: verbosity_level)
+
+      return cmd unless cmd.include?(SEED_SUBSTITUTION_VALUE)
+
+      Reviewer.history.set(key, :last_seed, seed)
+      cmd.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
     end
 
     def format_command(verbosity_level = :no_silence)

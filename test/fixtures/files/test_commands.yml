@@ -74,3 +74,8 @@ missing_command:
 dynamic_seed_tool:
   commands:
     review: 'bundle exec example review --seed $SEED'
+
+# For Testing Seed String Replacement on Re-run Commands
+failing_dynamic_seed_tool:
+  commands:
+    review: 'exit 1 --seed $SEED'
