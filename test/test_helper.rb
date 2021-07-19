@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
-require 'simplecov'
-SimpleCov.start do
-  enable_coverage :branch
-  minimum_coverage 97
-  minimum_coverage_by_file 95
-  refuse_coverage_drop
-end if ENV["COVERAGE"]
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.start do
+    enable_coverage :branch
+    minimum_coverage 97
+    minimum_coverage_by_file 95
+    refuse_coverage_drop
+  end
+end
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'reviewer'
