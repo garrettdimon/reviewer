@@ -7,5 +7,8 @@ gemspec
 
 gem 'rake', '~> 13.0'
 
-gem 'minitest', '~> 5.14.4'
-gem 'minitest-color', '~> 0.0.2'
+group :test do
+  gem 'minitest'
+  gem 'minitest-color'
+  gem 'simplecov'
+end

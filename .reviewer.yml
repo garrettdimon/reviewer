@@ -47,6 +47,11 @@ tests:
   commands:
     review: "bundle exec rake TESTOPTS='--seed=$SEED'"
     quiet_option: '--silent'
+  reports:
+    local_file: coverage/index.html
+    local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
+  env:
+    coverage: true
 
 rubocop:
   name: Rubocop
