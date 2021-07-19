@@ -9,7 +9,9 @@ require_relative 'tool/verbosity'
 module Reviewer
   # Provides an instance of a specific tool
   class Tool
-    attr_reader :settings
+    SIX_HOURS_IN_SECONDS = 60 * 60 * 6
+
+    attr_reader :settings, :history
 
     delegate :name,
              :description,
@@ -36,15 +38,33 @@ module Reviewer
       key
     end
 
+    def last_prepared_at
+      Reviewer.history.get(key, :last_prepared_at)
+    end
+
+    def last_prepared_at=(last_prepared_at)
+      Reviewer.history.set(key, :last_prepared_at, last_prepared_at)
+    end
+
+    def stale?
+      return false unless prepare_command?
+
+      last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
+    end
+
     def ==(other)
       settings == other.settings
     end
 
     def installation_command(verbosity_level = :no_silence)
+      return nil unless install_command?
+
       command_string(:install, verbosity_level: verbosity_level)
     end
 
     def preparation_command(verbosity_level = :total_silence)
+      return nil unless prepare_command?
+
       command_string(:prepare, verbosity_level: verbosity_level)
     end
 
@@ -53,15 +73,15 @@ module Reviewer
     end
 
     def format_command(verbosity_level = :no_silence)
+      return nil unless format_command?
+
       command_string(:format, verbosity_level: verbosity_level)
     end
 
     private
 
     def command_string(command_type, verbosity_level: :no_silence)
-      cmd = Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level)
-
-      cmd.to_s
+      Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
     end
   end
 end

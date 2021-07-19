@@ -1,5 +1,7 @@
 AllCops:
   NewCops: enable
+  UseCache: true
+  CacheRootDirectory: './'
   Exclude:
     - 'bin/**/*'
 

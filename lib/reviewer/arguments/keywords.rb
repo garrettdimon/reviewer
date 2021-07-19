@@ -82,17 +82,17 @@ module Reviewer
       #
       # @return [Array<String>] all unique configured tags
       def configured_tags
-        enabled_tools.map(&:tags).flatten.uniq.sort
+        tools.enabled.map(&:tags).flatten.uniq.sort
       end
 
       # Provides the complete list of all configured tool names for enabled tools
       #
-      # @return [Array<String>] all unique configured and enabled tools
+      # @return [Array<String>] all unique configured tools
       def configured_tool_names
         # We explicitly don't sort the tool names list because Reviewer uses the configuration order
         # to determine the execution order. So not sorting maintains the predicted order it will run
         # in and leaves the option to sort to the consuming code if needed
-        enabled_tools.map { |tool| tool.key.to_s }.flatten.uniq
+        tools.all.map { |tool| tool.key.to_s }
       end
 
       private
@@ -100,8 +100,8 @@ module Reviewer
       # Provides a collection of enabled Tools for convenient access
       #
       # @return [Array<Reviewer::Tool>] collection of all currently enabled tools
-      def enabled_tools
-        @enabled_tools ||= Reviewer.tools.enabled
+      def tools
+        @tools ||= Reviewer.tools
       end
 
       # Syntactic sugar for finding intersections with valid keywords

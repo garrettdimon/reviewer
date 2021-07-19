@@ -26,11 +26,11 @@ module Reviewer
       assert_match(/#{command_string}/i, out)
     end
 
-    def test_rerunning_context
+    def test_running_verbosely_context
       out, _err = capture_subprocess_io do
-        @logger.rerunning(@tool, 'command --flag flag')
+        @logger.last_command('command --flag flag')
       end
-      assert_match(/Re-running #{@tool.name} verbosely/i, out)
+      assert_match(/Reviewer ran/i, out)
     end
 
     def test_success_context
@@ -39,7 +39,7 @@ module Reviewer
         @logger.success(elapsed_time)
       end
       assert_includes(out, Reviewer::Logger::SUCCESS)
-      assert_match(/#{elapsed_time.round(3)}s/i, out)
+      assert_match(/#{elapsed_time.round(2)}s/i, out)
     end
 
     def test_failure_context

@@ -4,4 +4,4 @@
 
 require_relative '../lib/reviewer'
 
-Reviewer.format
+Reviewer.format(clear_screen: true)
