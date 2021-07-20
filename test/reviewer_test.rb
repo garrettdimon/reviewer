@@ -18,10 +18,12 @@ module Reviewer
     end
 
     def test_review_command
+      # skip "Needs logging suppression, but logger isn't explicitly passed any longer"
       assert_equal @missing_command_result, Reviewer.review
     end
 
     def test_format_command
+      # skip "Needs logging suppression, but logger isn't explicitly passed any longer"
       assert_equal @missing_command_result, Reviewer.review
     end
   end

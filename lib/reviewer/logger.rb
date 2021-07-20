@@ -44,11 +44,11 @@ module Reviewer
     end
 
     def divider
+      info # Blank Lane
       info DIVIDER.light_black
     end
 
     def output
-      info # Blank Lane
       divider
       yield
       divider

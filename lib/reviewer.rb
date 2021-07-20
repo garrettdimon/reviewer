@@ -101,7 +101,7 @@ module Reviewer
       results = {}
       benchmark_suite do
         tools.current.each do |tool|
-          runner = Runner.new(tool, command_type, logger: logger)
+          runner = Runner.new(tool, command_type)
           exit_status = runner.run
           results[tool.key] = exit_status
 

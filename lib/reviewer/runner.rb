@@ -2,35 +2,31 @@
 
 require 'open3'
 
+require_relative 'runner/output'
 require_relative 'runner/result'
 require_relative 'runner/timer'
 
 module Reviewer
   # Handles running, benchmarking, and printing output for a single command
   class Runner
-    EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE = 127
-
     attr_accessor :tool, :command_type
 
     attr_reader :last_command_run,
                 :timer,
-                :result,
-                :logger
+                :result
 
-    delegate :stdout,
-             to: :result
-
-    def initialize(tool, command_type, logger: Logger.new)
+    def initialize(tool, command_type)
       @tool = tool
       @command_type = command_type
-      @logger = logger
       @timer = Timer.new
     end
 
     def run
-      logger.running(tool)
       timer.record_elapsed { format? ? format! : review! }
-      print_result
+
+      print_tool_info
+      print_results
+
       result.exit_status
     end
 
@@ -46,8 +42,8 @@ module Reviewer
       command_type == :format
     end
 
-    def solo_tool_run?
-      Reviewer.tools.current.one?
+    def batch?
+      Reviewer.tools.current.size > 1
     end
 
     def shell_out(cmd)
@@ -64,7 +60,7 @@ module Reviewer
 
     def review!
       prepare! if tool.stale?
-      verbosity = solo_tool_run? ? :no_silence : :total_silence
+      verbosity = batch? ? :total_silence : :no_silence
       shell_out(tool.review_command(verbosity, seed: seed))
     end
 
@@ -74,50 +70,58 @@ module Reviewer
       shell_out(tool.format_command)
     end
 
-    def print_result
-      if result.success? && solo_tool_run?
-        show_tool_output
-      elsif result.success?
-        show_benchmark
-      elsif result.executable_not_found?
-        show_missing_executable_guidance
+    def output
+      @output ||= Output.new(tool, last_command_run, result, timer)
+    end
+
+    def print_tool_info
+      output.current_tool
+    end
+
+    def print_results
+      success? ? handle_success : handle_failure
+    end
+
+    def success?
+      result.success?(max_exit_status: tool.max_exit_status)
+    end
+
+    def existing_results?
+      !result.stdout.blank?
+    end
+
+    def handle_success
+      if batch?
+        # It's a batch, so just show the benchark...
+        output.benchmark
+      elsif existing_results?
+        # It's not a batch, so if we captured results, show them...
+        output.current_results
       else
-        show_failure_guidance
+        # It's not a batch, but we don't have results, so we need to run again
+        rerun_verbosely
       end
     end
 
-    def show_tool_output
-      logger.output do
-        result.stdout.blank? ? rerun_verbosely : show_stdout_results
+    def handle_failure
+      if result.executable_not_found?
+        output.missing_executable_guidance
+      elsif existing_results?
+        output.exit_status
+        output.current_results
+      elsif result.terminated?
+        output.exit_status
+      elsif result.cannot_execute?
+        output.exit_status
+      else
+        output.exit_status
+        rerun_verbosely
       end
-
-      logger.last_command(last_command_run)
-    end
-
-    def show_benchmark
-      logger.success(timer)
-    end
-
-    def show_missing_executable_guidance
-      logger.failure("Missing executable for '#{tool}'")
-      logger.last_command(last_command_run)
-      logger.guidance('Try installing the tool:', tool.installation_command)
-      logger.guidance('Read the installation guidance:', tool.settings.links&.fetch(:install, nil))
-    end
-
-    def show_failure_guidance
-      logger.failure("Exit Status #{result.exit_status}")
-      show_tool_output
     end
 
     def rerun_verbosely
-      cmd = tool.review_command(:no_silence, seed: seed)
-      logger.command("#{cmd}\n")
-      system(cmd)
-    end
-
-    def show_stdout_results
-      logger.info "\n#{result}"
+      # We're expicitly re-running it so we can show the output. So we explicitly use :no_silence
+      output.raw { tool.review_command(:no_silence, seed: seed) }
     end
   end
 end
