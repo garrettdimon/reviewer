@@ -34,12 +34,12 @@ module Reviewer
     end
 
     def test_success_context
-      elapsed_time = 1.2345
+      timer = Runner::Timer.new(elapsed: 1.2345)
       out, _err = capture_subprocess_io do
-        @logger.success(elapsed_time)
+        @logger.success(timer)
       end
       assert_includes(out, Reviewer::Logger::SUCCESS)
-      assert_match(/#{elapsed_time.round(2)}s/i, out)
+      assert_match(/#{timer.elapsed_seconds}s/i, out)
     end
 
     def test_failure_context

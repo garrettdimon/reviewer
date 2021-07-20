@@ -10,7 +10,7 @@ module Reviewer
       Reviewer.logger.level = 4
 
       # The test tools don't exist, so a 127 exit code is expected
-      @missing_command_result = { enabled_tool: Runner::EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE }
+      @missing_command_result = { enabled_tool: Runner::Result::EXIT_STATUS_CODES[:executable_not_found] }
     end
 
     def test_that_it_has_a_version_number

@@ -54,8 +54,11 @@ module Reviewer
       divider
     end
 
-    def success(elapsed_time, prep_time = nil)
-      info SUCCESS.green.bold + timing(elapsed_time, prep_time)
+    def success(timer)
+      message = SUCCESS.green.bold + " #{timer.elapsed_seconds}s".green
+      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prep?
+
+      info message
     end
 
     def failure(message)
@@ -71,19 +74,6 @@ module Reviewer
 
       info "\n#{summary}" if summary
       info details.to_s.light_black if details
-    end
-
-    private
-
-    def timing(elapsed_time, prep_time)
-      timing = " #{elapsed_time.round(2)}s".green
-
-      if prep_time.present?
-        prep_percent = (prep_time / elapsed_time) * 100
-        timing + " (#{prep_percent.round}% preparation)".yellow
-      else
-        timing
-      end
     end
   end
 end

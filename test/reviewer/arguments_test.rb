@@ -19,7 +19,7 @@ module Reviewer
     def test_prints_version_information
       args = %w[-v]
       out, _err = capture_subprocess_io do
-        arguments = Arguments.new(args)
+        Arguments.new(args)
       rescue SystemExit
       end
       assert_match(/#{Reviewer::VERSION}/i, out)
@@ -28,7 +28,7 @@ module Reviewer
     def test_prints_help_information
       args = %w[-h]
       out, _err = capture_subprocess_io do
-        arguments = Arguments.new(args)
+        Arguments.new(args)
       rescue SystemExit
       end
       assert_match(/a list of comma/i, out)

@@ -30,7 +30,7 @@ module Reviewer
       runner = Runner.new(tool, :review)
       out, _err = capture_subprocess_io do
         exit_status = runner.run
-        assert_equal Runner::EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE, exit_status
+        assert_equal Runner::Result::EXIT_STATUS_CODES[:executable_not_found], exit_status
       end
       assert_match(/Missing executable/i, out)
     end

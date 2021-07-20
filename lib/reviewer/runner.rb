@@ -2,6 +2,9 @@
 
 require 'open3'
 
+require_relative 'runner/result'
+require_relative 'runner/timer'
+
 module Reviewer
   # Handles running, benchmarking, and printing output for a single command
   class Runner
@@ -9,26 +12,26 @@ module Reviewer
 
     attr_accessor :tool, :command_type
 
-    attr_reader :elapsed_time,
-                :prep_time,
-                :last_command_run,
-                :stdout,
-                :stderr,
-                :status,
-                :exit_status,
+    attr_reader :last_command_run,
+                :timer,
+                :result,
                 :logger
+
+    delegate :stdout,
+             to: :result
 
     def initialize(tool, command_type, logger: Logger.new)
       @tool = tool
       @command_type = command_type
       @logger = logger
+      @timer = Timer.new
     end
 
     def run
       logger.running(tool)
-      @elapsed_time = Benchmark.realtime { format? ? format! : review! }
+      timer.record_elapsed { format? ? format! : review! }
       print_result
-      exit_status
+      result.exit_status
     end
 
     def seed
@@ -48,14 +51,15 @@ module Reviewer
     end
 
     def shell_out(cmd)
-      @stdout, @stderr, @status = Open3.capture3(cmd)
-      @exit_status = status.exitstatus
+      results = Open3.capture3(cmd)
+
+      @result = Result.new(*results)
       @last_command_run = cmd
     end
 
     def prepare!
       tool.last_prepared_at = Time.current.utc
-      @prep_time = Benchmark.realtime { shell_out(tool.preparation_command) }
+      timer.record_prep { shell_out(tool.preparation_command) }
     end
 
     def review!
@@ -67,23 +71,31 @@ module Reviewer
     def format!
       return unless tool.format_command?
 
-      shell_out(tool.format_command) if tool.format_command?
+      shell_out(tool.format_command)
     end
 
     def print_result
-      if solo_tool_run? && status.success?
+      if result.success? && solo_tool_run?
         show_tool_output
-      elsif status.success?
+      elsif result.success?
         show_benchmark
-      elsif missing_executable?
+      elsif result.executable_not_found?
         show_missing_executable_guidance
       else
         show_failure_guidance
       end
     end
 
+    def show_tool_output
+      logger.output do
+        result.stdout.blank? ? rerun_verbosely : show_stdout_results
+      end
+
+      logger.last_command(last_command_run)
+    end
+
     def show_benchmark
-      logger.success(elapsed_time, prep_time)
+      logger.success(timer)
     end
 
     def show_missing_executable_guidance
@@ -94,16 +106,8 @@ module Reviewer
     end
 
     def show_failure_guidance
-      logger.failure("Exit Status #{exit_status}")
+      logger.failure("Exit Status #{result.exit_status}")
       show_tool_output
-    end
-
-    def show_tool_output
-      logger.output do
-        stdout.blank? ? rerun_verbosely : show_stdout_results
-      end
-
-      logger.last_command(last_command_run)
     end
 
     def rerun_verbosely
@@ -113,12 +117,7 @@ module Reviewer
     end
 
     def show_stdout_results
-      logger.info "\n#{stdout}"
-    end
-
-    def missing_executable?
-      @exit_status == EXECUTABLE_NOT_FOUND_EXIT_STATUS_CODE ||
-        stderr.include?("can't find executable")
+      logger.info "\n#{result}"
     end
   end
 end
