@@ -4,7 +4,7 @@ if ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start do
     enable_coverage :branch
-    minimum_coverage 97
+    minimum_coverage 98
     minimum_coverage_by_file 95
     refuse_coverage_drop
   end

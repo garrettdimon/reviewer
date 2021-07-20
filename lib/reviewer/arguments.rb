@@ -21,30 +21,33 @@ module Reviewer
   class Arguments
     attr_accessor :options
 
-    def initialize(options = ARGV)
+    attr_reader :logger
+
+    def initialize(options = ARGV, logger: Logger.new)
       @options = Slop.parse options do |opts|
         opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
         opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
 
         opts.on '-v', '--version', 'print the version' do
-          puts VERSION
+          logger.info VERSION
           exit
         end
 
         opts.on '-h', '--help', 'print the help' do
-          puts opts
+          logger.info opts
           exit
         end
       end
     end
 
-    def inspect
+    def to_h
       {
         files: files.raw,
         tags: tags.raw,
         keywords: keywords.raw
       }
     end
+    alias inspect to_h
 
     def tags
       @tags ||= Arguments::Tags.new(provided: options[:tags])

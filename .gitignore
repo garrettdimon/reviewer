@@ -10,3 +10,4 @@
 .reviewer_history.yml
 .reviewer_history_test.yml
 coverage
+Gemfile.lock

@@ -27,7 +27,7 @@ module Reviewer
 
         value = needs_quotes?(value) ? "'#{value}'" : value
 
-        "#{key.to_s.strip.upcase}=#{value.to_s.strip};"
+        "#{key.to_s.strip.upcase}=#{value.to_s.strip}"
       end
 
       def needs_quotes?(value)

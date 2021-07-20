@@ -48,6 +48,7 @@ tests:
     review: "bundle exec rake TESTOPTS='--seed=$SEED'"
     quiet_option: '--silent'
   reports:
+    open_on_fail: true
     local_file: coverage/index.html
     local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
   env:

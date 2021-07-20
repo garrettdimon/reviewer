@@ -28,25 +28,25 @@ module Reviewer
       def test_install_command_generates_correct_string
         cmd = Command.new(:install, tool_settings: @settings, verbosity_level: @level)
 
-        assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec gem install example --quiet > /dev/null", cmd.to_s
+        assert_equal "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true bundle exec gem install example --quiet > /dev/null", cmd.to_s
       end
 
       def test_prepare_command_generates_correct_string
         cmd = Command.new(:prepare, tool_settings: @settings, verbosity_level: @level)
 
-        assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example update --quiet > /dev/null", cmd.to_s
+        assert_equal "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true bundle exec example update --quiet > /dev/null", cmd.to_s
       end
 
       def test_review_command_generates_correct_string
         cmd = Command.new(:review, tool_settings: @settings, verbosity_level: @level)
 
-        assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example review --third 'third flag' --fourth 'fourth flag' --quiet > /dev/null", cmd.to_s
+        assert_equal "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true bundle exec example review --third 'third flag' --fourth 'fourth flag' --quiet > /dev/null", cmd.to_s
       end
 
       def test_format_command_generates_correct_string
         cmd = Command.new(:format, tool_settings: @settings, verbosity_level: @level)
 
-        assert_equal "WITH_SPACES='with spaces'; WORD=second; INTEGER=1; BOOLEAN=true; bundle exec example format --quiet > /dev/null", cmd.to_s
+        assert_equal "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true bundle exec example format --quiet > /dev/null", cmd.to_s
       end
     end
   end
