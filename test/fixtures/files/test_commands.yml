@@ -48,6 +48,14 @@ disabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
+# For testing a command that can be run safely
+list:
+  commands:
+    install: 'ls'
+    prepare: 'ls -a'
+    review: 'ls -l'
+    format: 'ls -la'
+
 # For Testing Tagged & Named
 tagged:
   tags: [tagged]

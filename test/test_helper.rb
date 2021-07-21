@@ -5,7 +5,7 @@ if ENV['COVERAGE']
   SimpleCov.start do
     enable_coverage :branch
     minimum_coverage 98
-    minimum_coverage_by_file 95
+    minimum_coverage_by_file 50
     refuse_coverage_drop
   end
 end
@@ -15,6 +15,9 @@ require 'reviewer'
 
 require 'minitest/autorun'
 require 'minitest/color'
+
+# Makes it easy to mock process statuses
+MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true)
 
 # Ensure it's using the test configuration file since some tests intentionally
 # change it to test how it recovers when misconfigured

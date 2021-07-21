@@ -5,7 +5,10 @@ require 'open3'
 module Reviewer
   # Handles running, benchmarking, and printing output for a single command
   class Runner
+    # Provides a structured interface for measuring realtime elapsed while running comamnds
     class Timer
+      class NoRecordedPreparationError < StandardError; end
+
       attr_accessor :prep, :elapsed
 
       def initialize(elapsed: nil, prep: nil)
@@ -13,12 +16,12 @@ module Reviewer
         @elapsed = elapsed
       end
 
-      def record_prep
-        @prep = record { yield }
+      def record_prep(&block)
+        @prep = record(&block)
       end
 
-      def record_elapsed
-        @elapsed = record { yield }
+      def record_elapsed(&block)
+        @elapsed = record(&block)
       end
 
       def prep?
@@ -34,13 +37,15 @@ module Reviewer
       end
 
       def prep_percent
-        (prep.to_f / elapsed.to_f * 100).round
+        raise NoRecordedPreparationError unless prep.present?
+
+        (prep / elapsed.to_f * 100).round
       end
 
       private
 
-      def record
-        Benchmark.realtime { yield }
+      def record(&block)
+        Benchmark.realtime(&block)
       end
     end
   end

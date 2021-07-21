@@ -3,11 +3,10 @@
 module Reviewer
   # Handles running, benchmarking, and printing output for a single command
   class Runner
+    # Provides a structure interface for the results of running a command
     class Result
       EXIT_STATUS_CODES = {
         success: 0,
-        minor_issue: 1,
-        major_issue: 2,
         cannot_execute: 126,
         executable_not_found: 127,
         terminated: 130
@@ -27,6 +26,10 @@ module Reviewer
 
       def exit_status
         status.exitstatus
+      end
+
+      def rerunnable?
+        exit_status < EXIT_STATUS_CODES[:cannot_execute]
       end
 
       def success?(max_exit_status: EXIT_STATUS_CODES[:success])

@@ -4,6 +4,14 @@ require 'test_helper'
 
 module Reviewer
   class RunnerTest < MiniTest::Test
+    def setup
+      Reviewer.logger.level = 1
+    end
+
+    def teardown
+      Reviewer.logger.level = 4
+    end
+
     def test_run_exits_cleanly_and_displays_tool_name
       tool = Tool.new(:minimum_viable_tool)
       runner = Runner.new(tool, :review)
@@ -46,6 +54,33 @@ module Reviewer
 
         assert_equal first_run_seed, second_run_seed
       end
+    end
+
+    def test_runs_prepare_step_when_available_and_not_recently_run
+      ensure_test_configuration!
+      Reviewer.history.reset!
+      tool = Tool.new(:list)
+      runner = Runner.new(tool, :review)
+
+      out, _err = capture_subprocess_io do
+        runner.run
+      end
+      assert_match(/preparation/i, out)
+    end
+
+    def test_skips_prepare_step_when_recently_run
+      ensure_test_configuration!
+      Reviewer.history.reset!
+      tool = Tool.new(:list)
+      runner = Runner.new(tool, :review)
+
+      # Make sure we've recorded that it ran recently
+      tool.last_prepared_at = Time.current.utc
+
+      out, _err = capture_subprocess_io do
+        runner.run
+      end
+      refute_match(/preparation/i, out)
     end
   end
 end

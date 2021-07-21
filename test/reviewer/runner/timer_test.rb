@@ -34,11 +34,15 @@ module Reviewer
       end
 
       def test_exposes_prep_percent
-        timer = Timer.new(elapsed: 2)
-        assert_equal 0, timer.prep_percent
-
         timer = Timer.new(elapsed: 2, prep: 1)
         assert_equal 50, timer.prep_percent
+      end
+
+      def test_raises_error_on_prep_percent_without_prep
+        timer = Timer.new(elapsed: 2)
+        assert_raises(Timer::NoRecordedPreparationError) do
+          timer.prep_percent
+        end
       end
     end
   end

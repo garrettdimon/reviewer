@@ -18,19 +18,23 @@ module Reviewer
 
     def test_prints_version_information
       args = %w[-v]
+      # rubocop:disable Lint/SuppressedException
       out, _err = capture_subprocess_io do
         Arguments.new(args)
       rescue SystemExit
       end
+      # rubocop:enable Lint/SuppressedException
       assert_match(/#{Reviewer::VERSION}/i, out)
     end
 
     def test_prints_help_information
       args = %w[-h]
+      # rubocop:disable Lint/SuppressedException
       out, _err = capture_subprocess_io do
         Arguments.new(args)
       rescue SystemExit
       end
+      # rubocop:enable Lint/SuppressedException
       assert_match(/a list of comma/i, out)
     end
 

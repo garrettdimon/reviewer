@@ -11,9 +11,7 @@ module Reviewer
   class Runner
     attr_accessor :tool, :command_type
 
-    attr_reader :last_command_run,
-                :timer,
-                :result
+    attr_reader :last_command_run, :timer, :result
 
     def initialize(tool, command_type)
       @tool = tool
@@ -95,7 +93,7 @@ module Reviewer
         # It's a batch, so just show the benchark...
         output.benchmark
       elsif existing_results?
-        # It's not a batch, so if we captured results, show them...
+        # It's not a batch, so if we captured results, it's for a solo tool, show the results...
         output.current_results
       else
         # It's not a batch, but we don't have results, so we need to run again
@@ -105,23 +103,26 @@ module Reviewer
 
     def handle_failure
       if result.executable_not_found?
+        # Help them install it so it will work...
         output.missing_executable_guidance
       elsif existing_results?
+        # We captured output, so display it...
         output.exit_status
         output.current_results
-      elsif result.terminated?
-        output.exit_status
-      elsif result.cannot_execute?
-        output.exit_status
+        output.syntax_guidance
       else
+        # Something went wrong, so re-run the command without suppression to show the output...
         output.exit_status
         rerun_verbosely
       end
     end
 
     def rerun_verbosely
+      return unless result.rerunnable?
+
       # We're expicitly re-running it so we can show the output. So we explicitly use :no_silence
-      output.raw { tool.review_command(:no_silence, seed: seed) }
+      cmd = tool.review_command(:no_silence, seed: seed)
+      output.raw(cmd)
     end
   end
 end

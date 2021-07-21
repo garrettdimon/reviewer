@@ -113,7 +113,8 @@ module Reviewer
     end
 
     def benchmark_suite(&block)
-      logger.total_time(Benchmark.realtime(&block))
+      elapsed_time = Benchmark.realtime(&block)
+      logger.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
     end
   end
 end

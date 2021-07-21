@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'colorize'
-
 module Reviewer
   # Clean formatter for logging to $stdout
   class StandardOutFormatter < ::Logger::Formatter
@@ -27,53 +25,6 @@ module Reviewer
     def initialize(formatter = StandardOutFormatter.new)
       super($stdout)
       @formatter = formatter
-    end
-
-    def running(tool)
-      info "\n#{tool.name}".bold + ' · '.light_black + tool.description
-    end
-
-    def command(cmd)
-      info "\nNow running:"
-      info cmd.to_s.light_black
-    end
-
-    def last_command(cmd)
-      info "\nReviewer ran:"
-      info cmd.to_s.light_black
-    end
-
-    def divider
-      info # Blank Lane
-      info DIVIDER.light_black
-    end
-
-    def output
-      divider
-      yield
-      divider
-    end
-
-    def success(timer)
-      message = SUCCESS.green.bold + " #{timer.elapsed_seconds}s".green
-      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prep?
-
-      info message
-    end
-
-    def failure(message)
-      error "#{FAILURE} #{message}".red.bold
-    end
-
-    def total_time(elapsed_time)
-      info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
-    end
-
-    def guidance(summary, details)
-      return unless details.present?
-
-      info "\n#{summary}" if summary
-      info details.to_s.light_black if details
     end
   end
 end

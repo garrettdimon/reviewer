@@ -5,10 +5,8 @@ require 'test_helper'
 module Reviewer
   class Runner
     class ResultTest < MiniTest::Test
-      MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true)
-
       def setup
-        @process_status = MockProcessStatus.new(exitstatus: 0, pid: 12345)
+        @process_status = MockProcessStatus.new(exitstatus: 0, pid: 123)
       end
 
       def test_exposes_exit_status
@@ -41,16 +39,6 @@ module Reviewer
       end
 
       def test_recognizes_common_exit_statuses
-        @process_status.exitstatus = Result::EXIT_STATUS_CODES[:minor_issue]
-        result = Result.new('Standard Out', '', @process_status)
-        refute result.success?
-        assert result.minor_issue?
-
-        @process_status.exitstatus = Result::EXIT_STATUS_CODES[:major_issue]
-        result = Result.new('Standard Out', '', @process_status)
-        refute result.success?
-        assert result.major_issue?
-
         @process_status.exitstatus = Result::EXIT_STATUS_CODES[:cannot_execute]
         result = Result.new('Standard Out', '', @process_status)
         refute result.success?
