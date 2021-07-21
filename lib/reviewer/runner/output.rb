@@ -23,7 +23,7 @@ module Reviewer
       end
 
       def current_tool
-        running(tool)
+        logger.info "\n#{tool.name}".bold + ' · '.light_black + tool.description
       end
 
       def benchmark
@@ -33,7 +33,8 @@ module Reviewer
       def raw(current_command = nil)
         current_command ||= command
 
-        now_running(current_command)
+        logger.info "\nNow running:"
+        logger.info current_command.light_black
         divider
         logger.info # Blank Lane
         system(current_command)
@@ -51,27 +52,29 @@ module Reviewer
         failure("Missing executable for '#{tool}'")
         last_command(command)
         guidance('Try installing the tool:', tool.installation_command)
-        guidance('Read the installation guidance:', tool.settings.links&.fetch(:install, nil))
+        guidance('Read the installation guidance:', tool_link(:install))
       end
 
       def syntax_guidance
-        guidance('Syntax for Selectively Ignoring a Rule:', tool.settings.links&.fetch(:ignore_syntax, nil))
-        guidance('Syntax for Disabling Rules:', tool.settings.links&.fetch(:disable_syntax, nil))
+        guidance('Selectively Ignore a Rule:', tool_link(:ignore_syntax))
+        guidance('Fully Disable a Rule:', tool_link(:disable_syntax))
       end
 
       def exit_status
         failure("Exit Status #{result.exit_status}")
       end
 
-      private
+      def guidance(summary, details)
+        return unless details.present?
 
-      def running(tool)
-        logger.info "\n#{tool.name}".bold + ' · '.light_black + tool.description
+        logger.info "\n#{summary}"
+        logger.info details.to_s.light_black
       end
 
-      def now_running(cmd)
-        logger.info "\nNow running:"
-        logger.info cmd.to_s.light_black
+      private
+
+      def tool_link(key)
+        tool.settings.links&.fetch(key, nil)
       end
 
       def last_command(cmd)
@@ -93,13 +96,6 @@ module Reviewer
 
       def failure(message)
         logger.error "#{FAILURE} #{message}".red.bold
-      end
-
-      def guidance(summary, details)
-        return unless details.present?
-
-        logger.info "\n#{summary}" if summary
-        logger.info details.to_s.light_black if details
       end
     end
   end

@@ -17,11 +17,6 @@ module Reviewer
 
   # Logger for $stdout
   class Logger < ::Logger
-    SUCCESS = 'Success'
-    FAILURE = 'Failure ·'
-    PROMPT  = '$'
-    DIVIDER = ('-' * 60).to_s
-
     def initialize(formatter = StandardOutFormatter.new)
       super($stdout)
       @formatter = formatter
