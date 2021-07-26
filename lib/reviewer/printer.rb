@@ -16,7 +16,7 @@ module Reviewer
   end
 
   # Logger for $stdout
-  class Logger < ::Logger
+  class Printer < ::Logger
     def initialize(formatter = StandardOutFormatter.new)
       super($stdout)
       @formatter = formatter

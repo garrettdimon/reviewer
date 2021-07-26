@@ -21,20 +21,20 @@ module Reviewer
   class Arguments
     attr_accessor :options
 
-    attr_reader :logger
+    attr_reader :printer
 
-    def initialize(options = ARGV, logger: Logger.new)
+    def initialize(options = ARGV, printer: Reviewer.printer)
       @options = Slop.parse options do |opts|
         opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
         opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
 
         opts.on '-v', '--version', 'print the version' do
-          logger.info VERSION
+          printer.info VERSION
           exit
         end
 
         opts.on '-h', '--help', 'print the help' do
-          logger.info opts
+          printer.info opts
           exit
         end
       end

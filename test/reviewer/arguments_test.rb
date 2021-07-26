@@ -20,7 +20,7 @@ module Reviewer
       args = %w[-v]
       # rubocop:disable Lint/SuppressedException
       out, _err = capture_subprocess_io do
-        Arguments.new(args)
+        Arguments.new(args, printer: Printer.new)
       rescue SystemExit
       end
       # rubocop:enable Lint/SuppressedException
@@ -31,7 +31,7 @@ module Reviewer
       args = %w[-h]
       # rubocop:disable Lint/SuppressedException
       out, _err = capture_subprocess_io do
-        Arguments.new(args)
+        Arguments.new(args, printer: Printer.new)
       rescue SystemExit
       end
       # rubocop:enable Lint/SuppressedException

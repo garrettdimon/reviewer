@@ -9,8 +9,8 @@ require_relative 'reviewer/configuration'
 require_relative 'reviewer/format'
 require_relative 'reviewer/history'
 require_relative 'reviewer/loader'
-require_relative 'reviewer/logger'
 require_relative 'reviewer/output'
+require_relative 'reviewer/printer'
 require_relative 'reviewer/review'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/tool'
@@ -59,9 +59,9 @@ module Reviewer
     # The primary output method for Reviewer to consistently display success/failure details for a
     # unique run of each tool and the collective summary when relevant.
     #
-    # @return [Reviewer::Logger] prints formatted output to the command line.
-    def logger
-      @logger ||= configuration.logger
+    # @return [Reviewer::Printer] prints formatted output to the command line.
+    def printer
+      @printer ||= configuration.printer
     end
 
     # A file store for sharing information across runs
@@ -125,7 +125,7 @@ module Reviewer
 
     def benchmark_suite(&block)
       elapsed_time = Benchmark.realtime(&block)
-      logger.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
+      printer.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
     end
   end
 end

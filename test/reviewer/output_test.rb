@@ -5,8 +5,7 @@ require 'test_helper'
 module Reviewer
   class OutputTest < MiniTest::Test
     def setup
-      @logger = Logger.new
-      @output = Output.new(logger: @logger)
+      @output = Output.new(printer: Printer.new)
     end
 
     def test_tool_summary

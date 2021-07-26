@@ -13,12 +13,12 @@ module Reviewer
     DEFAULT_CONFIG_LOCATION = "#{DEFAULT_PATH}/#{DEFAULT_CONFIG_FILE_NAME}"
     DEFAULT_HISTORY_LOCATION = "#{DEFAULT_PATH}/#{DEFAULT_HISTORY_FILE_NAME}"
 
-    attr_accessor :file, :history_file, :logger
+    attr_accessor :file, :history_file, :printer
 
     def initialize
       @file = Pathname(DEFAULT_CONFIG_LOCATION)
       @history_file = Pathname(DEFAULT_HISTORY_LOCATION)
-      @logger = Logger.new
+      @printer = ::Reviewer::Printer.new
     end
   end
 end

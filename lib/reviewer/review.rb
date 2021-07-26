@@ -51,19 +51,19 @@ module Reviewer
       exit_status
     end
 
-    def needs_prep?
-      tool.prepare_command? && tool.stale?
-    end
-
     def success?
       result.success?(max_exit_status: tool.max_exit_status)
+    end
+
+    private
+
+    def needs_prep?
+      tool.prepare_command? && tool.stale?
     end
 
     def batch?
       batch
     end
-
-    private
 
     def run_quietly_and_benchmark
       runner.tap do |runner|

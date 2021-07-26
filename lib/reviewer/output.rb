@@ -3,40 +3,40 @@
 require 'colorize'
 
 module Reviewer
-  # Friendly API for printing runner-based output to the console
+  # Friendly API for printing nicely-formatted output to the console
   class Output
     SUCCESS = 'Success'
     FAILURE = 'Failure ·'
     DIVIDER = ('-' * 60).to_s
 
-    attr_reader :logger
+    attr_reader :printer
 
-    def initialize(logger: Reviewer.logger)
-      @logger = logger
+    def initialize(printer: Reviewer.printer)
+      @printer = printer
     end
 
     def blank_line
-      logger.info
+      printer.info
     end
 
     def divider
       blank_line
-      logger.info DIVIDER.light_black
+      printer.info DIVIDER.light_black
       blank_line
     end
 
     def tool_summary(tool)
-      logger.info "\n#{tool.name}".bold + ' · '.light_black + tool.description
+      printer.info "\n#{tool.name}".bold + ' · '.light_black + tool.description
     end
 
     def current_command(command)
-      logger.info "\nNow running:"
-      logger.info command.light_black
+      printer.info "\nNow running:"
+      printer.info command.light_black
     end
 
     def last_command(command)
-      logger.info "\nReviewer ran:"
-      logger.info command.to_s.light_black
+      printer.info "\nReviewer ran:"
+      printer.info command.to_s.light_black
     end
 
     def raw_results(command)
@@ -47,7 +47,7 @@ module Reviewer
 
     def results_block(&block)
       divider
-      logger.info(&block)
+      printer.info(&block)
       divider
     end
 
@@ -59,24 +59,24 @@ module Reviewer
       message = SUCCESS.green.bold + " #{timer.elapsed_seconds}s".green
       message += " (#{timer.prep_percent}% preparation)".yellow if timer.prep?
 
-      logger.info message
+      printer.info message
     end
 
     def failure(details)
-      logger.error "#{FAILURE} #{details}".red.bold
+      printer.error "#{FAILURE} #{details}".red.bold
     end
 
     def unrecoverable(details)
-      logger.error 'An Uncrecoverable Error Occured'.red.bold
-      logger.error details
+      printer.error 'An Uncrecoverable Error Occured'.red.bold
+      printer.error details
     end
 
     def guidance(summary, details)
       return unless details.present?
 
       blank_line
-      logger.info summary
-      logger.info details.to_s.light_black
+      printer.info summary
+      printer.info details.to_s.light_black
     end
 
     def missing_executable_guidance(tool:, command:)

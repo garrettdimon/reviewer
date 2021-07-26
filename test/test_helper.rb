@@ -29,9 +29,9 @@ def ensure_test_configuration!
     # Use a test location for the history file so it doesn't overwrite the primary history file
     config.history_file = Reviewer::Configuration::DEFAULT_HISTORY_LOCATION.sub('.yml', '_test.yml')
 
-    # By default, send all the logging to dev/null. If there's an explicit need to test the values in
+    # By default, send all the output to dev/null. If there's an explicit need to test the values in
     # a given test, it can be overriden with the Reviewer logger and use capture_subprocess_io
-    config.logger = ::Logger.new(File::NULL)
+    config.printer = ::Logger.new(File::NULL)
   end
 end
 
