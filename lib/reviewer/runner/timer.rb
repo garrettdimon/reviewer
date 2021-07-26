@@ -9,7 +9,7 @@ module Reviewer
     class Timer
       class NoRecordedPreparationError < StandardError; end
 
-      attr_accessor :prep, :elapsed
+      attr_accessor :elapsed, :prep
 
       def initialize(elapsed: nil, prep: nil)
         @prep = prep

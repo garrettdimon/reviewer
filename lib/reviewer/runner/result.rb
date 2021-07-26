@@ -16,16 +16,16 @@ module Reviewer
         executable_not_found: "can't find executable"
       }.freeze
 
-      attr_reader :stdout, :stderr, :status
+      attr_accessor :stdout, :stderr, :exit_status
 
-      def initialize(stdout, stderr, status)
+      def initialize(stdout = nil, stderr = nil, status = nil)
         @stdout = stdout
         @stderr = stderr
-        @status = status
+        @exit_status = status&.exitstatus
       end
 
-      def exit_status
-        status.exitstatus
+      def any?
+        !stdout.blank? || !stderr.blank?
       end
 
       def rerunnable?
@@ -36,22 +36,13 @@ module Reviewer
         exit_status <= max_exit_status
       end
 
-      def minor_issue?
-        exit_status == EXIT_STATUS_CODES[:minor_issue]
-      end
-
-      def major_issue?
-        exit_status == EXIT_STATUS_CODES[:major_issue]
-      end
-
       def cannot_execute?
         exit_status == EXIT_STATUS_CODES[:cannot_execute]
       end
 
       def executable_not_found?
-        sym = :executable_not_found
-
-        exit_status == EXIT_STATUS_CODES[sym] || stderr.include?(STD_ERROR_STRINGS[sym])
+        exit_status == EXIT_STATUS_CODES[:executable_not_found] ||
+          stderr&.include?(STD_ERROR_STRINGS[:executable_not_found])
       end
 
       def terminated?

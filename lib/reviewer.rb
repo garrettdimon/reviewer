@@ -2,12 +2,16 @@
 
 require 'active_support/core_ext/string'
 require 'benchmark'
+require 'dead_end'
 
 require_relative 'reviewer/arguments'
 require_relative 'reviewer/configuration'
+require_relative 'reviewer/format'
 require_relative 'reviewer/history'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/logger'
+require_relative 'reviewer/output'
+require_relative 'reviewer/review'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
@@ -57,7 +61,7 @@ module Reviewer
     #
     # @return [Reviewer::Logger] prints formatted output to the command line.
     def logger
-      @logger ||= Logger.new
+      @logger ||= configuration.logger
     end
 
     # A file store for sharing information across runs
@@ -86,6 +90,16 @@ module Reviewer
       yield(configuration)
     end
 
+    # Convenience method to know whether the current Reviewer run is running multiple tools or just
+    # a single tool. When running multiple, it does its best to suppress 'successful' output so as
+    # to not overhwelm you. But when it's just a single tool, it assumes you want to see the full
+    # output in order to act on it.
+    #
+    # @return [Boolean] true if more than one tool being run with the current instance
+    def batch?
+      tools.current.size > 1
+    end
+
     private
 
     # Provides a consistent approach to running and benchmarking commmands and preventing further
@@ -100,14 +114,11 @@ module Reviewer
       system('clear') if clear_screen
       results = {}
       benchmark_suite do
-        tools.current.each do |tool|
-          runner = Runner.new(tool, command_type)
-          exit_status = runner.run
-          results[tool.key] = exit_status
-
-          # If the tool fails, stop running other tools
-          break unless exit_status <= tool.max_exit_status
-        end
+        results = case command_type
+                  when :review then Review.perform_with(tools.current)
+                  when :format then Format.perform_with(tools.current)
+                  else raise UnrecognizedCommandError
+                  end
       end
       results
     end
