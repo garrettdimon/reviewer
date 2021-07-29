@@ -11,8 +11,12 @@ module Reviewer
 
     attr_reader :printer
 
-    def initialize(printer: Reviewer.printer)
+    def initialize(printer: Reviewer.configuration.printer)
       @printer = printer
+    end
+
+    def info(message)
+      printer.info message
     end
 
     def blank_line
@@ -80,7 +84,7 @@ module Reviewer
     end
 
     def missing_executable_guidance(tool:, command:)
-      installation_command = tool.installation_command
+      installation_command = Command.new(tool, :install, :no_silence).string
       install_link = tool.settings.links&.fetch(:install, nil)
 
       failure("Missing executable for '#{tool}'")

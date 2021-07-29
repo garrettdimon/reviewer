@@ -17,25 +17,29 @@ module Reviewer
     end
 
     def test_prints_version_information
+      allow_printing_output!
       args = %w[-v]
       # rubocop:disable Lint/SuppressedException
       out, _err = capture_subprocess_io do
-        Arguments.new(args, printer: Printer.new)
+        Arguments.new(args)
       rescue SystemExit
       end
       # rubocop:enable Lint/SuppressedException
       assert_match(/#{Reviewer::VERSION}/i, out)
+      ensure_test_configuration!
     end
 
     def test_prints_help_information
+      allow_printing_output!
       args = %w[-h]
       # rubocop:disable Lint/SuppressedException
       out, _err = capture_subprocess_io do
-        Arguments.new(args, printer: Printer.new)
+        Arguments.new(args)
       rescue SystemExit
       end
       # rubocop:enable Lint/SuppressedException
       assert_match(/a list of comma/i, out)
+      ensure_test_configuration!
     end
 
     def test_parses_multiple_tags_from_command_line

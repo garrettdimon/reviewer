@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module Reviewer
-  # Handles running, benchmarking, and printing output for a single command
-  class Runner
+  class Shell
     # Provides a structure interface for the results of running a command
     class Result
       EXIT_STATUS_CODES = {

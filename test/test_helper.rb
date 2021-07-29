@@ -19,6 +19,14 @@ require 'minitest/color'
 # Makes it easy to mock process statuses
 MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true)
 
+# In some tests, we want to be able to capture the output and ensure it's the output expected. This
+# removes the Null logger so we can see and capture the output.
+def allow_printing_output!
+  Reviewer.configure do |config|
+    config.printer = ::Reviewer::Printer.new
+  end
+end
+
 # Ensure it's using the test configuration file since some tests intentionally
 # change it to test how it recovers when misconfigured
 def ensure_test_configuration!
@@ -30,7 +38,8 @@ def ensure_test_configuration!
     config.history_file = Reviewer::Configuration::DEFAULT_HISTORY_LOCATION.sub('.yml', '_test.yml')
 
     # By default, send all the output to dev/null. If there's an explicit need to test the values in
-    # a given test, it can be overriden with the Reviewer logger and use capture_subprocess_io
+    # a given test, it can be overriden with the Reviewer printer configuration and use
+    # `capture_subprocess_io` to record the output to stdout
     config.printer = ::Logger.new(File::NULL)
   end
 end

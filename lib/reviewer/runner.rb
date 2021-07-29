@@ -1,65 +1,115 @@
 # frozen_string_literal: true
 
-require 'open3'
-
-require_relative 'runner/result'
-require_relative 'runner/timer'
-
 module Reviewer
-  # Handles running, timing, and capturing results for a command
   class Runner
-    class NilCommandError < ArgumentError; end
+    include Conversions
 
-    attr_accessor :command, :preparation
+    class UnrecognizedCommandError < ArgumentError; end
 
-    attr_reader :timer, :result
+    attr_reader :tool,
+                :command_type,
+                :verbosity,
+                :shell,
+                :output
 
-    delegate :exit_status, to: :result
+    delegate :result,
+             :run,
+             to: :command
 
-    def initialize(command: nil, preparation: nil)
-      @command = command
-      @preparation = preparation
-      @timer = Timer.new
-      @result = Result.new
+    delegate :result,
+             :seed,
+             :timer,
+             to: :shell
+
+    delegate :exit_status,
+             :rerunnable?,
+             to: :result
+
+    def initialize(tool, command_type, verbosity)
+      @tool         = Tool(tool)
+      @command_type = command_type.to_sym
+      @verbosity    = Verbosity(verbosity)
+      @shell        = Shell.new
+      @output       = Output.new
     end
 
-    def run_and_benchmark
-      timer.record_elapsed do
-        prepare
-        perform
-      end
-    end
-
-    def direct(one_off_command)
-      result.exit_status = system(one_off_command) ? 0 : 1
-    end
-
-    # Generates a seed that can be re-used across runs so that the results are consistent across
-    # related runs for tools that would otherwise change the seed automatically every run.
-    # Since not all tools will use the seed, there's no need to generate it in the initializer
-    #
-    # @return [Integer] a random integer to pass to tools that use seeds
-    def seed
-      @seed ||= Random.rand(100_000)
+    def success?
+      result.success?(max_exit_status: tool.max_exit_status)
     end
 
     private
 
-    def run_and_capture_results(command)
-      captured_results = Open3.capture3(command)
-      @result = Result.new(*captured_results)
+    def command
+      @command ||= case command_type
+                   when :install then Commands::Install.new(tool, verbosity)
+                   when :prepare then Commands::Prepare.new(tool, verbosity)
+                   when :review  then Commands::Review.new(tool, verbosity)
+                   when :format  then Commands::Format.new(tool, verbosity)
+                   else raise UnrecognizedCommandError, "'#{command_type}'"
+                   end
     end
 
-    def prepare
-      return unless preparation.present?
-
-      timer.record_prep { run_and_capture_results(preparation) }
+    def needs_prep?
+      tool.prepare_command? && tool.stale?
     end
 
-    def perform
-      raise UndefinedCommandError, 'You must specify a command to run' unless command.present?
+    def run_directly
+      output.tool_summary(tool)
 
-      run_and_capture_results(command)
+      output.current_command(command)
+      output.divider
+
+      # Using the shell here would capture the output as plain text and strip it of any color or
+      # or special characters. So it runs the full command with no quiet optiosn directly in its
+      # full glory and leaves the tool's own output formatting in tact
+      shell.direct(command)
+
+      output.divider
+      output.last_command(command)
+
+      show_guidance
+
+      exit_status
+    end
+
+    def show_current_tool
+      output.tool_summary(tool)
+    end
+
+    def show_result
+      if success?
+        output.success(timer)
+      else
+        output.failure("Exit Status #{exit_status} · #{result}")
+        show_guidance
+      end
+    end
+
+    def show_guidance
+      if result.executable_not_found?
+        show_missing_executable_guidance
+      elsif result.cannot_execute?
+        show_unrecoverable_guidance
+      else
+        show_syntax_guidance
+      end
+    end
+
+    def show_missing_executable_guidance
+      return unless result.executable_not_found?
+
+      output.missing_executable_guidance(tool: tool, command: shell.command)
+    end
+
+    def show_unrecoverable_guidance
+      output.unrecoverable(result.stderr)
+    end
+
+    def show_syntax_guidance
+      output.syntax_guidance(
+        ignore_link: tool.settings.links[:ignore_syntax],
+        disable_link: tool.settings.links[:disable_syntax]
+      )
     end
   end
 end

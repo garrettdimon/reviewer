@@ -3,8 +3,7 @@
 require 'open3'
 
 module Reviewer
-  # Handles running, benchmarking, and printing output for a single command
-  class Runner
+  class Shell
     # Provides a structured interface for measuring realtime elapsed while running comamnds
     class Timer
       class NoRecordedPreparationError < StandardError; end

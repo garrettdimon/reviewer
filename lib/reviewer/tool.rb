@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'tool/command'
-require_relative 'tool/env'
-require_relative 'tool/flags'
 require_relative 'tool/settings'
-require_relative 'tool/verbosity'
 
 module Reviewer
   # Provides an instance of a specific tool
@@ -17,6 +13,7 @@ module Reviewer
     delegate :name,
              :description,
              :tags,
+             :commands,
              :key,
              :enabled?,
              :disabled?,
@@ -62,37 +59,37 @@ module Reviewer
     end
     alias :== eql?
 
-    def installation_command(verbosity_level = :no_silence)
-      return nil unless install_command?
+    # def installation_command(verbosity_level = :no_silence)
+    #   return nil unless install_command?
 
-      command_string(:install, verbosity_level: verbosity_level)
-    end
+    #   command_string(:install, verbosity_level: verbosity_level)
+    # end
 
-    def preparation_command(verbosity_level = :total_silence)
-      return nil unless prepare_command?
+    # def preparation_command(verbosity_level = :total_silence)
+    #   return nil unless prepare_command?
 
-      command_string(:prepare, verbosity_level: verbosity_level)
-    end
+    #   command_string(:prepare, verbosity_level: verbosity_level)
+    # end
 
-    def review_command(verbosity_level = :total_silence, seed: nil)
-      cmd = command_string(:review, verbosity_level: verbosity_level)
+    # def review_command(verbosity_level = :total_silence, seed: nil)
+    #   cmd = command_string(:review, verbosity_level: verbosity_level)
 
-      return cmd unless cmd.include?(SEED_SUBSTITUTION_VALUE)
+    #   return cmd unless cmd.include?(SEED_SUBSTITUTION_VALUE)
 
-      Reviewer.history.set(key, :last_seed, seed)
-      cmd.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
-    end
+    #   Reviewer.history.set(key, :last_seed, seed)
+    #   cmd.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
+    # end
 
-    def format_command(verbosity_level = :no_silence)
-      return nil unless format_command?
+    # def format_command(verbosity_level = :no_silence)
+    #   return nil unless format_command?
 
-      command_string(:format, verbosity_level: verbosity_level)
-    end
+    #   command_string(:format, verbosity_level: verbosity_level)
+    # end
 
-    private
+    # private
 
-    def command_string(command_type, verbosity_level: :no_silence)
-      Command.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
-    end
+    # def command_string(command_type, verbosity_level: :no_silence)
+    #   Command::Text.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
+    # end
   end
 end

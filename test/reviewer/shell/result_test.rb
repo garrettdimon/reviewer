@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class Runner
+  class Shell
     class ResultTest < MiniTest::Test
       def setup
         @process_status = MockProcessStatus.new(exitstatus: 0, pid: 123)

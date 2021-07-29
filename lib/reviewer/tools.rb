@@ -3,6 +3,8 @@
 module Reviewer
   # Provides convenient access to subsets of configured tools
   class Tools
+    include Enumerable
+
     def initialize(tags: nil, tool_names: nil)
       @tags       = tags
       @tool_names = tool_names

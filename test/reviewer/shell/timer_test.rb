@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class Runner
+  class Shell
     class TimerTest < MiniTest::Test
       def test_records_prep_time
         timer = Timer.new

@@ -4,21 +4,27 @@ require 'active_support/core_ext/string'
 require 'benchmark'
 require 'dead_end'
 
+require_relative 'reviewer/conversions'
+
 require_relative 'reviewer/arguments'
+require_relative 'reviewer/batch'
+require_relative 'reviewer/command'
+require_relative 'reviewer/commands'
 require_relative 'reviewer/configuration'
-require_relative 'reviewer/format'
 require_relative 'reviewer/history'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/output'
 require_relative 'reviewer/printer'
-require_relative 'reviewer/review'
 require_relative 'reviewer/runner'
+require_relative 'reviewer/shell'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
 require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
 module Reviewer
+  include Conversions
+
   class Error < StandardError; end
 
   class << self
@@ -59,9 +65,9 @@ module Reviewer
     # The primary output method for Reviewer to consistently display success/failure details for a
     # unique run of each tool and the collective summary when relevant.
     #
-    # @return [Reviewer::Printer] prints formatted output to the command line.
-    def printer
-      @printer ||= configuration.printer
+    # @return [Reviewer::Output] prints formatted output to the console.
+    def output
+      @output ||= Output.new
     end
 
     # A file store for sharing information across runs
@@ -90,16 +96,6 @@ module Reviewer
       yield(configuration)
     end
 
-    # Convenience method to know whether the current Reviewer run is running multiple tools or just
-    # a single tool. When running multiple, it does its best to suppress 'successful' output so as
-    # to not overhwelm you. But when it's just a single tool, it assumes you want to see the full
-    # output in order to act on it.
-    #
-    # @return [Boolean] true if more than one tool being run with the current instance
-    def batch?
-      tools.current.size > 1
-    end
-
     private
 
     # Provides a consistent approach to running and benchmarking commmands and preventing further
@@ -112,20 +108,17 @@ module Reviewer
     # @return [Hash] the exit status (in integer format) for each command run
     def perform(command_type, clear_screen: false)
       system('clear') if clear_screen
-      results = {}
-      benchmark_suite do
-        results = case command_type
-                  when :review then Review.perform_with(tools.current)
-                  when :format then Format.perform_with(tools.current)
-                  else raise UnrecognizedCommandError
-                  end
-      end
-      results
+
+      results = benchmark_suite { Batch.run(command_type, tools.current) }
     end
 
+    # Records and prints the total runtime of a block
+    # @param &block [type] section of code to be timed
+    #
+    # @return [void] prints the elapsed time
     def benchmark_suite(&block)
       elapsed_time = Benchmark.realtime(&block)
-      printer.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
+      output.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
     end
   end
 end
