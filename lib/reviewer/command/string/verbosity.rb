@@ -11,7 +11,7 @@ module Reviewer
 
         attr_reader :flag, :level
 
-        def initialize(flag, level: :tool_silence)
+        def initialize(flag, level: Reviewer::Command::Verbosity::TOOL_SILENCE)
           @flag = String(flag)
           @level = Verbosity(level)
         end

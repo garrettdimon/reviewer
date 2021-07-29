@@ -4,6 +4,8 @@ module Reviewer
   class Command
     # Defines the possible verbosity options for running commands
     class Verbosity
+      include Comparable
+
       class InvalidLevelError < ArgumentError; end
 
       # Use the quiet flag and send everything to dev/null.
@@ -34,6 +36,10 @@ module Reviewer
         @level = level.to_sym
 
         verify_level!
+      end
+
+      def <=>(other)
+        level <=> other.level
       end
 
       def to_s

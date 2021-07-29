@@ -4,16 +4,16 @@ module Reviewer
   class Runner
     include Conversions
 
-    class UnrecognizedCommandError < ArgumentError; end
-
     attr_reader :tool,
                 :command_type,
                 :verbosity,
                 :shell,
                 :output
 
-    delegate :result,
-             :run,
+    delegate :needs_prep?,
+             to: :tool
+
+    delegate :run,
              to: :command
 
     delegate :result,
@@ -47,10 +47,6 @@ module Reviewer
                    when :format  then Commands::Format.new(tool, verbosity)
                    else raise UnrecognizedCommandError, "'#{command_type}'"
                    end
-    end
-
-    def needs_prep?
-      tool.prepare_command? && tool.stale?
     end
 
     def run_directly

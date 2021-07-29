@@ -5,7 +5,8 @@ require_relative 'tool/settings'
 module Reviewer
   # Provides an instance of a specific tool
   class Tool
-    SEED_SUBSTITUTION_VALUE = '$SEED'
+    include Comparable
+
     SIX_HOURS_IN_SECONDS = 60 * 60 * 6
 
     attr_reader :settings, :history
@@ -18,9 +19,6 @@ module Reviewer
              :enabled?,
              :disabled?,
              :max_exit_status,
-             :prepare_command?,
-             :install_command?,
-             :format_command?,
              :install_link?,
              to: :settings
 
@@ -40,6 +38,30 @@ module Reviewer
       key
     end
 
+    def needs_prep?
+      preparable? && stale?
+    end
+
+    def has_command?(command_type)
+      commands.key?(command_type) && commands[command_type].present?
+    end
+
+    def installable?
+      has_command?(:install)
+    end
+
+    def preparable?
+      has_command?(:prepare)
+    end
+
+    def reviewable?
+      has_command?(:review)
+    end
+
+    def formattable?
+      has_command?(:format)
+    end
+
     def last_prepared_at
       Reviewer.history.get(key, :last_prepared_at)
     end
@@ -49,7 +71,7 @@ module Reviewer
     end
 
     def stale?
-      return false unless prepare_command?
+      return false unless preparable?
 
       last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
     end
@@ -59,19 +81,19 @@ module Reviewer
     end
     alias :== eql?
 
-    # def installation_command(verbosity_level = :no_silence)
+    # def installation_command(verbosity_level = Verbosity::NO_SILENCE)
     #   return nil unless install_command?
 
     #   command_string(:install, verbosity_level: verbosity_level)
     # end
 
-    # def preparation_command(verbosity_level = :total_silence)
+    # def preparation_command(verbosity_level = Verbosity::TOTAL_SILENCE)
     #   return nil unless prepare_command?
 
     #   command_string(:prepare, verbosity_level: verbosity_level)
     # end
 
-    # def review_command(verbosity_level = :total_silence, seed: nil)
+    # def review_command(verbosity_level = Verbosity::TOTAL_SILENCE, seed: nil)
     #   cmd = command_string(:review, verbosity_level: verbosity_level)
 
     #   return cmd unless cmd.include?(SEED_SUBSTITUTION_VALUE)
@@ -80,7 +102,7 @@ module Reviewer
     #   cmd.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
     # end
 
-    # def format_command(verbosity_level = :no_silence)
+    # def format_command(verbosity_level = Verbosity::NO_SILENCE)
     #   return nil unless format_command?
 
     #   command_string(:format, verbosity_level: verbosity_level)
@@ -88,8 +110,8 @@ module Reviewer
 
     # private
 
-    # def command_string(command_type, verbosity_level: :no_silence)
-    #   Command::Text.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
+    # def command_string(command_type, verbosity_level: Verbosity::NO_SILENCE)
+    #   Command::String.new(command_type, tool_settings: settings, verbosity_level: verbosity_level).to_s
     # end
   end
 end

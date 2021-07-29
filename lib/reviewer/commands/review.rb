@@ -8,7 +8,7 @@ module Reviewer
 
       attr_reader :tool
 
-      def initalize(tool, verbosity = :total_silence)
+      def initalize(tool, verbosity = Verbosity::TOTAL_SILENCE)
         @tool = tool
         @verbosity = Verbosity(verbosity)
       end
@@ -23,17 +23,24 @@ module Reviewer
       end
 
       def command
-        @command ||= Command.new(tool, :prepare, verbosity)
+        @command ||= Command.new(tool, :review, verbosity)
       end
 
       def to_s
-        if command.random_seed?
+        if seed_substitution?
           # Store the seed for reference
           Reviewer.history.set(tool.key, :last_seed, seed)
+
+          # Update the string with the memoized seed value
           command.string.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
         else
+          # Otherwise, the string is good as is
           command.string
         end
+      end
+
+      def seed_substitution?
+        command.string.include?(SEED_SUBSTITUTION_VALUE)
       end
 
       # Generates a seed that can be re-used across runs so that the results are consistent across

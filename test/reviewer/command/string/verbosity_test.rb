@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Command
-    class Text
+    class String
       class VerbosityTest < MiniTest::Test
         def setup
           @flag = '--quiet'

@@ -29,18 +29,6 @@ module Reviewer
         !disabled?
       end
 
-      def prepare_command?
-        commands.key?(:prepare) && commands[:prepare].present?
-      end
-
-      def install_command?
-        commands.key?(:install) && commands[:install].present?
-      end
-
-      def format_command?
-        commands.key?(:format) && commands[:format].present?
-      end
-
       def install_link?
         links.key?(:install) && links[:install].present?
       end

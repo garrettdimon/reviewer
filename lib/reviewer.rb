@@ -23,8 +23,6 @@ require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
 module Reviewer
-  include Conversions
-
   class Error < StandardError; end
 
   class << self

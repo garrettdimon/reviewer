@@ -16,41 +16,38 @@ module Reviewer
 
     attr_reader :tool, :type
 
-    attr_accessor :verbosity_level
+    attr_accessor :verbosity
 
-    delegate :commands, to: :tool
-
-    def initialize(tool, type, verbosity)
+    def initialize(tool, type, verbosity = Verbosity::TOTAL_SILENCE)
       @tool = Tool(tool)
       @type = type.to_sym
-      @verbosity_level ||= :total_silence
+      @verbosity = Verbosity(verbosity)
 
       verify_type!
     end
 
     def string
-      @string ||= Text.new(
+      @string ||= String.new(
         type,
         tool_settings: tool.settings,
-        verbosity_level: verbosity_level
+        verbosity: verbosity
       ).to_s
     end
+    alias to_s string
 
-    def random_seed?
-      string.include?(SEED_SUBSTITUTION_VALUE)
-    end
+    private
 
     def valid_type?
       TYPES.include?(type)
     end
 
-    def command_defined?
-      commands.key?(type) && commands[type].present?
+    def configured?
+      tool.has_command?(type)
     end
 
     def verify_type!
-      raise InvalidTypeError, "'#{type}' is not a supported command type. (Make sure it's not a typo.)" unless valid_type?
-      raise NotConfiguredError, "The '#{type}' command is not configured for #{tool.name}.  (Make sure it's not a typo.)" unless command_defined?
+      raise InvalidTypeError, "'#{type}' is not a supported command type." unless valid_type?
+      raise NotConfiguredError, "The '#{type}' command is not configured for #{tool.name}." unless configured?
     end
   end
 end

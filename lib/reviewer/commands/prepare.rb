@@ -8,7 +8,7 @@ module Reviewer
 
       attr_reader :tool
 
-      def initalize(tool, verbosity = :total_silence)
+      def initalize(tool, verbosity = Verbosity::TOTAL_SILENCE)
         @tool = tool
         @verbosity = Verbosity(verbosity)
       end

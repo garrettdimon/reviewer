@@ -8,12 +8,14 @@ module Reviewer
   class Command
     # Assembles tool tool_settings into a usable command string for the command type and verbosity
     class String
-      attr_reader :command_type, :tool_settings, :verbosity_level
+      include Conversions
 
-      def initialize(command_type, tool_settings:, verbosity_level: nil)
+      attr_reader :command_type, :tool_settings, :verbosity
+
+      def initialize(command_type, tool_settings:, verbosity: nil)
         @command_type = command_type
         @tool_settings = tool_settings
-        @verbosity_level = verbosity_level
+        @verbosity = Verbosity(verbosity)
       end
 
       def to_s
@@ -28,7 +30,7 @@ module Reviewer
           env,
           body,
           flags,
-          verbosity
+          verbosity_level
         ].compact
       end
 
@@ -49,8 +51,8 @@ module Reviewer
         Flags.new(tool_settings.flags).to_s
       end
 
-      def verbosity
-        Verbosity.new(tool_settings.quiet_option, level: verbosity_level).to_s
+      def verbosity_level
+        Verbosity.new(tool_settings.quiet_option, level: verbosity.level).to_s
       end
 
       private
