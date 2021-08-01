@@ -23,7 +23,7 @@ module Reviewer
         to_a.join(',')
       end
 
-      def inspect
+      def to_h
         {
           provided: provided,
           recognized: recognized,
@@ -33,6 +33,7 @@ module Reviewer
           for_tool_names: for_tool_names
         }
       end
+      alias inspect to_h
 
       # Extracts reserved keywords from the provided arguments
       #

@@ -48,6 +48,11 @@ module Reviewer
 
       private
 
+      # Combines the sorted list of unique files/paths by merging the explicitly-provided file
+      # arguments as well as those that were translated from any relevant keyword arguments.
+      #
+      # @return [Array] full list of files/paths passed via command-line including those extracted
+      #   as a result of a keyword argument like `staged`
       def file_list
         @file_list ||= [
           *provided,
@@ -55,6 +60,10 @@ module Reviewer
         ].compact.sort.uniq
       end
 
+      # Converts relevant keywords to the list of files they implicitly represent.
+      #
+      # @return [Array] list of files/paths translated from any keyword arguments that represent a
+      #   list of files
       def from_keywords
         return [] unless keywords.any?
 
@@ -65,6 +74,10 @@ module Reviewer
         end.flatten.uniq
       end
 
+      # If `staged` is passed as a keyword via the command-line, this will get the list of staged
+      # files via Git
+      #
+      # @return [Array] list of the currently staged files
       def staged
         # Use git for list of staged fields
         ::Reviewer::Keywords::Git::Staged.list

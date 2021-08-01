@@ -23,11 +23,11 @@ module Reviewer
 
     attr_reader :output
 
-   # A catch all for aguments passed to reviewer via the command-line.
-   # @param options = ARGV [Hash] options to parse and extract the relevant values for a run
-   #
-   # @return [Reviewer::Arguments] the full collection of arguments provided via the command line
-   def initialize(options = ARGV)
+    # A catch all for aguments passed to reviewer via the command-line.
+    # @param options = ARGV [Hash] options to parse and extract the relevant values for a run
+    #
+    # @return [Reviewer::Arguments] the full collection of arguments provided via the command line
+    def initialize(options = ARGV)
       @output = Output.new
       @options = Slop.parse options do |opts|
         opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
