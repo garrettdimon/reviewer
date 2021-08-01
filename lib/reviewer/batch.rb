@@ -30,6 +30,8 @@ module Reviewer
           break unless runner.success?
         end
       end
+
+      results
     end
 
     def self.run(*args)
