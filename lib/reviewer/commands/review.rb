@@ -4,11 +4,11 @@ module Reviewer
   module Commands
     # Provides a structure for running review commands and sharing results
     class Review
-      SEED_SUBSTITUTION_VALUE = '$SEED'
+      include Conversions
 
       attr_reader :tool
 
-      def initalize(tool, verbosity = Verbosity::TOTAL_SILENCE)
+      def initialize(tool, verbosity = Verbosity::TOTAL_SILENCE)
         @tool = tool
         @verbosity = Verbosity(verbosity)
       end
@@ -20,10 +20,6 @@ module Reviewer
       def verbosity=(verbosity)
         @verbosity = Verbosity(verbosity)
         @command.verbosity = @verbosity
-      end
-
-      def command
-        @command ||= Command.new(tool, :review, verbosity)
       end
 
       def to_s

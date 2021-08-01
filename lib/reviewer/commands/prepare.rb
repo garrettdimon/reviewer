@@ -4,11 +4,13 @@ module Reviewer
   module Commands
     # Provides a structure for running review commands and sharing results
     class Prepare
+      include Conversions
+
       attr_accessor :verbosity
 
       attr_reader :tool
 
-      def initalize(tool, verbosity = Verbosity::TOTAL_SILENCE)
+      def initialize(tool, verbosity = Verbosity::TOTAL_SILENCE)
         @tool = tool
         @verbosity = Verbosity(verbosity)
       end

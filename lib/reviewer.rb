@@ -5,13 +5,15 @@ require 'benchmark'
 require 'dead_end'
 
 require_relative 'reviewer/conversions'
+require_relative 'reviewer/commands'
 
 require_relative 'reviewer/arguments'
 require_relative 'reviewer/batch'
 require_relative 'reviewer/command'
-require_relative 'reviewer/commands'
 require_relative 'reviewer/configuration'
+require_relative 'reviewer/conversions'
 require_relative 'reviewer/history'
+require_relative 'reviewer/keywords'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/output'
 require_relative 'reviewer/printer'
@@ -107,16 +109,7 @@ module Reviewer
     def perform(command_type, clear_screen: false)
       system('clear') if clear_screen
 
-      results = benchmark_suite { Batch.run(command_type, tools.current) }
-    end
-
-    # Records and prints the total runtime of a block
-    # @param &block [type] section of code to be timed
-    #
-    # @return [void] prints the elapsed time
-    def benchmark_suite(&block)
-      elapsed_time = Benchmark.realtime(&block)
-      output.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
+      Batch.run(command_type, tools.current)
     end
   end
 end

@@ -50,7 +50,7 @@ module Reviewer
     end
 
     def tool_names
-      Array(@tool_names || Reviewer.arguments.tool_names)
+      Array(@tool_names || Reviewer.arguments.keywords.for_tool_names)
     end
 
     def tagged?(tool)

@@ -27,8 +27,8 @@ module Reviewer
         !stdout.blank? || !stderr.blank?
       end
 
-      def rerunnable?
-        exit_status < EXIT_STATUS_CODES[:cannot_execute]
+      def total_failure?
+        exit_status >= EXIT_STATUS_CODES[:cannot_execute]
       end
 
       def success?(max_exit_status: EXIT_STATUS_CODES[:success])

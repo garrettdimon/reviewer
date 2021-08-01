@@ -4,11 +4,13 @@ module Reviewer
   module Commands
     # Provides a structure for running format commands and sharing results
     class Format
+      include Conversions
+
       attr_accessor :verbosity
 
       attr_reader :tool
 
-      def initalize(tool, verbosity = :tool_silence)
+      def initialize(tool, verbosity = :tool_silence)
         @tool = tool
         @verbosity = Verbosity(verbosity)
       end

@@ -27,14 +27,14 @@ module Reviewer
 
       def to_a
         [
-          env,
+          env_variables,
           body,
           flags,
-          verbosity_level
+          verbosity_options
         ].compact
       end
 
-      def env
+      def env_variables
         Env.new(tool_settings.env).to_s
       end
 
@@ -51,7 +51,7 @@ module Reviewer
         Flags.new(tool_settings.flags).to_s
       end
 
-      def verbosity_level
+      def verbosity_options
         Verbosity.new(tool_settings.quiet_option, level: verbosity.level).to_s
       end
 

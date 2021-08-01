@@ -5,35 +5,35 @@ module Reviewer
   class Batch
     class UnrecognizedCommandError < ArgumentError; end
 
-    attr_reader :tools, :command_type, :results
+    attr_reader :command_type, :tools, :output, :results
 
-    def initialize(command_type, tools)
-      @tools = tools
+    def initialize(command_type, tools, output: Reviewer.output)
       @command_type = command_type
+      @tools = tools
+      @output  = output
       @results = {}
     end
 
     def run
-      tools.each do |tool|
-        next unless tool.has_command?(command_type)
+      benchmark_batch do
+        tools.each do |tool|
+          runner = Runner.new(tool, command_type, verbosity)
 
-        runner = Runner.new(tool, command_type, verbosity)
+          # With multiple tools, run each one quietly.
+          # Otherwise, with just one tool
+          multiple_tools? ? runner.run_quietly : runner.run_verbosely
 
-        # Do the thing
-        runner.run
+          # Record the exit status
+          capture_results(runner)
 
-        # Record the exit status
-        capture_results(runner)
-
-        # If the tool fails, stop running other tools
-        break unless runner.success?
+          # If the tool fails, stop running other tools
+          break unless runner.success?
+        end
       end
-
-      results
     end
 
-    def self.run(**kwargs)
-      new(**kwargs).run
+    def self.run(*args)
+      new(*args).run
     end
 
     private
@@ -50,14 +50,13 @@ module Reviewer
       @results[runner.tool.key] = runner.exit_status
     end
 
-    def runnable?(tool, command_type)
-      case command_type
-      when :install then tool.installable?
-      when :prepare then tool.preparable?
-      when :review then tool.reviewable?
-      when :format then tool.formattable?
-      else raise UnrecognizedCommandError, "The '#{command_type}' command is not a recognized command type." unless configured?
-      end
+    # Records and prints the total runtime of a block
+    # @param &block [type] section of code to be timed
+    #
+    # @return [void] prints the elapsed time
+    def benchmark_batch(&block)
+      elapsed_time = Benchmark.realtime(&block)
+      output.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
     end
   end
 end

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'keywords/git'
-
 module Reviewer
   class Arguments
     # Handles interpreting all 'leftover' arguments and translating them to file-related,

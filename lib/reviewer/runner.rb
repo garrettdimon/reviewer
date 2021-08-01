@@ -2,35 +2,37 @@
 
 module Reviewer
   class Runner
-    include Conversions
+    attr_accessor :command
 
-    attr_reader :tool,
-                :command_type,
-                :verbosity,
-                :shell,
+    attr_reader :shell,
                 :output
 
-    delegate :needs_prep?,
-             to: :tool
+    delegate :tool, :type,               to: :command
+    delegate :result, :timer,            to: :shell
+    delegate :exit_status, :rerunnable?, to: :result
 
-    delegate :run,
-             to: :command
+    def initialize(tool, command_type, verbosity, output: Reviewer.output)
+      @command = Command.new(tool, command_type, verbosity)
+      @shell = Shell.new
+      @output = output
+    end
 
-    delegate :result,
-             :seed,
-             :timer,
-             to: :shell
+    def run_quietly
+      identify_and_prepare_tool
 
-    delegate :exit_status,
-             :rerunnable?,
-             to: :result
+      run
+      success? ? show_timing_result : rerun_verbosely
 
-    def initialize(tool, command_type, verbosity)
-      @tool         = Tool(tool)
-      @command_type = command_type.to_sym
-      @verbosity    = Verbosity(verbosity)
-      @shell        = Shell.new
-      @output       = Output.new
+      exit_status
+    end
+
+    def run_verbosely
+      identify_and_prepare_tool
+
+      show_raw_output_block
+      show_guidance
+
+      exit_status
     end
 
     def success?
@@ -39,46 +41,45 @@ module Reviewer
 
     private
 
-    def command
-      @command ||= case command_type
-                   when :install then Commands::Install.new(tool, verbosity)
-                   when :prepare then Commands::Prepare.new(tool, verbosity)
-                   when :review  then Commands::Review.new(tool, verbosity)
-                   when :format  then Commands::Format.new(tool, verbosity)
-                   else raise UnrecognizedCommandError, "'#{command_type}'"
-                   end
+    def identify_and_prepare_tool
+      output.tool_summary(tool)
+      prepare if tool.prepare?
     end
 
-    def run_directly
-      output.tool_summary(tool)
+    def prepare
+      prepare_command = Command.new(tool, :prepare, Reviewer::Command::Verbosity::TOTAL_SILENCE)
+      shell.capture_prep(prepare_command)
+    end
 
-      output.current_command(command)
-      output.divider
+    def run
+      shell.capture_prep(command)
+    end
 
-      # Using the shell here would capture the output as plain text and strip it of any color or
-      # or special characters. So it runs the full command with no quiet optiosn directly in its
-      # full glory and leaves the tool's own output formatting in tact
-      shell.direct(command)
+    def show_raw_output_block
+      verbose_command = Command.new(tool, command.type, Reviewer::Command::Verbosity::NO_SILENCE)
 
-      output.divider
-      output.last_command(command)
+      output.current_command(verbose_command)
+
+      unless verbose_command.string.include?('quiet')
+        output.divider
+        shell.direct(verbose_command.string)
+        output.divider
+      end
 
       show_guidance
-
-      exit_status
     end
 
     def show_current_tool
       output.tool_summary(tool)
     end
 
-    def show_result
-      if success?
-        output.success(timer)
-      else
-        output.failure("Exit Status #{exit_status} · #{result}")
-        show_guidance
-      end
+    def show_timing_result
+      output.success(timer)
+    end
+
+    def rerun_verbosely
+      output.failure("Exit Status #{exit_status} · #{result}")
+      show_raw_output_block unless result.total_failure?
     end
 
     def show_guidance

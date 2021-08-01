@@ -3,8 +3,6 @@
 module Reviewer
   # Conversion functions for special types in Reviewer
   module Conversions
-    module_function
-
     def Tool(value)
       case value
       when Tool   then value
@@ -13,6 +11,8 @@ module Reviewer
       else raise TypeError, "Cannot convert #{value.inspect} to Tool"
       end
     end
+    module_function :Tool
+
 
     def Verbosity(value)
       case value
@@ -23,5 +23,6 @@ module Reviewer
       else raise TypeError, "Cannot convert #{value.inspect} to Verbosity"
       end
     end
+    module_function :Verbosity
   end
 end

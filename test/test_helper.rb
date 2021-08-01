@@ -6,7 +6,7 @@ if ENV['COVERAGE']
     enable_coverage :branch
     minimum_coverage 95
     minimum_coverage_by_file 50
-    # refuse_coverage_drop
+    refuse_coverage_drop
   end
 end
 

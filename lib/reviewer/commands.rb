@@ -8,6 +8,5 @@ require_relative 'commands/review'
 module Reviewer
   # Grouping for individual commands
   module Commands
-    TYPES = %i[install prepare format review].freeze
   end
 end

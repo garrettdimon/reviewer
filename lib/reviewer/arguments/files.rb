@@ -8,25 +8,43 @@ module Reviewer
 
       alias raw provided
 
+      # Generates and instance of files from the provided arguments
+      # @param provided: Reviewer.arguments.files.raw [Array, String] file arguments provided
+      #   directly via the -f or --files flag on the command line.
+      # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
+      #   be translated to a list of files (ex. 'staged')
+      #
+      # @return [ReviewerArguments] [description]
       def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords)
         @provided = Array(provided)
         @keywords = Array(keywords)
       end
 
+
+      # Proves the full list of file/path arguments explicitly passed via command-line as an array
+      #
+      # @return [Array] full collection of the file arguments as a string
       def to_a
         file_list
       end
 
+      # Proves the full list of file/path arguments explicitly passed via command-line as a string
+      #
+      # @return [String] comma-separated list of the file arguments as a string
       def to_s
         to_a.join(',')
       end
 
-      def inspect
+      # Summary of the state of the file arguments
+      #
+      # @return [Hash] represents the summary of the file values parsed from the comand-line
+      def to_h
         {
           provided: provided,
           from_keywords: from_keywords
         }
       end
+      alias inspect to_h
 
       private
 
@@ -49,7 +67,7 @@ module Reviewer
 
       def staged
         # Use git for list of staged fields
-        ::Reviewer::Arguments::Keywords::Git::Staged.list
+        ::Reviewer::Keywords::Git::Staged.list
       end
     end
   end

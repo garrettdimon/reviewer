@@ -4,41 +4,43 @@ require 'open3'
 
 module Reviewer
   class Shell
-    # Provides a structured interface for measuring realtime elapsed while running comamnds
+    # Provides a structured interface for measuring realtime main while running comamnds
     class Timer
-      class NoRecordedPreparationError < StandardError; end
+      attr_accessor :prep, :main
 
-      attr_accessor :elapsed, :prep
-
-      def initialize(elapsed: nil, prep: nil)
+      def initialize(prep: nil, main: nil)
         @prep = prep
-        @elapsed = elapsed
+        @main = main
       end
 
       def record_prep(&block)
         @prep = record(&block)
       end
 
-      def record_elapsed(&block)
-        @elapsed = record(&block)
-      end
-
-      def prep?
-        prep.present?
+      def record_main(&block)
+        @main = record(&block)
       end
 
       def prep_seconds
         prep.round(2)
       end
 
-      def elapsed_seconds
-        elapsed.round(2)
+      def main_seconds
+        main.round(2)
+      end
+
+      def total_seconds
+        total.round(2)
       end
 
       def prep_percent
-        raise NoRecordedPreparationError unless prep.present?
+        return nil unless prep.present? && main.present?
 
-        (prep / elapsed.to_f * 100).round
+        (prep / total.to_f * 100).round
+      end
+
+      def total
+        [prep, main].compact.sum
       end
 
       private

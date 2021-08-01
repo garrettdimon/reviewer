@@ -38,7 +38,7 @@ module Reviewer
       key
     end
 
-    def needs_prep?
+    def prepare?
       preparable? && stale?
     end
 

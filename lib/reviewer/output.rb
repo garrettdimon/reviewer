@@ -34,16 +34,22 @@ module Reviewer
     end
 
     def current_command(command)
+      command = String(command)
+
       printer.info "\nNow running:"
       printer.info command.light_black
     end
 
     def last_command(command)
+      command = String(command)
+
       printer.info "\nReviewer ran:"
-      printer.info command.to_s.light_black
+      printer.info command.light_black
     end
 
     def raw_results(command)
+      command = String(command)
+
       current_command(command)
       results_block { system(command) }
       last_command(command)
@@ -60,8 +66,8 @@ module Reviewer
     end
 
     def success(timer)
-      message = SUCCESS.green.bold + " #{timer.elapsed_seconds}s".green
-      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prep?
+      message = SUCCESS.green.bold + " #{timer.total_seconds}s".green
+      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prep_percent
 
       printer.info message
     end
