@@ -5,13 +5,11 @@ require 'benchmark'
 require 'dead_end'
 
 require_relative 'reviewer/conversions'
-require_relative 'reviewer/commands'
 
 require_relative 'reviewer/arguments'
 require_relative 'reviewer/batch'
 require_relative 'reviewer/command'
 require_relative 'reviewer/configuration'
-require_relative 'reviewer/conversions'
 require_relative 'reviewer/history'
 require_relative 'reviewer/keywords'
 require_relative 'reviewer/loader'
