@@ -15,29 +15,30 @@ module Reviewer
       # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
       #   be translated to a list of files (ex. 'staged')
       #
-      # @return [ReviewerArguments] [description]
+      # @return [Arguments::Files] the container for determining targeted files from the provided
+      #   command line arguments
       def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords)
         @provided = Array(provided)
         @keywords = Array(keywords)
       end
 
-      # Proves the full list of file/path arguments explicitly passed via command-line as an array
+      # Provides the full list of file/path values derived from the command-line arguments
       #
-      # @return [Array] full collection of the file arguments as a string
+      # @return [Array<String>] full collection of the file arguments as a string
       def to_a
         file_list
       end
 
-      # Proves the full list of file/path arguments explicitly passed via command-line as a string
+      # Provides the full list of file/path values derived from the command-line arguments
       #
-      # @return [String] comma-separated list of the file arguments as a string
+      # @return [String] comma-separated string of the derived tag values
       def to_s
         to_a.join(',')
       end
 
       # Summary of the state of the file arguments
       #
-      # @return [Hash] represents the summary of the file values parsed from the comand-line
+      # @return [Hash] represents the summary of the file values parsed from the command-line
       def to_h
         {
           provided: provided,

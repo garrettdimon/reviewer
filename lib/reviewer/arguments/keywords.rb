@@ -11,18 +11,33 @@ module Reviewer
 
       alias raw provided
 
+      # Generates an instace of parsed keywords from the provided arguments
+      # @param *provided [Array<String>] the leftover (non-flag) arguments from the command line
+      #
+      # @return [Arguments::Keywords]
       def initialize(*provided)
         @provided = Array(provided.flatten)
       end
 
+      # Proves the full list of raw keyword arguments explicitly passed via command-line as an array
+      #
+      # @return [Array] full collection of the provided keyword arguments as a string
       def to_a
         provided
       end
 
+      # Provides the full list of raw keyword arguments explicitly passed via command-line as a
+      #   comma-separated string
+      #
+      # @return [String] comma-separated list of the file arguments as a string
       def to_s
         to_a.join(',')
       end
 
+      # Summary of the state of keyword arguments based on how Reviewer parsed them
+      #
+      # @return [Hash] represents the summary of the keyword values parsed from the command-line and
+      #   grouped based on how they were parsed
       def to_h
         {
           provided: provided,
