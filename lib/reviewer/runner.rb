@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Reviewer
+  # Wrapper for executng a command and printing the results
   class Runner
     attr_accessor :command
 
@@ -36,7 +37,16 @@ module Reviewer
     end
 
     def success?
-      result.success?(max_exit_status: tool.max_exit_status)
+      if command.type == :review
+        # Some tools (ex. yarn audit) return a range of non-zero exit statuses and almost never
+        # return 0. Those tools can be configured to accept a non-zero exit status so they aren't
+        # constantly considered to be failing over minor issues.
+        exit_status <= tool.max_exit_status
+      else
+        # When command types other than reviews are run, they either do the thing or they don't. In
+        # those cases, anything other than a 0 isn't acceptable.
+        exit_status.zero?
+      end
     end
 
     private
@@ -47,12 +57,18 @@ module Reviewer
     end
 
     def prepare
-      prepare_command = Command.new(tool, :prepare, Reviewer::Command::Verbosity::TOTAL_SILENCE)
+      # Set up the prepare command using the same verbosity level that it's being run with.
+      prepare_command = Command.new(tool, :prepare, command.verbosity)
+
+      # Run and benchmark the prepare command
       shell.capture_prep(prepare_command)
+
+      # Touch the `last_prepared_at` timestamp for the tool so it waits before running again.
+      tool.last_prepared_at = Time.current.utc
     end
 
     def run
-      shell.capture_prep(command)
+      shell.capture_main(command)
     end
 
     def show_raw_output_block

@@ -67,7 +67,7 @@ module Reviewer
 
     def success(timer)
       message = SUCCESS.green.bold + " #{timer.total_seconds}s".green
-      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prep_percent
+      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prepped?
 
       printer.info message
     end
@@ -90,7 +90,7 @@ module Reviewer
     end
 
     def missing_executable_guidance(tool:, command:)
-      installation_command = Command.new(tool, :install, :no_silence).string
+      installation_command = Command.new(tool, :install, :no_silence).string if tool.installable?
       install_link = tool.settings.links&.fetch(:install, nil)
 
       failure("Missing executable for '#{tool}'")

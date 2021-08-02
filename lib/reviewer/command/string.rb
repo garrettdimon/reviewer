@@ -43,10 +43,14 @@ module Reviewer
       end
 
       def flags
-        # :review commands are the only commands that use flags
-        # And if no flags are configured, this won't do much
-        # Flags for 'quiet' are handled separately by design and excluded from this check.
-        return nil unless review? && tool_settings.flags.any?
+        # Flags to be used for `review` commands.
+        # 1. The `review` commands are the only commands that use flags
+        # 2. If no flags are configured, this won't do much
+        #
+        # Note: Since verbosity is handled separately, flags for 'quiet' are handled separately at a
+        #   lower level by design and excluded from this check. They are not included with the other
+        #   configured flags.
+        return nil unless flags?
 
         Flags.new(tool_settings.flags).to_s
       end
@@ -57,8 +61,11 @@ module Reviewer
 
       private
 
-      def review?
-        command_type == :review
+      # Determines whether the string needs flags added
+      #
+      # @return [Boolean] true if it's a review command and it has flags configured
+      def flags?
+        command_type == :review && tool_settings.flags.any?
       end
     end
   end

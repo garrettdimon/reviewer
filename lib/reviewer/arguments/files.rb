@@ -20,7 +20,6 @@ module Reviewer
         @keywords = Array(keywords)
       end
 
-
       # Proves the full list of file/path arguments explicitly passed via command-line as an array
       #
       # @return [Array] full collection of the file arguments as a string

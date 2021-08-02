@@ -85,7 +85,6 @@ module Reviewer
     end
 
     def test_missing_executable_guidance
-      skip "Pending lower level updates/fixes - May need `allow_printing_output!`"
       tool = Tool.new(:missing_command)
       out, _err = capture_subprocess_io do
         @output.missing_executable_guidance(tool: tool, command: 'tool command')
@@ -98,7 +97,6 @@ module Reviewer
     end
 
     def test_missing_executable_guidance_without_installation_help
-      skip "Pending lower level updates/fixes - May need `allow_printing_output!`"
       tool = Tool.new(:missing_command_without_guidance)
       out, _err = capture_subprocess_io do
         @output.missing_executable_guidance(tool: tool, command: 'tool command')

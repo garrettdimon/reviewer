@@ -56,24 +56,24 @@ module Reviewer
     # @param command_type [Symbol] one of the available command types defined in Command::TYPES
     #
     # @return [Boolean] true if the command type is configured and not blank
-    def has_command?(command_type)
+    def command?(command_type)
       commands.key?(command_type) && commands[command_type].present?
     end
 
     def installable?
-      has_command?(:install)
+      command?(:install)
     end
 
     def preparable?
-      has_command?(:prepare)
+      command?(:prepare)
     end
 
     def reviewable?
-      has_command?(:review)
+      command?(:review)
     end
 
     def formattable?
-      has_command?(:format)
+      command?(:format)
     end
 
     def last_prepared_at

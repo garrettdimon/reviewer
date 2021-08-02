@@ -4,11 +4,11 @@ module Reviewer
   class Tool
     # Converts/casts tool configuration values and provides default values if not set
     class Settings
-      attr_reader :tool
+      attr_reader :tool, :config
 
       def initialize(tool, config: nil)
         @tool = tool
-        @config = config
+        @config = config || load_config
       end
 
       def hash
@@ -75,12 +75,12 @@ module Reviewer
 
       protected
 
-      def config
-        @config || Reviewer.tools.to_h.fetch(tool.to_sym) { {} }
-      end
-
       def state
         config.to_hash
+      end
+
+      def load_config
+        Reviewer.tools.to_h.fetch(tool.to_sym) { {} }
       end
     end
   end

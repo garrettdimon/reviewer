@@ -9,7 +9,14 @@ module Reviewer
     end
 
     def test_maintains_seed_despite_changes
-      skip 'command seed tests'
+      original_seed = @command.seed
+      @command.verbosity = Command::Verbosity::TOTAL_SILENCE
+      assert_equal original_seed, @command.seed
+    end
+
+    def test_records_last_used_seed_in_history
+      seed = @command.seed
+      assert_equal seed, Reviewer.history.get(@command.tool.key, :last_seed)
     end
 
     def test_command_with_seed
@@ -43,19 +50,10 @@ module Reviewer
     end
 
     def test_generates_fresh_string_after_verbosity_change
-      skip "Pending Command Verbosity Change Test"
-    end
+      assert_equal Command::Verbosity::NO_SILENCE, @command.verbosity.level
 
-    def test_raises_error_on_invalid_command_type
-      assert_raises Reviewer::Command::InvalidTypeError do
-        Command.new(:enabled_tool, :missing_command_type)
-      end
-    end
-
-    def test_raises_error_if_command_type_is_not_defined_for_tool
-      assert_raises Reviewer::Command::NotConfiguredError do
-        Command.new(:minimum_viable_tool, :install)
-      end
+      @command.verbosity = Command::Verbosity::TOTAL_SILENCE
+      assert_equal Command::Verbosity::TOTAL_SILENCE, @command.verbosity.level
     end
   end
 end

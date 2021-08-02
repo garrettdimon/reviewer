@@ -15,19 +15,6 @@ module Reviewer
         assert_equal @process_status.exitstatus, result.exit_status
       end
 
-      def test_considered_successful_with_zero_exit_code
-        result = Result.new('Standard Out', '', @process_status)
-        assert_equal 0, result.exit_status
-        assert result.success?
-      end
-
-      def test_considered_successful_with_custom_exit_code
-        @process_status.exitstatus = 3
-        result = Result.new('Standard Out', '', @process_status)
-        refute result.success?
-        assert result.success?(max_exit_status: 3)
-      end
-
       def test_considered_total_failure_when_exit_status_is_too_high
         @process_status.exitstatus = 0
         result = Result.new('Standard Out', '', @process_status)
@@ -55,12 +42,10 @@ module Reviewer
       def test_recognizes_common_exit_statuses
         @process_status.exitstatus = Result::EXIT_STATUS_CODES[:cannot_execute]
         result = Result.new('Standard Out', '', @process_status)
-        refute result.success?
         assert result.cannot_execute?
 
         @process_status.exitstatus = Result::EXIT_STATUS_CODES[:terminated]
         result = Result.new('Standard Out', '', @process_status)
-        refute result.success?
         assert result.terminated?
       end
 

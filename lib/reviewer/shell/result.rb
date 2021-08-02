@@ -31,10 +31,6 @@ module Reviewer
         exit_status >= EXIT_STATUS_CODES[:cannot_execute]
       end
 
-      def success?(max_exit_status: EXIT_STATUS_CODES[:success])
-        exit_status <= max_exit_status
-      end
-
       def cannot_execute?
         exit_status == EXIT_STATUS_CODES[:cannot_execute]
       end

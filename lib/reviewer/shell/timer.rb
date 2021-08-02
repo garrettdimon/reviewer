@@ -43,6 +43,10 @@ module Reviewer
         [prep, main].compact.sum
       end
 
+      def prepped?
+        prep.present? && main.present?
+      end
+
       private
 
       def record(&block)

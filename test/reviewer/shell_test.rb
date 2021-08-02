@@ -17,17 +17,33 @@ module Reviewer
       assert_equal 0, @shell.exit_status
     end
 
-    def test_timing
+    def test_prep_timing
       assert_nil @shell.timer.prep
-      assert_nil @shell.timer.main
-      assert_equal 0, @shell.timer.total
 
       @shell.capture_main('ls')
       @shell.capture_prep('ls -la')
 
       refute_nil @shell.timer
       refute_nil @shell.timer.prep
+    end
+
+    def test_main_timing
+      assert_nil @shell.timer.main
+
+      @shell.capture_main('ls')
+      @shell.capture_prep('ls -la')
+
+      refute_nil @shell.timer
       refute_nil @shell.timer.main
+    end
+
+    def test_total_timing
+      assert_equal 0, @shell.timer.total
+
+      @shell.capture_main('ls')
+      @shell.capture_prep('ls -la')
+
+      refute_nil @shell.timer
       refute_nil @shell.timer.total
     end
 

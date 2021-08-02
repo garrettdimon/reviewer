@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class BatchTest < MiniTest::Test
     def test_command
-      skip "Reviewer::BatchTest"
+      skip 'Reviewer::BatchTest'
     end
   end
 end

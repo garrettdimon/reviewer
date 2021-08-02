@@ -8,53 +8,7 @@ module Reviewer
   class Command
     include Conversions
 
-    class InvalidTypeError < StandardError
-      attr_reader :provided_type
-
-      def initialize(provided_type)
-        @provided_type = provided_type
-        super(message)
-      end
-
-      private
-
-      def valid_command_types
-        Command::TYPES.map { |type| "'#{type}'" }.join(', ')
-      end
-
-      def message
-        "'#{provided_type}' is not a supported command type. Must be one of: #{valid_command_types}"
-      end
-    end
-
-    class NotConfiguredError < StandardError
-      attr_reader :provided_type, :tool
-
-      def initialize(provided_type, tool)
-        @provided_type = provided_type
-        @tool = tool
-        super(message)
-      end
-
-      private
-
-      def available_command_types_for(tool)
-        valid_command_types = Command::TYPES
-        configured_command_types = tool.commands.keys
-
-        configured_command_types
-          .intersection(valid_command_types)
-          .join(', ')
-      end
-
-      def message
-        "'#{provided_type}' is not defined for #{tool.name}. Must be one of: #{available_command_types_for(@tool)}"
-      end
-    end
-
     SEED_SUBSTITUTION_VALUE = '$SEED'
-
-    TYPES = %i[install prepare review format].freeze
 
     attr_reader :tool, :type
 
@@ -63,8 +17,8 @@ module Reviewer
       @type = type.to_sym
       @verbosity = Verbosity(verbosity)
 
-      raise InvalidTypeError.new(type) unless valid_type?
-      raise NotConfiguredError.new(type, @tool) unless configured_for_tool?
+      # raise InvalidTypeError.new(type) unless valid_type?
+      # raise NotConfiguredError.new(type, @tool) unless configured_for_tool?
     end
 
     def string
@@ -72,16 +26,24 @@ module Reviewer
     end
     alias to_s string
 
-    def verbosity
+    # Getter for @verbosity. Since the setter is custom, the getter needs to be explicitly declared.
+    # Otherwise, using `attr_accessor` and then overriding the setter muddies the waters.
+    #
+    # @return [Verbosity] the current verbosity setting for the command
+    def verbosity # rubocop:disable Style/TrivialAccessors
       @verbosity
     end
 
+    # Override verbosity assignment to clear the related memoized values when verbosity changes
+    # @param verbosity [Verbosity, Symbol] the desired verbosity for the command
+    #
+    # @return [Verbosity] the updated verbosity level for the command
     def verbosity=(verbosity)
-      @verbosity = Verbosity(verbosity)
-
       # Unmemoize string since the verbosity has been changed
       @raw_string = nil
       @string = nil
+
+      @verbosity = Verbosity(verbosity)
     end
 
     # Generates a seed that can be re-used across runs so that the results are consistent across
@@ -92,10 +54,19 @@ module Reviewer
     # @return [Integer] a random integer to pass to tools that use seeds
     def seed
       @seed ||= Random.rand(100_000)
+
+      # Store the seed for reference
+      Reviewer.history.set(tool.key, :last_seed, @seed)
+
+      @seed
     end
 
     private
 
+    # The raw command string before any substitutions. For example, since seeds need to remain
+    # consistent from one run to the next, they're
+    #
+    # @return [type] [description]
     def raw_string
       @raw_string ||= String.new(
         type,
@@ -105,23 +76,12 @@ module Reviewer
     end
 
     def seeded_string
-      # Store the seed for reference
-      Reviewer.history.set(tool.key, :last_seed, seed)
-
       # Update the string with the memoized seed value
       raw_string.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
     end
 
     def seed_substitution?
       raw_string.include?(SEED_SUBSTITUTION_VALUE)
-    end
-
-    def valid_type?
-      TYPES.include?(type)
-    end
-
-    def configured_for_tool?
-      tool.has_command?(type)
     end
   end
 end

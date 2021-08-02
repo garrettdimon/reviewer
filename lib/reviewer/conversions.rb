@@ -3,7 +3,7 @@
 module Reviewer
   # Conversion functions for special types in Reviewer
   module Conversions
-    def Tool(value)
+    def Tool(value) # rubocop:disable Naming/MethodName
       case value
       when Tool   then value
       when Symbol then Tool.new(value)
@@ -13,8 +13,7 @@ module Reviewer
     end
     module_function :Tool
 
-
-    def Verbosity(value)
+    def Verbosity(value) # rubocop:disable Naming/MethodName
       case value
       when Command::Verbosity then value
       when Symbol             then Command::Verbosity.new(value)
