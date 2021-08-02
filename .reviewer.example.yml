@@ -37,7 +37,7 @@ tool-name-key:
     home: https://example.com
     install: https://example.com/install
     ignore_syntax: https://example.com/ignore
-    ignore_syntax: https://example.com/disable
+    disable_syntax: https://example.com/disable
   commands:
     install: 'bundle install tool'
     prepare: 'bundle exec tool update'
@@ -45,6 +45,8 @@ tool-name-key:
     format: 'bundle exec tool --format'
     quiet_option: '--quiet'
     max_exit_status: 1
+    files_flag: 'files'
+    files_separator: ','
    env:
      report: false
    flags:

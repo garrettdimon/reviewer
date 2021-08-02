@@ -19,6 +19,18 @@ module Reviewer
       @file = Pathname(DEFAULT_CONFIG_LOCATION)
       @history_file = Pathname(DEFAULT_HISTORY_LOCATION)
       @printer = ::Reviewer::Printer.new
+
+      # Future Configuration Options:
+      # - seed_substitution_value(string): Currently a constant of `$SEED` in Reviewer::Command, but
+      #   may need to be configurable in case any command-line strings have other legitimate uses
+      #   for the value such that it may need to be override. Ideally, it woudl be changed to3
+      #   something obscure enough that conflicts wouldn't happen, but you never know
+      # - benchmark_everything(:dev, :optimize): Use the `time_up` gem to measure and show all the results
+      #   for each tool and step to help identify and reduce bottlenecks. It would mainly be a flag
+      #   for use in development, but it could also help folks troubleshoot their speed in finer
+      #   detail than the standard Reviewer output
+      # - default_preparation_refresh(integer time): Right now, it's hard-coded at 6 hours, but that may require
+      #   tuning for individual tools
     end
   end
 end

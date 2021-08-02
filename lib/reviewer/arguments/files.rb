@@ -2,7 +2,8 @@
 
 module Reviewer
   class Arguments
-    # Generates the list of files to run the command against
+    # Generates a Ruby-friendly list (Array) of files to run the command against from the provided
+    # command line arguments
     class Files
       attr_reader :provided, :keywords
 
