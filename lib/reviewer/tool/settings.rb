@@ -29,10 +29,6 @@ module Reviewer
         !disabled?
       end
 
-      def install_link?
-        links.key?(:install) && links[:install].present?
-      end
-
       def key
         tool.to_sym
       end

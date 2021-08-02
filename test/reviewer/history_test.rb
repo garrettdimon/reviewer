@@ -25,5 +25,15 @@ module Reviewer
       @history.reset!
       assert_nil @history.get(:tool, :key)
     end
+
+    def test_gracefully_handles_resetting_when_history_file_missing
+      missing_file = 'very_nonexistent_history_file.yml'
+      refute File.exist?(missing_file)
+
+      history = History.new(missing_file)
+      assert_equal missing_file, history.file
+
+      history.reset!
+    end
   end
 end

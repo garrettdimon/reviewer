@@ -24,7 +24,6 @@ module Reviewer
              :enabled?,
              :disabled?,
              :max_exit_status,
-             :install_link?,
              to: :settings
 
     def initialize(tool)
@@ -88,6 +87,10 @@ module Reviewer
       return false unless preparable?
 
       last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
+    end
+
+    def install_link?
+      links.key?(:install) && links[:install].present?
     end
 
     def eql?(other)

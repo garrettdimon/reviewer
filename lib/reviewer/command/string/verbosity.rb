@@ -24,7 +24,7 @@ module Reviewer
           case level.key
           when Reviewer::Command::Verbosity::TOTAL_SILENCE then [flag, SEND_TO_DEV_NULL].compact
           when Reviewer::Command::Verbosity::TOOL_SILENCE  then [flag].compact
-          when Reviewer::Command::Verbosity::NO_SILENCE    then []
+          else []
           end
         end
       end
