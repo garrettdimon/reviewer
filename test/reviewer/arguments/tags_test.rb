@@ -28,6 +28,13 @@ module Reviewer
         )
 
         assert_equal tags_array.sort, tags.to_a
+        assert_equal tags_array.sort, tags.to_h[:provided]
+      end
+
+      def test_casting_to_hash
+        tags = Files.new
+        assert tags.to_h.key?(:provided)
+        assert tags.to_h.key?(:from_keywords)
       end
 
       def test_generating_tags_from_keywords

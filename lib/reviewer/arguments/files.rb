@@ -41,7 +41,7 @@ module Reviewer
       # @return [Hash] represents the summary of the file values parsed from the command-line
       def to_h
         {
-          provided: provided,
+          provided: provided.sort,
           from_keywords: from_keywords
         }
       end

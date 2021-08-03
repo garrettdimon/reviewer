@@ -40,8 +40,8 @@ module Reviewer
       # @return [Hash] represents the summary of the tag values parsed from the command-line
       def to_h
         {
-          provided: provided,
-          from_keywords: keywords
+          provided: provided.sort,
+          from_keywords: keywords.sort
         }
       end
       alias inspect to_h
