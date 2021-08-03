@@ -34,6 +34,10 @@ module Reviewer
         result = Result.new('Standard Out', stderr, @process_status)
         refute result.executable_not_found?
 
+        stderr = nil
+        result = Result.new('Standard Out', stderr, @process_status)
+        refute result.executable_not_found?
+
         stderr = Result::STD_ERROR_STRINGS[:executable_not_found]
         result = Result.new('Standard Out', stderr, @process_status)
         assert result.executable_not_found?
@@ -43,10 +47,6 @@ module Reviewer
         @process_status.exitstatus = Result::EXIT_STATUS_CODES[:cannot_execute]
         result = Result.new('Standard Out', '', @process_status)
         assert result.cannot_execute?
-
-        @process_status.exitstatus = Result::EXIT_STATUS_CODES[:terminated]
-        result = Result.new('Standard Out', '', @process_status)
-        assert result.terminated?
       end
 
       def test_casting_to_string_uses_stdout_by_default
