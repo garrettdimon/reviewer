@@ -2,7 +2,6 @@
 
 require 'active_support/core_ext/string'
 require 'benchmark'
-require 'dead_end'
 
 require_relative 'reviewer/conversions'
 

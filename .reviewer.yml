@@ -21,10 +21,11 @@ flog:
     install: https://ruby.sadi.st/Flog.html
   commands:
     install: 'bundle exec gem install flog'
-    review: 'bundle exec flog'
+    review: 'bundle exec flog -g lib'
   flags:
     threshold: 10 # Percentage. i.e. Show the most concerning 10% of results
     group:
+    methods-only:
 
 flay:
   disabled: true # Flay provides guidance and is generally run solo
@@ -36,7 +37,10 @@ flay:
     install: https://ruby.sadi.st/Flay.html
   commands:
     install: 'bundle exec gem install flay'
-    review: 'bundle exec flay'
+    review: 'bundle exec flay ./lib'
+  flags:
+    liberal:
+    summary:
 
 tests:
   name: Minitest

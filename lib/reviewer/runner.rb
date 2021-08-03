@@ -21,6 +21,11 @@ module Reviewer
 
     def run_quietly
       run do
+        @command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
+
+        # Run the prep command if it needs to be run
+        prepare_with_capture if prepare?
+
         # Fully capture all output so no extraneous noise is displayed
         run_with_capture
 
@@ -31,11 +36,13 @@ module Reviewer
 
     def run_verbosely
       run do
+        @command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
+
+        # Run the prep command if it needs to be run
+        prepare_without_capture if prepare?
+
         # Show the unfiltered output in its full fidelity
         run_without_capture
-
-        # Help them get back on track if necessary
-        show_guidance
       end
     end
 
@@ -57,8 +64,8 @@ module Reviewer
     def run
       # Show which tool is about to run
       output.tool_summary(tool)
-
       yield
+      guidance.show unless success?
 
       exit_status
     end
@@ -70,43 +77,42 @@ module Reviewer
       @prepare_command ||= Command.new(tool, :prepare, command.verbosity)
     end
 
-
-
-
     def prepare_with_capture
       shell.capture_prep(prepare_command)
+      # TODO: Record the prep time for historic data to show % complete while running in the future
+      #       It could also show min/max/mean/avg as well?
+      #       Should only update history if it was running against all files, or times would be
+      #       skewed by the shorter runtime.
     end
 
     def run_with_capture
-      @command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
-      prepare_with_capture if prepare?
-
       shell.capture_main(command)
+      # TODO: Record the main time for historic data to show % complete while running in the future
+      #       It could also show min/max/mean/avg as well?
+      #       Should only update history if it was running against all files, or times would be
+      #       skewed by the shorter runtime.
     end
 
     def show_results
       # If it's a success, just show the timing, otherwise, show the output of the command
-      success? ? show_timing_result : show_output
+      success? ? show_timing_result : show_command_output
     end
 
-    def show_output
+    def show_command_output
       output.failure("Exit Status #{exit_status}", command: command)
 
       # If it can't be rerun, then don't try
       return if result.total_failure?
 
+      # In the future, this could conditionally print the results of stdout/stderr to save time.
+      # The downside is that the content will display as a pure string stripped of all color.
+      # So maybe if re-running will take longer than X seconds, we display the stripped output?
       run_without_capture
-      show_guidance
     end
 
     def show_timing_result
       output.success(timer)
     end
-
-
-
-
-
 
     def prepare_without_capture
       output.current_command(prepare_command)
@@ -115,20 +121,14 @@ module Reviewer
     end
 
     def run_without_capture
-      @command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
-      prepare_without_capture if prepare?
-
       output.current_command(command)
       output.divider
       shell.direct(command)
       output.divider
     end
 
-    def show_guidance
-      # No need to show guidance if it went well
-      return if success?
-
-      Reviewer::Guidance.new(command: command, result: result, output: output).show
+    def guidance
+      @guidance ||= Reviewer::Guidance.new(command: command, result: result, output: output)
     end
   end
 end
