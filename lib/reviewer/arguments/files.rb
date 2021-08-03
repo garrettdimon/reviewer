@@ -72,7 +72,7 @@ module Reviewer
           next unless respond_to?(keyword.to_sym, true)
 
           send(keyword.to_sym)
-        end.flatten.uniq
+        end.flatten.compact.uniq
       end
 
       # If `staged` is passed as a keyword via the command-line, this will get the list of staged

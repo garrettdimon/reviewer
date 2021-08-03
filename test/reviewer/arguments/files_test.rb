@@ -30,6 +30,22 @@ module Reviewer
         assert_equal files_array.sort, files.to_a
       end
 
+      def test_casting_to_hash
+        files = Files.new
+        assert files.to_h.key?(:provided)
+        assert files.to_h.key?(:from_keywords)
+      end
+
+      def test_skips_generating_files_from_keywords_if_the_keyword_is_not_a_defined_method
+        keywords_array = %w[not_a_real_keyword]
+        files = Files.new(
+          provided: [],
+          keywords: keywords_array
+        )
+
+        assert_empty files.to_h[:from_keywords]
+      end
+
       def test_generating_files_from_keywords
         staged_files = ['lib/reviewer.rb']
         keywords_array = %w[staged]
