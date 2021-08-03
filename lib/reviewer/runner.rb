@@ -8,6 +8,7 @@ module Reviewer
     attr_reader :shell,
                 :output
 
+    delegate :prepare?,       to: :tool
     delegate :tool,           to: :command
     delegate :result, :timer, to: :shell
     delegate :exit_status,    to: :result
@@ -19,27 +20,23 @@ module Reviewer
     end
 
     def run_quietly
-      identify_and_prepare_tool
+      run do
+        # Fully capture all output so no extraneous noise is displayed
+        run_with_capture
 
-      # Fully capture all output so no extraneous noise is displayed
-      run_with_capture
-
-      # If it's a success, just show the timing, otherwise, show the output of the command
-      success? ? show_timing_result : show_output
-
-      exit_status
+        # Display either the timer for success or the details for failure
+        show_results
+      end
     end
 
     def run_verbosely
-      identify_and_prepare_tool
+      run do
+        # Show the unfiltered output in its full fidelity
+        run_without_capture
 
-      # Show the unfiltered output in its full fidelity
-      run_without_capture
-
-      # Help them get back on track
-      show_guidance unless success?
-
-      exit_status
+        # Help them get back on track if necessary
+        show_guidance
+      end
     end
 
     def success?
@@ -57,34 +54,39 @@ module Reviewer
 
     private
 
-    def identify_and_prepare_tool
+    def run
+      # Show which tool is about to run
       output.tool_summary(tool)
-      prepare if tool.prepare?
+
+      yield
+
+      exit_status
     end
 
-    def prepare
-      # Set up the prepare command using the same verbosity level that it's being run with.
-      prepare_command = Command.new(tool, :prepare, command.verbosity)
-
-      # Run and benchmark the prepare command
-      shell.capture_prep(prepare_command)
-
+    def prepare_command
       # Touch the `last_prepared_at` timestamp for the tool so it waits before running again.
       tool.last_prepared_at = Time.current.utc
+
+      @prepare_command ||= Command.new(tool, :prepare, command.verbosity)
+    end
+
+
+
+
+    def prepare_with_capture
+      shell.capture_prep(prepare_command)
     end
 
     def run_with_capture
-      command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
+      @command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
+      prepare_with_capture if prepare?
+
       shell.capture_main(command)
     end
 
-    def run_without_capture
-      command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
-      output.current_command(command)
-
-      output.divider
-      shell.direct(command)
-      output.divider
+    def show_results
+      # If it's a success, just show the timing, otherwise, show the output of the command
+      success? ? show_timing_result : show_output
     end
 
     def show_output
@@ -101,7 +103,31 @@ module Reviewer
       output.success(timer)
     end
 
+
+
+
+
+
+    def prepare_without_capture
+      output.current_command(prepare_command)
+      output.divider
+      shell.direct(prepare_command)
+    end
+
+    def run_without_capture
+      @command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
+      prepare_without_capture if prepare?
+
+      output.current_command(command)
+      output.divider
+      shell.direct(command)
+      output.divider
+    end
+
     def show_guidance
+      # No need to show guidance if it went well
+      return if success?
+
       Reviewer::Guidance.new(command: command, result: result, output: output).show
     end
   end
