@@ -16,30 +16,27 @@ module Reviewer
 
     attr_reader :settings, :history
 
-    delegate :name,
+    delegate :key,
+             :name,
+             :hash,
              :description,
              :tags,
              :commands,
-             :key,
+             :links,
              :enabled?,
              :disabled?,
              :max_exit_status,
              to: :settings
 
-    def initialize(tool)
-      @settings = Settings.new(tool)
-    end
+    alias to_sym key
+    alias to_s name
 
-    def hash
-      settings.hash
-    end
-
-    def to_s
-      name
-    end
-
-    def to_sym
-      key
+    # Create an instance of a tool
+    # @param tool_key [Symbol] the key to the tool from the configuration file
+    #
+    # @return [Tool] an instance of tool for accessing settings information and facts about the tool
+    def initialize(tool_key)
+      @settings = Settings.new(tool_key)
     end
 
     # For determining if the tool should run it's prepration command. It will only be run both if
@@ -51,7 +48,7 @@ module Reviewer
       preparable? && stale?
     end
 
-    # Convenience method for knowing if a tool has a specific command type configured.
+    # Determines whether a tool has a specific command type configured
     # @param command_type [Symbol] one of the available command types defined in Command::TYPES
     #
     # @return [Boolean] true if the command type is configured and not blank
@@ -59,40 +56,70 @@ module Reviewer
       commands.key?(command_type) && commands[command_type].present?
     end
 
+    # Determines if the tool can run a `install` command
+    #
+    # @return [Boolean] true if there is a non-blank `install` command configured
     def installable?
       command?(:install)
     end
 
+    # Determines if the tool can run a `prepare` command
+    #
+    # @return [Boolean] true if there is a non-blank `prepare` command configured
     def preparable?
       command?(:prepare)
     end
 
+    # Determines if the tool can run a `review` command
+    #
+    # @return [Boolean] true if there is a non-blank `review` command configured
     def reviewable?
       command?(:review)
     end
 
+    # Determines if the tool can run a `format` command
+    #
+    # @return [Boolean] true if there is a non-blank `format` command configured
     def formattable?
       command?(:format)
     end
 
+    # Specifies when the tool last had it's `prepare` command run
+    #
+    # @return [DateTime] timestamp of when the `prepare` command was last run
     def last_prepared_at
       Reviewer.history.get(key, :last_prepared_at)
     end
 
+    # Sets the timestamp for when the tool last ran its `prepare` command
+    # @param last_prepared_at [DateTime] the value to record for when the `prepare` command last ran
+    #
+    # @return [DateTime] timestamp of when the `prepare` command was last run
     def last_prepared_at=(last_prepared_at)
       Reviewer.history.set(key, :last_prepared_at, last_prepared_at)
     end
 
+    # Determines whether the `prepare` command was run recently enough
+    #
+    # @return [Boolean] true if a prepare command exists, a timestamp exists, and it was run more
+    #   than six hours ago
     def stale?
       return false unless preparable?
 
       last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
     end
 
+    # Convenience method for determining if a tool has a configured install link
+    #
+    # @return [Boolean] true if there is an `install` key under links and the value isn't blank
     def install_link?
       links.key?(:install) && links[:install].present?
     end
 
+    # Determines if two tools are equal
+    # @param other [Tool] the tool to compare to the current instance
+    #
+    # @return [Boolean] true if the settings match
     def eql?(other)
       settings == other.settings
     end

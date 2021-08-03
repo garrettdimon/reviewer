@@ -6,6 +6,12 @@ module Reviewer
   class ToolTest < MiniTest::Test
     def setup
       @tool = Tool.new(:enabled_tool)
+      @mvt = Tool.new(:minimum_viable_tool)
+    end
+
+    def test_name_and_casting_to_string
+      assert_equal 'Enabled Test Tool', @tool.to_s
+      assert_equal @tool.to_s, @tool.name
     end
 
     def test_compares_settings_values_for_equality
@@ -18,6 +24,26 @@ module Reviewer
       refute tool_one.eql?(tool_three)
     end
 
+    def test_knows_when_a_tool_needs_to_run_its_preparation_step
+      @tool.last_prepared_at = nil
+      assert @tool.stale?
+
+      @tool.last_prepared_at = Time.current - (Tool::SIX_HOURS_IN_SECONDS + 1)
+      assert @tool.stale?
+
+      @tool.last_prepared_at = Time.current - (Tool::SIX_HOURS_IN_SECONDS - 1)
+      refute @tool.stale?
+    end
+
+    def test_never_considers_a_tool_stale_if_it_does_not_have_a_prepare_command
+      @mvt = Tool.new(:minimum_viable_tool)
+      refute @mvt.preparable?
+
+      # The last prepared at date is definitely stale...
+      @mvt.last_prepared_at = Time.current - (Tool::SIX_HOURS_IN_SECONDS * 2)
+      refute @mvt.stale?
+    end
+
     def test_can_track_last_prepared_at_across_runs
       timestamp = Time.current
 
@@ -27,6 +53,31 @@ module Reviewer
 
       assert_equal timestamp, tool_one.last_prepared_at
       assert_equal tool_one.last_prepared_at, tool_two.last_prepared_at
+    end
+
+    def test_knows_if_a_command_has_an_install_link_configured
+      assert @tool.install_link?
+      refute @mvt.install_link?
+    end
+
+    def test_knows_if_a_command_is_installable
+      assert @tool.installable?
+      refute @mvt.installable?
+    end
+
+    def test_knows_if_a_command_is_preparable
+      assert @tool.preparable?
+      refute @mvt.preparable?
+    end
+
+    def test_knows_if_a_command_is_reviewable
+      assert @tool.reviewable?
+      assert @mvt.reviewable?
+    end
+
+    def test_knows_if_a_command_is_formattable
+      assert @tool.formattable?
+      refute @mvt.formattable?
     end
   end
 end

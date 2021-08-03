@@ -94,7 +94,7 @@ module Reviewer
     end
 
     def rerun_verbosely
-      output.failure("Exit Status #{exit_status} · #{result}")
+      output.failure("Exit Status #{exit_status}")
       show_raw_output_block unless result.total_failure?
     end
 

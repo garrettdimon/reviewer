@@ -2,12 +2,14 @@
 
 module Reviewer
   class Tool
-    # Converts/casts tool configuration values and provides default values if not set
+    # Converts/casts tool configuration values and provides default values if not set.
     class Settings
-      attr_reader :tool, :config
+      attr_reader :tool_key, :config
 
-      def initialize(tool, config: nil)
-        @tool = tool
+      alias key tool_key
+
+      def initialize(tool_key, config: nil)
+        @tool_key = tool_key.to_sym
         @config = config || load_config
       end
 
@@ -29,12 +31,8 @@ module Reviewer
         !disabled?
       end
 
-      def key
-        tool.to_sym
-      end
-
       def name
-        config.fetch(:name) { tool.to_s.titleize }
+        config.fetch(:name) { tool_key.to_s.titleize }
       end
 
       def description
@@ -76,7 +74,7 @@ module Reviewer
       end
 
       def load_config
-        Reviewer.tools.to_h.fetch(tool.to_sym) { {} }
+        Reviewer.tools.to_h.fetch(key) { {} }
       end
     end
   end
