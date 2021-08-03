@@ -11,6 +11,36 @@ bundler_audit:
     review: 'bundle exec bundle-audit check --no-update'
     quiet_option: '--quiet'
 
+tests:
+  name: Minitest
+  description: Unit Tests & Coverage
+  tags: [ruby, tests, dev]
+  links:
+    home:
+  commands:
+    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
+    quiet_option: '--silent'
+  reports:
+    open_on_fail: true
+    local_file: coverage/index.html
+    local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
+  env:
+    coverage: true
+
+reek:
+  name: Reek
+  description: Examine Ruby Classes for Code Smells
+  tags: [ruby, quality, dev]
+  links:
+    home: https://github.com/troessner/reek
+    install: https://github.com/troessner/reek#quickstart
+  commands:
+    install: 'bundle exec gem install reek'
+    review: 'bundle exec reek'
+  flags:
+    color:
+    documentation:
+
 flog:
   disabled: true # Flog provides guidance and is generally run solo
   name: Flog
@@ -42,21 +72,6 @@ flay:
     liberal:
     summary:
 
-tests:
-  name: Minitest
-  description: Unit Tests & Coverage
-  tags: [ruby, tests, dev]
-  links:
-    home:
-  commands:
-    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
-    quiet_option: '--silent'
-  reports:
-    open_on_fail: true
-    local_file: coverage/index.html
-    local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
-  env:
-    coverage: true
 
 rubocop:
   name: Rubocop
