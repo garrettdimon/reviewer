@@ -8,7 +8,7 @@ module Reviewer
       when Tool   then value
       when Symbol then Tool.new(value)
       when String then Tool.new(value.to_sym)
-      else raise TypeError, "Cannot convert #{value.inspect} to Tool"
+      else raise TypeError, "Cannot convert #{value} to Tool"
       end
     end
     module_function :Tool
@@ -19,7 +19,7 @@ module Reviewer
       when Symbol             then Command::Verbosity.new(value)
       when String             then Command::Verbosity.new(value.to_sym)
       when Integer            then Command::Verbosity.new(Command::Verbosity::LEVELS[value])
-      else raise TypeError, "Cannot convert #{value.inspect} to Verbosity"
+      else raise TypeError, "Cannot convert #{value} to Verbosity"
       end
     end
     module_function :Verbosity

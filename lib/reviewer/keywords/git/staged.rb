@@ -17,20 +17,6 @@ module Reviewer
           stdout.present? ? stdout.split("\n") : []
         end
 
-        def to_s
-          stdout.present? ? stdout : ''
-        end
-
-        def inspect
-          {
-            command: command,
-            stdout: stdout,
-            stderr: stderr,
-            status: status,
-            results: results
-          }
-        end
-
         def list
           @stdout, @stderr, @status = Open3.capture3(command)
           @exit_status = @status.exitstatus.to_i

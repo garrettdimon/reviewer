@@ -24,10 +24,6 @@ module Reviewer
       def test_casting_to_hash
         keywords = Keywords.new
         assert keywords.to_h.key?(:provided)
-        assert keywords.to_h.key?(:recognized)
-        assert keywords.to_h.key?(:unrecognized)
-        assert keywords.to_h.key?(:reserved)
-        assert keywords.to_h.key?(:for_tags)
         assert keywords.to_h.key?(:for_tool_names)
       end
 
