@@ -20,20 +20,8 @@ module Reviewer
     end
 
     def test_command_with_seed
-      skip 'command seed tests'
-      @command = Reviewer::Command.new(:enabled_tool, :review, :no_silence)
-      tool = Tool.new(:dynamic_seed_tool)
-      seed = 123
-      cmd = tool.review_command(seed: seed)
-      assert_equal "bundle exec example review --seed #{seed} > /dev/null", cmd
-    end
-
-    def test_records_last_used_seed_value_to_history
-      skip 'Pending Removal or Move'
-      tool = Tool.new(:dynamic_seed_tool)
-      seed = 123
-      tool.review_command(seed: seed)
-      assert_equal Reviewer.history.get(tool.key, :last_seed), seed
+      command = Reviewer::Command.new(:dynamic_seed_tool, :review)
+      assert_match(/#{command.seed}/, command.string)
     end
 
     def test_can_be_cast_to_string

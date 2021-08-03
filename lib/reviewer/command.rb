@@ -12,15 +12,22 @@ module Reviewer
 
     attr_reader :tool, :type
 
+    # Creates an instance of the Command class to synthesize a command string using the tool,
+    # command type, and verbosity.
+    # @param tool [Tool, Symbol] a tool or tool key to use to look up the command and options
+    # @param type [Symbol] the desired command type (:install, :prepare, :review, :format)
+    # @param verbosity = Verbosity::TOTAL_SILENCE [Symbol] the desired verbosity for the command
+    #
+    # @return [Command] the intersection of a tool, command type, and verbosity
     def initialize(tool, type, verbosity = Verbosity::TOTAL_SILENCE)
       @tool = Tool(tool)
       @type = type.to_sym
       @verbosity = Verbosity(verbosity)
-
-      # raise InvalidTypeError.new(type) unless valid_type?
-      # raise NotConfiguredError.new(type, @tool) unless configured_for_tool?
     end
 
+    # The final command string with all of the conditions appled
+    #
+    # @return [String] the final, valid command string to run
     def string
       @string ||= seed_substitution? ? seeded_string : raw_string
     end
@@ -75,11 +82,17 @@ module Reviewer
       ).to_s
     end
 
+    # The version of the command with the SEED_SUBSTITUTION_VALUE replaced
+    #
+    # @return [String] the command string with the SEED_SUBSTITUTION_VALUE replaced
     def seeded_string
       # Update the string with the memoized seed value
       raw_string.gsub(SEED_SUBSTITUTION_VALUE, seed.to_s)
     end
 
+    # Determines if the raw command string has a SEED_SUBSTITUTION_VALUE that needs replacing
+    #
+    # @return [Boolean] true if the raw command string contains the SEED_SUBSTITUTION_VALUE
     def seed_substitution?
       raw_string.include?(SEED_SUBSTITUTION_VALUE)
     end
