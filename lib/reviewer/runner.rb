@@ -8,12 +8,12 @@ module Reviewer
     attr_reader :shell,
                 :output
 
-    delegate :tool, :type,               to: :command
-    delegate :result, :timer,            to: :shell
-    delegate :exit_status, :rerunnable?, to: :result
+    delegate :tool,           to: :command
+    delegate :result, :timer, to: :shell
+    delegate :exit_status,    to: :result
 
-    def initialize(tool, command_type, verbosity, output: Reviewer.output)
-      @command = Command.new(tool, command_type, verbosity)
+    def initialize(tool, command_type, output: Reviewer.output)
+      @command = Command.new(tool, command_type)
       @shell = Shell.new
       @output = output
     end
@@ -21,8 +21,11 @@ module Reviewer
     def run_quietly
       identify_and_prepare_tool
 
-      run
-      success? ? show_timing_result : rerun_verbosely
+      # Fully capture all output so no extraneous noise is displayed
+      run_with_capture
+
+      # If it's a success, just show the timing, otherwise, show the output of the command
+      success? ? show_timing_result : show_output
 
       exit_status
     end
@@ -30,8 +33,11 @@ module Reviewer
     def run_verbosely
       identify_and_prepare_tool
 
-      show_raw_output_block
-      show_guidance
+      # Show the unfiltered output in its full fidelity
+      run_without_capture
+
+      # Help them get back on track
+      show_guidance unless success?
 
       exit_status
     end
@@ -67,62 +73,36 @@ module Reviewer
       tool.last_prepared_at = Time.current.utc
     end
 
-    def run
+    def run_with_capture
+      command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
       shell.capture_main(command)
     end
 
-    def show_raw_output_block
-      verbose_command = Command.new(tool, command.type, Reviewer::Command::Verbosity::NO_SILENCE)
+    def run_without_capture
+      command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
+      output.current_command(command)
 
-      output.current_command(verbose_command)
-
-      unless verbose_command.string.include?('quiet')
-        output.divider
-        shell.direct(verbose_command.string)
-        output.divider
-      end
-
-      show_guidance
+      output.divider
+      shell.direct(command)
+      output.divider
     end
 
-    def show_current_tool
-      output.tool_summary(tool)
+    def show_output
+      output.failure("Exit Status #{exit_status}", command: command)
+
+      # If it can't be rerun, then don't try
+      return if result.total_failure?
+
+      run_without_capture
+      show_guidance
     end
 
     def show_timing_result
       output.success(timer)
     end
 
-    def rerun_verbosely
-      output.failure("Exit Status #{exit_status}")
-      show_raw_output_block unless result.total_failure?
-    end
-
     def show_guidance
-      if result.executable_not_found?
-        show_missing_executable_guidance
-      elsif result.cannot_execute?
-        show_unrecoverable_guidance
-      else
-        show_syntax_guidance
-      end
-    end
-
-    def show_missing_executable_guidance
-      return unless result.executable_not_found?
-
-      output.missing_executable_guidance(tool: tool, command: shell.command)
-    end
-
-    def show_unrecoverable_guidance
-      output.unrecoverable(result.stderr)
-    end
-
-    def show_syntax_guidance
-      output.syntax_guidance(
-        ignore_link: tool.settings.links[:ignore_syntax],
-        disable_link: tool.settings.links[:disable_syntax]
-      )
+      Reviewer::Guidance.new(command: command, result: result, output: output).show
     end
   end
 end

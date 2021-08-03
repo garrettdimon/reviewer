@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class OutputTest < MiniTest::Test # rubocop:disable  Metrics/ClassLength
+  class OutputTest < MiniTest::Test
     def setup
       @output = Output.new(printer: Printer.new)
     end
@@ -28,14 +28,7 @@ module Reviewer
     def test_current_command
       command_string = 'ls -la'
       out, _err = capture_subprocess_io { @output.current_command(command_string) }
-      assert_match(/Now running/i, out)
-      assert_match(/#{command_string}/i, out)
-    end
-
-    def test_last_command
-      command_string = 'ls -la'
-      out, _err = capture_subprocess_io { @output.last_command(command_string) }
-      assert_match(/Reviewer ran/i, out)
+      assert_match(/Running:/i, out)
       assert_match(/#{command_string}/i, out)
     end
 
@@ -70,7 +63,7 @@ module Reviewer
     def test_unrecoverable
       details = 'Unrecoverable Failure 12345'
       out, _err = capture_subprocess_io { @output.unrecoverable(details) }
-      assert_match(/Uncrecoverable Error Occured/i, out)
+      assert_match(/Unrecoverable Error/i, out)
       assert_match(/#{details}/i, out)
     end
 
@@ -104,24 +97,20 @@ module Reviewer
     end
 
     def test_missing_executable_guidance
-      tool = Tool.new(:missing_command)
-      out, _err = capture_subprocess_io do
-        @output.missing_executable_guidance(tool: tool, command: 'tool command')
-      end
+      command = Command.new(:missing_command, :review, :total_silence)
+      out, _err = capture_subprocess_io { @output.missing_executable_guidance(command) }
       assert_includes(out, Output::FAILURE)
-      assert_match(/#{tool.name}/i, out)
+      assert_match(/#{command.tool.name}/i, out)
       assert_match(/Missing executable for/i, out)
       assert_match(/Try installing/i, out)
       assert_match(/Read the installation guidance/i, out)
     end
 
     def test_missing_executable_guidance_without_installation_help
-      tool = Tool.new(:missing_command_without_guidance)
-      out, _err = capture_subprocess_io do
-        @output.missing_executable_guidance(tool: tool, command: 'tool command')
-      end
+      command = Command.new(:missing_command_without_guidance, :review, :total_silence)
+      out, _err = capture_subprocess_io { @output.missing_executable_guidance(command) }
       assert_includes(out, Output::FAILURE)
-      assert_match(/#{tool.name}/i, out)
+      assert_match(/#{command.tool.name}/i, out)
       assert_match(/Missing executable for/i, out)
       refute_match(/Try installing/i, out)
       refute_match(/Read the installation guidance/i, out)

@@ -36,14 +36,7 @@ module Reviewer
     def current_command(command)
       command = String(command)
 
-      printer.info "\nNow running:"
-      printer.info command.light_black
-    end
-
-    def last_command(command)
-      command = String(command)
-
-      printer.info "\nReviewer ran:"
+      printer.info "\nNow Running:"
       printer.info command.light_black
     end
 
@@ -58,12 +51,18 @@ module Reviewer
       printer.info message
     end
 
-    def failure(details)
+    def failure(details, command: nil)
       printer.error "#{FAILURE} #{details}".red.bold
+
+      return if command.nil?
+
+      blank_line
+      printer.error 'Failed Command:'.red.bold
+      printer.error String(command).light_black
     end
 
     def unrecoverable(details)
-      printer.error 'An Uncrecoverable Error Occured'.red.bold
+      printer.error 'Unrecoverable Error:'.red.bold
       printer.error details
     end
 
@@ -75,12 +74,12 @@ module Reviewer
       printer.info details.to_s.light_black
     end
 
-    def missing_executable_guidance(tool:, command:)
+    def missing_executable_guidance(command)
+      tool = command.tool
       installation_command = Command.new(tool, :install, :no_silence).string if tool.installable?
       install_link = tool.install_link
 
-      failure("Missing executable for '#{tool}'")
-      last_command(command)
+      failure("Missing executable for '#{tool}'", command: command)
       guidance('Try installing the tool:', installation_command)
       guidance('Read the installation guidance:', install_link)
     end

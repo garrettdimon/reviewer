@@ -17,7 +17,7 @@ module Reviewer
     def run
       benchmark_batch do
         tools.each do |tool|
-          runner = Runner.new(tool, command_type, verbosity)
+          runner = Runner.new(tool, command_type)
 
           # With multiple tools, run each one quietly.
           # Otherwise, with just one tool
