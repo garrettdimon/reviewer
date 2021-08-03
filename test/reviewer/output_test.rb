@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class OutputTest < MiniTest::Test
+  class OutputTest < MiniTest::Test # rubocop:disable  Metrics/ClassLength
     def setup
       @output = Output.new(printer: Printer.new)
     end
@@ -13,6 +13,16 @@ module Reviewer
       out, _err = capture_subprocess_io { @output.tool_summary(tool) }
       assert_match(/#{tool.name}/i, out)
       assert_match(/#{tool.description}/i, out)
+    end
+
+    def test_blank_line
+      out, _err = capture_subprocess_io { @output.blank_line }
+      assert_match(/\n/i, out)
+    end
+
+    def test_divider
+      out, _err = capture_subprocess_io { @output.divider }
+      assert_match(/#{Output::DIVIDER}/i, out)
     end
 
     def test_current_command
@@ -29,20 +39,6 @@ module Reviewer
       assert_match(/#{command_string}/i, out)
     end
 
-    def test_raw_results
-      command_string = 'ls -la'
-      out, _err = capture_subprocess_io { @output.raw_results(command_string) }
-      assert_match(/Now running/i, out)
-      assert_match(/CHANGELOG.md/i, out)
-      assert_match(/Reviewer ran/i, out)
-    end
-
-    def test_syntax_guidance
-      content = 'Test Block'
-      out, _err = capture_subprocess_io { @output.results_block { 'Test Block' } }
-      assert_match(/#{content}/i, out)
-    end
-
     def test_exit_status_context
       exit_status = 123
       out, _err = capture_subprocess_io { @output.exit_status(exit_status) }
@@ -50,7 +46,14 @@ module Reviewer
       assert_match(/#{exit_status}/i, out)
     end
 
-    def test_success
+    def test_success_without_prep
+      timer = Shell::Timer.new(main: 1.2345)
+      out, _err = capture_subprocess_io { @output.success(timer) }
+      assert_match(/#{Reviewer::Output::SUCCESS}/i, out)
+      refute_match(/preparation/i, out)
+    end
+
+    def test_success_with_prep
       timer = Shell::Timer.new(prep: 0.2345, main: 1.2345)
       out, _err = capture_subprocess_io { @output.success(timer) }
       assert_match(/#{Reviewer::Output::SUCCESS}/i, out)
@@ -82,6 +85,22 @@ module Reviewer
     def test_skips_guidance_when_details_nil
       out, _err = capture_subprocess_io { @output.guidance('Test', nil) }
       assert out.blank?
+    end
+
+    def test_syntax_guidance_with_ignore_link
+      link = 'https://example.com/ignore'
+      out, _err = capture_subprocess_io { @output.syntax_guidance(ignore_link: link) }
+      assert_includes(out, 'Selectively Ignore a Rule:')
+      assert_includes(out, link)
+    end
+
+    def test_syntax_guidance_with_disable_link
+      link = 'https://example.com/disable'
+      out, _err = capture_subprocess_io do
+        @output.syntax_guidance(disable_link: link)
+      end
+      assert_includes(out, 'Fully Disable a Rule:')
+      assert_includes(out, link)
     end
 
     def test_missing_executable_guidance

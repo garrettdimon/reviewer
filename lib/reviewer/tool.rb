@@ -116,6 +116,13 @@ module Reviewer
       links.key?(:install) && links[:install].present?
     end
 
+    # Returns the text for the install link if available
+    #
+    # @return [String, nil] the link if it exists, nil otherwise
+    def install_link
+      install_link? ? links.fetch(:install) : nil
+    end
+
     # Determines if two tools are equal
     # @param other [Tool] the tool to compare to the current instance
     #

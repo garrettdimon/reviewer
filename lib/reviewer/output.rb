@@ -47,20 +47,6 @@ module Reviewer
       printer.info command.light_black
     end
 
-    def raw_results(command)
-      command = String(command)
-
-      current_command(command)
-      results_block { system(command) }
-      last_command(command)
-    end
-
-    def results_block(&block)
-      divider
-      printer.info(&block)
-      divider
-    end
-
     def exit_status(value)
       failure("Exit Status #{value}")
     end
@@ -91,7 +77,7 @@ module Reviewer
 
     def missing_executable_guidance(tool:, command:)
       installation_command = Command.new(tool, :install, :no_silence).string if tool.installable?
-      install_link = tool.settings.links&.fetch(:install, nil)
+      install_link = tool.install_link
 
       failure("Missing executable for '#{tool}'")
       last_command(command)

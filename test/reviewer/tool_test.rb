@@ -60,6 +60,11 @@ module Reviewer
       refute @mvt.install_link?
     end
 
+    def test_returns_the_install_link
+      assert_nil @mvt.install_link
+      assert_equal 'https://example.com/install', @tool.install_link
+    end
+
     def test_knows_if_a_command_is_installable
       assert @tool.installable?
       refute @mvt.installable?
