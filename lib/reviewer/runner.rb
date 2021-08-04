@@ -6,13 +6,15 @@ require_relative 'runner/strategies/verbose'
 module Reviewer
   # Wrapper for executng a command and printing the results
   class Runner
+    extend Forwardable
+
     attr_accessor :strategy
 
     attr_reader :command, :shell, :output
 
-    delegate :tool,           to: :command
-    delegate :result, :timer, to: :shell
-    delegate :exit_status,    to: :result
+    def_delegators :@command, :tool
+    def_delegators :@shell, :result, :timer
+    def_delegators :result, :exit_status
 
     def initialize(tool, command_type, strategy = Strategies::Quiet, output: Reviewer.output)
       @command = Command.new(tool, command_type)

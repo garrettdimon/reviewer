@@ -8,9 +8,11 @@ require_relative 'shell/timer'
 module Reviewer
   # Handles running, timing, and capturing results for a command
   class Shell
+    extend Forwardable
+
     attr_reader :timer, :result
 
-    delegate :exit_status, to: :result
+    def_delegators :@result, :exit_status
 
     # Initializes a Reviewer shell for running and benchmarking commands, and capturing output
     #

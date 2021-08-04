@@ -2,6 +2,7 @@
 
 require 'active_support/core_ext/string'
 require 'benchmark'
+require 'forwardable'
 
 require_relative 'reviewer/conversions'
 

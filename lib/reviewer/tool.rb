@@ -5,6 +5,7 @@ require_relative 'tool/settings'
 module Reviewer
   # Provides an instance of a specific tool for accessing its settings and run history
   class Tool
+    extend Forwardable
     include Comparable
 
     # In general, Reviewer tries to save time where it can. In the case of the "prepare" command
@@ -16,17 +17,17 @@ module Reviewer
 
     attr_reader :settings, :history
 
-    delegate :key,
-             :name,
-             :hash,
-             :description,
-             :tags,
-             :commands,
-             :links,
-             :enabled?,
-             :disabled?,
-             :max_exit_status,
-             to: :settings
+    def_delegators :@settings,
+                   :key,
+                   :name,
+                   :hash,
+                   :description,
+                   :tags,
+                   :commands,
+                   :links,
+                   :enabled?,
+                   :disabled?,
+                   :max_exit_status
 
     alias to_sym key
     alias to_s name
