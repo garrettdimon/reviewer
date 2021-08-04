@@ -17,11 +17,11 @@ module Reviewer
     def run
       benchmark_batch do
         tools.each do |tool|
-          runner = Runner.new(tool, command_type)
+          runner = Runner.new(tool, command_type, strategy)
 
           # With multiple tools, run each one quietly.
           # Otherwise, with just one tool
-          multiple_tools? ? runner.run_quietly : runner.run_verbosely
+          runner.run
 
           # Record the exit status
           capture_results(runner)
@@ -44,8 +44,8 @@ module Reviewer
       tools.size > 1
     end
 
-    def verbosity
-      multiple_tools? ? Command::Verbosity::TOTAL_SILENCE : Command::Verbosity::NO_SILENCE
+    def strategy
+      multiple_tools? ? Runner::Strategies::Quiet : Runner::Strategies::Verbose
     end
 
     def capture_results(runner)

@@ -5,11 +5,22 @@ require 'test_helper'
 module Reviewer
   class RunnerTest < MiniTest::Test
     def setup
+      # @output = Output.new(printer: Printer.new)
       allow_printing_output!
     end
 
     def teardown
       ensure_test_configuration!
+    end
+
+    def test_quiet_runner_implementation
+      quiet_runner = Runner.new(:enabled_tool, :review, Runner::Strategies::Quiet)
+      capture_subprocess_io { quiet_runner.run }
+    end
+
+    def test_verbose_runner_implementation
+      verbose_runner = Runner.new(:enabled_tool, :review, Runner::Strategies::Verbose)
+      capture_subprocess_io { verbose_runner.run }
     end
 
     def test_determines_success_based_on_configured_max_exit_status_for_review

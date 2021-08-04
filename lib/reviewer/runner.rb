@@ -1,53 +1,41 @@
 # frozen_string_literal: true
 
+require_relative 'runner/strategies/quiet'
+require_relative 'runner/strategies/verbose'
+
 module Reviewer
   # Wrapper for executng a command and printing the results
   class Runner
-    attr_accessor :command
+    attr_accessor :strategy
 
-    attr_reader :shell,
-                :output
+    attr_reader :command, :shell, :output
 
-    delegate :prepare?,       to: :tool
     delegate :tool,           to: :command
     delegate :result, :timer, to: :shell
     delegate :exit_status,    to: :result
 
-    def initialize(tool, command_type, output: Reviewer.output)
+    def initialize(tool, command_type, strategy = Strategies::Quiet, output: Reviewer.output)
       @command = Command.new(tool, command_type)
+      @strategy = strategy
       @shell = Shell.new
       @output = output
     end
 
-    def run_quietly
-      run do
-        @command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
+    def run
+      # Show which tool is about to run
+      output.tool_summary(tool)
 
-        # Run the prep command if it needs to be run
-        prepare_with_capture if prepare?
+      # Run the provided strategy
+      run_strategy
 
-        # Fully capture all output so no extraneous noise is displayed
-        run_with_capture
+      # If it failed,
+      guidance.show unless success?
 
-        # Display either the timer for success or the details for failure
-        show_results
-      end
-    end
-
-    def run_verbosely
-      run do
-        @command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
-
-        # Run the prep command if it needs to be run
-        prepare_without_capture if prepare?
-
-        # Show the unfiltered output in its full fidelity
-        run_without_capture
-      end
+      exit_status
     end
 
     def success?
-      if command.type == :review
+      if review?
         # Some tools (ex. yarn audit) return a range of non-zero exit statuses and almost never
         # return 0. Those tools can be configured to accept a non-zero exit status so they aren't
         # constantly considered to be failing over minor issues.
@@ -59,15 +47,47 @@ module Reviewer
       end
     end
 
+    def review?
+      command.type == :review
+    end
+
+    def prepare_with_capture
+      shell.capture_prep(prepare_command)
+    end
+
+    def prepare_without_capture
+      output.current_command(prepare_command)
+      output.divider
+      shell.direct(prepare_command)
+    end
+
+    def run_with_capture
+      shell.capture_main(command)
+    end
+
+    def run_without_capture
+      output.current_command(command)
+      output.divider
+      shell.direct(command)
+      output.divider
+    end
+
+    def show_results
+      # If it's a success, just show the timing, otherwise, show the output of the command
+      success? ? show_timing_result : show_command_output
+    end
+
     private
 
-    def run
-      # Show which tool is about to run
-      output.tool_summary(tool)
-      yield
-      guidance.show unless success?
+    def run_prepare_step?
+      command.type != :prepare && tool.prepare?
+    end
 
-      exit_status
+    def run_strategy
+      strategy.new(self).tap do |runner|
+        runner.prepare if run_prepare_step?
+        runner.run
+      end
     end
 
     def prepare_command
@@ -77,25 +97,8 @@ module Reviewer
       @prepare_command ||= Command.new(tool, :prepare, command.verbosity)
     end
 
-    def prepare_with_capture
-      shell.capture_prep(prepare_command)
-      # TODO: Record the prep time for historic data to show % complete while running in the future
-      #       It could also show min/max/mean/avg as well?
-      #       Should only update history if it was running against all files, or times would be
-      #       skewed by the shorter runtime.
-    end
-
-    def run_with_capture
-      shell.capture_main(command)
-      # TODO: Record the main time for historic data to show % complete while running in the future
-      #       It could also show min/max/mean/avg as well?
-      #       Should only update history if it was running against all files, or times would be
-      #       skewed by the shorter runtime.
-    end
-
-    def show_results
-      # If it's a success, just show the timing, otherwise, show the output of the command
-      success? ? show_timing_result : show_command_output
+    def show_timing_result
+      output.success(timer)
     end
 
     def show_command_output
@@ -108,23 +111,6 @@ module Reviewer
       # The downside is that the content will display as a pure string stripped of all color.
       # So maybe if re-running will take longer than X seconds, we display the stripped output?
       run_without_capture
-    end
-
-    def show_timing_result
-      output.success(timer)
-    end
-
-    def prepare_without_capture
-      output.current_command(prepare_command)
-      output.divider
-      shell.direct(prepare_command)
-    end
-
-    def run_without_capture
-      output.current_command(command)
-      output.divider
-      shell.direct(command)
-      output.divider
     end
 
     def guidance
