@@ -15,12 +15,10 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Run the default task
-      run: bundle exec rake
     - name: Bundle Audit
       run: bundle exec ./exe/rvw bundle_audit
     - name: Test Review
       run: bundle exec ./exe/rvw tests
-    - name: Full Review
-      run: bundle exec ./exe/rvw
+    - name: Multiple Command Review
+      run: bundle exec ./exe/rvw bundle_audit tests
 
