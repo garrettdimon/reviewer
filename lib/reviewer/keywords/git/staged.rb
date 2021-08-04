@@ -14,7 +14,7 @@ module Reviewer
         attr_reader :stdout, :stderr, :status, :exit_status
 
         def to_a
-          !stdout.strip.empty? ? stdout.split("\n") : []
+          stdout.strip.empty? ? [] : stdout.split("\n")
         end
 
         def list
