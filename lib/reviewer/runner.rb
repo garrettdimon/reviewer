@@ -26,7 +26,10 @@ module Reviewer
       output.tool_summary(tool)
 
       # Run the provided strategy
-      run_strategy
+      strategy.new(self).tap do |run_strategy|
+        run_strategy.prepare if run_prepare_step?
+        run_strategy.run
+      end
 
       # If it failed,
       guidance.show unless success?
@@ -35,82 +38,30 @@ module Reviewer
     end
 
     def success?
-      if review?
-        # Some tools (ex. yarn audit) return a range of non-zero exit statuses and almost never
-        # return 0. Those tools can be configured to accept a non-zero exit status so they aren't
-        # constantly considered to be failing over minor issues.
+      # Some review tools return a range of non-zero exit statuses and almost never return 0.
+      # (`yarn audit` is a good example.) Those tools can be configured to accept a non-zero exit
+      # status so they aren't constantly considered to be failing over minor issues.
+      #
+      # But when other command types (prepare, install, format) are run, they either succeed or they
+      # fail. With no shades of gray in those cases, anything other than a 0 is a failure.
+      if command.type == :review
         exit_status <= tool.max_exit_status
       else
-        # When command types other than reviews are run, they either do the thing or they don't. In
-        # those cases, anything other than a 0 isn't acceptable.
         exit_status.zero?
       end
     end
-
-    def review?
-      command.type == :review
-    end
-
-    def prepare_with_capture
-      shell.capture_prep(prepare_command)
-    end
-
-    def prepare_without_capture
-      output.current_command(prepare_command)
-      output.divider
-      shell.direct(prepare_command)
-    end
-
-    def run_with_capture
-      shell.capture_main(command)
-    end
-
-    def run_without_capture
-      output.current_command(command)
-      output.divider
-      shell.direct(command)
-      output.divider
-    end
-
-    def show_results
-      # If it's a success, just show the timing, otherwise, show the output of the command
-      success? ? show_timing_result : show_command_output
-    end
-
-    private
 
     def run_prepare_step?
       command.type != :prepare && tool.prepare?
     end
 
-    def run_strategy
-      strategy.new(self).tap do |runner|
-        runner.prepare if run_prepare_step?
-        runner.run
-      end
-    end
-
     def prepare_command
-      # Touch the `last_prepared_at` timestamp for the tool so it waits before running again.
-      tool.last_prepared_at = Time.current.utc
-
       @prepare_command ||= Command.new(tool, :prepare, command.verbosity)
     end
 
-    def show_timing_result
-      output.success(timer)
-    end
-
-    def show_command_output
-      output.failure("Exit Status #{exit_status}", command: command)
-
-      # If it can't be rerun, then don't try
-      return if result.total_failure?
-
-      # In the future, this could conditionally print the results of stdout/stderr to save time.
-      # The downside is that the content will display as a pure string stripped of all color.
-      # So maybe if re-running will take longer than X seconds, we display the stripped output?
-      run_without_capture
+    def update_last_prepared_at
+      # Touch the `last_prepared_at` timestamp for the tool so it waits before running again.
+      tool.last_prepared_at = Time.current.utc
     end
 
     def guidance

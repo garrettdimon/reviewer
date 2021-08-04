@@ -18,7 +18,7 @@ tests:
   links:
     home:
   commands:
-    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
+    review: "bundle exec rake --trace TESTOPTS='--verbose --seed=$SEED'"
     quiet_option: '--silent'
   reports:
     open_on_fail: true

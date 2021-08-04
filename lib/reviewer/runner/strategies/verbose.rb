@@ -13,11 +13,17 @@ module Reviewer
         end
 
         def prepare
-          runner.prepare_without_capture
+          runner.update_last_prepared_at
+          runner.output.current_command(runner.prepare_command)
+          runner.output.divider
+          runner.shell.direct(runner.prepare_command)
         end
 
         def run
-          runner.run_without_capture
+          runner.output.current_command(runner.command)
+          runner.output.divider
+          runner.shell.direct(runner.command)
+          runner.output.divider
         end
       end
     end
