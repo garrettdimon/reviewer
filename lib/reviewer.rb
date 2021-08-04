@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'rubygems'
+require 'slop'
+
 require 'benchmark'
 require 'forwardable'
 require 'logger'

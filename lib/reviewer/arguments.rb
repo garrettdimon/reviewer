@@ -4,8 +4,6 @@ require_relative 'arguments/keywords'
 require_relative 'arguments/files'
 require_relative 'arguments/tags'
 
-require 'slop'
-
 module Reviewer
   # Handles option parsing for `rvw` and `fmt` commands
   #
@@ -19,8 +17,6 @@ module Reviewer
   #   `rvw ruby staged`
   #
   class Arguments
-    include Slop
-
     attr_accessor :options
 
     attr_reader :output
