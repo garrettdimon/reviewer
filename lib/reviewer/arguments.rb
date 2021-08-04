@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'slop'
+
 require_relative 'arguments/keywords'
 require_relative 'arguments/files'
 require_relative 'arguments/tags'

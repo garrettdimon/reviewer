@@ -18,13 +18,13 @@ jobs:
     - name: Run the default task
       run: bundle exec rake
     - name: Bundle Audit
-      run: ./exe/rvw bundle_audit
+      run: bundle exec ./exe/rvw bundle_audit
     - name: Test Review
-      run: ./exe/rvw tests
+      run: bundle exec ./exe/rvw tests
     - name: Reek
-      run: ./exe/rvw reek
+      run: bundle exec ./exe/rvw reek
     - name: Rubocop
-      run: ./exe/rvw rubocop
+      run: bundle exec ./exe/rvw rubocop
     - name: Full Review
-      run: ./exe/rvw
+      run: bundle exec ./exe/rvw
 
