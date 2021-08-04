@@ -34,7 +34,7 @@ module Reviewer
       end
 
       def prep_percent
-        return nil unless prep.present? && main.present?
+        return nil unless prepped?
 
         (prep / total.to_f * 100).round
       end
@@ -44,7 +44,7 @@ module Reviewer
       end
 
       def prepped?
-        prep.present? && main.present?
+        !(prep.nil? || main.nil?)
       end
 
       private

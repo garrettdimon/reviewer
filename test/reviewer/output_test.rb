@@ -77,7 +77,7 @@ module Reviewer
 
     def test_skips_guidance_when_details_nil
       out, _err = capture_subprocess_io { @output.guidance('Test', nil) }
-      assert out.blank?
+      assert out.strip.empty?
     end
 
     def test_syntax_guidance_with_ignore_link

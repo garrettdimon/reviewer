@@ -24,7 +24,7 @@ module Reviewer
         private
 
         def env(key, value)
-          return nil if key.to_s.blank? || value.to_s.blank?
+          return nil if key.to_s.strip.empty? || value.to_s.strip.empty?
 
           value = needs_quotes?(value) ? "'#{value}'" : value
 

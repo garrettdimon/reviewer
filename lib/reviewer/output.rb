@@ -67,7 +67,7 @@ module Reviewer
     end
 
     def guidance(summary, details)
-      return unless details.present?
+      return if details.nil?
 
       blank_line
       printer.info summary

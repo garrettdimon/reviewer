@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-require 'active_support'
+# require 'active_support'
 require 'benchmark'
 require 'forwardable'
+require 'logger'
 
 require_relative 'reviewer/conversions'
 

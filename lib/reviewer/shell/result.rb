@@ -62,7 +62,7 @@ module Reviewer
       #
       # @return [String] stdout if present, otherwise stderr
       def to_s
-        stderr.blank? ? stdout : stderr
+        stderr.strip.empty? ? stdout : stderr
       end
     end
   end
