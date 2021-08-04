@@ -5,6 +5,9 @@ require 'test_helper'
 module Reviewer
   class CommandTest < MiniTest::Test
     def setup
+      # Only load it once per SettingsTest run rather than every test
+      @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
+
       @command = Reviewer::Command.new(:enabled_tool, :review, :no_silence)
     end
 
