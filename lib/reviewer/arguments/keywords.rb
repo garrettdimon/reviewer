@@ -123,7 +123,7 @@ module Reviewer
       #
       # @return [Array<String>] the list of intersecting values
       def intersection_with(values)
-        values.intersection(provided).uniq.sort
+        (values & provided).uniq.sort
       end
     end
   end

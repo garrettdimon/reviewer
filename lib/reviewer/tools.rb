@@ -87,7 +87,7 @@ module Reviewer
     end
 
     def tagged?(tool)
-      tool.enabled? && tags.intersection(tool.tags).any?
+      tool.enabled? && (tags & tool.tags).any?
     end
 
     def named?(tool)
