@@ -19,6 +19,8 @@ module Reviewer
   #   `rvw ruby staged`
   #
   class Arguments
+    include Slop
+
     attr_accessor :options
 
     attr_reader :output
