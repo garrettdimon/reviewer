@@ -107,7 +107,7 @@ module Reviewer
     def stale?
       return false unless preparable?
 
-      last_prepared_at.nil? || last_prepared_at < Time.current.utc - SIX_HOURS_IN_SECONDS
+      last_prepared_at.nil? || last_prepared_at < Time.now - SIX_HOURS_IN_SECONDS
     end
 
     # Convenience method for determining if a tool has a configured install link

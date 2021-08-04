@@ -32,7 +32,7 @@ module Reviewer
       end
 
       def name
-        config.fetch(:name) { tool_key.to_s.titleize }
+        config.fetch(:name) { tool_key.to_s.capitalize }
       end
 
       def description

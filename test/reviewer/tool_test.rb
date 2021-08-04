@@ -28,10 +28,10 @@ module Reviewer
       @tool.last_prepared_at = nil
       assert @tool.stale?
 
-      @tool.last_prepared_at = Time.current - (Tool::SIX_HOURS_IN_SECONDS + 1)
+      @tool.last_prepared_at = Time.now - (Tool::SIX_HOURS_IN_SECONDS + 1)
       assert @tool.stale?
 
-      @tool.last_prepared_at = Time.current - (Tool::SIX_HOURS_IN_SECONDS - 1)
+      @tool.last_prepared_at = Time.now - (Tool::SIX_HOURS_IN_SECONDS - 1)
       refute @tool.stale?
     end
 
@@ -40,12 +40,12 @@ module Reviewer
       refute @mvt.preparable?
 
       # The last prepared at date is definitely stale...
-      @mvt.last_prepared_at = Time.current - (Tool::SIX_HOURS_IN_SECONDS * 2)
+      @mvt.last_prepared_at = Time.now - (Tool::SIX_HOURS_IN_SECONDS * 2)
       refute @mvt.stale?
     end
 
     def test_can_track_last_prepared_at_across_runs
-      timestamp = Time.current
+      timestamp = Time.now
 
       tool_one = Tool.new(:enabled_tool)
       tool_two = Tool.new(:enabled_tool)

@@ -45,7 +45,7 @@ module Reviewer
       end
 
       def test_provides_the_tool_name_with_the_key_as_default
-        assert_equal @tool.to_s.titleize, @settings.name
+        assert_equal @tool.to_s.capitalize, @settings.name
 
         @config[:name] = 'Tool Name'
         @settings = Settings.new(@tool, config: @config)

@@ -63,7 +63,7 @@ module Reviewer
 
     def update_last_prepared_at
       # Touch the `last_prepared_at` timestamp for the tool so it waits before running again.
-      tool.last_prepared_at = Time.current.utc
+      tool.last_prepared_at = Time.now
     end
 
     def guidance
