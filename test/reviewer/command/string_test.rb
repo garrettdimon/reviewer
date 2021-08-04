@@ -6,6 +6,9 @@ module Reviewer
   class Command
     class StringTest < MiniTest::Test
       def setup
+        # Only load it once per SettingsTest run rather than every test
+        @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
+
         @settings = ::Reviewer::Tool::Settings.new(:enabled_tool)
         @level = Reviewer::Command::Verbosity::TOTAL_SILENCE
       end
