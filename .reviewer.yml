@@ -1,5 +1,5 @@
-bundler_audit:
-  name: Bundler Audit
+bundle_audit:
+  name: Bundle Audit
   description: Review Gem Dependencies for Security Issues
   tags: [critical, dependencies, ruby, dev]
   links:

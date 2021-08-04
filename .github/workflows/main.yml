@@ -17,3 +17,14 @@ jobs:
         bundler-cache: true
     - name: Run the default task
       run: bundle exec rake
+    - name: Bundle Audit
+      run: ./exe/rvw bundle_audit
+    - name: Test Review
+      run: ./exe/rvw tests
+    - name: Reek
+      run: ./exe/rvw reek
+    - name: Rubocop
+      run: ./exe/rvw rubocop
+    - name: Full Review
+      run: ./exe/rvw
+
