@@ -1,0 +1,13 @@
+list:
+  commands:
+    install: 'ls'
+    prepare: 'ls'
+    review: 'ls'
+    format: 'ls'
+
+list_other:
+  commands:
+    review: 'ls'
+    prepare: 'ls'
+    review: 'ls'
+    format: 'ls'

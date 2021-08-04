@@ -27,7 +27,9 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :configuration
+    def reset
+      @tools = nil
+    end
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     # commands that are not disabled to have an entry for the `review` command.
@@ -108,7 +110,10 @@ module Reviewer
     def perform(command_type, clear_screen: false)
       system('clear') if clear_screen
 
-      Batch.run(command_type, tools.current)
+      results = Batch.run(command_type, tools.current)
+
+      # Return the largest exit status
+      exit results.values.max
     end
   end
 end

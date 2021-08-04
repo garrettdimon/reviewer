@@ -6,6 +6,9 @@ module Reviewer
   class Tool
     class SettingsTest < MiniTest::Test
       def setup
+        # Only load it once per SettingsTest run rather than every test
+        @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
+
         @tool = :example
         @config = {
           commands: {
@@ -40,11 +43,8 @@ module Reviewer
         assert @settings.disabled?
       end
 
-      def test_provides_the_tool_key
-        assert_equal @tool, @settings.key
-      end
-
       def test_provides_the_tool_name_with_the_key_as_default
+        assert_equal @tool, @settings.key
         assert_equal @tool.to_s.capitalize, @settings.name
 
         @config[:name] = 'Tool Name'
