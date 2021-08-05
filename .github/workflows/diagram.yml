@@ -1,0 +1,17 @@
+name: Ruby
+
+on: [push,pull_request]
+
+env:
+  CI: true
+
+jobs:
+  visualize:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - name: Update diagram
+      uses: githubocto/repo-visualizer@main
+      with:
+        output_file: 'structure.svg'
+        excluded_paths: 'bin,exe,test,vendor'

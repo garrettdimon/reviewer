@@ -24,8 +24,3 @@ jobs:
       run: bundle exec ./exe/rvw tests
     - name: Multiple Command Review
       run: bundle exec ./exe/rvw bundle_audit tests
-    - name: Update diagram
-      uses: githubocto/repo-visualizer@main
-      with:
-        output_file: 'images/diagram.svg'
-        excluded_paths: 'exe,test,bin'
