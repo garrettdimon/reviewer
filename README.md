@@ -1,7 +1,7 @@
 
 **Note:** As of August 4th, 2021, Reviewer is a work in progress. While it's working great reviewing its own code, it's not quite ready for wider usage.
 
-[![Gem Version](https://badge.fury.io/rb/reviewer.svg)](https://badge.fury.io/rb/reviewer) [![Ruby](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml)
+[![Gem Version](https://badge.fury.io/rb/reviewer.svg)](https://badge.fury.io/rb/reviewer) [![Ruby](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/garrettdimon/reviewer/branch/main/graph/badge.svg?token=UuXUlQAA2e)](https://codecov.io/gh/garrettdimon/reviewer)
 
 # What is Reviewer?
 
