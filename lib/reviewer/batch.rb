@@ -7,6 +7,13 @@ module Reviewer
 
     attr_reader :command_type, :tools, :output, :results
 
+    # Generates an instance of Batch for running multiple tools together
+    # @param command_type [Symbol] the type of command to run for each tool. One of: :install,
+    #   :prepare, :review, :format
+    # @param tools [Array<Tool>] the tools to run the commands for
+    # @param output: Reviewer.output [Output] the output channel to print results to
+    #
+    # @return [self]
     def initialize(command_type, tools, output: Reviewer.output)
       @command_type = command_type
       @tools = tools
