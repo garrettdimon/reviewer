@@ -119,8 +119,8 @@ yard:
   commands:
     install: 'bundle exec gem install yard'
     prepare: "yardoc 'lib/**/*.rb'"
+    review: 'yard stats'
     serve: 'yard server --reload && open http://0.0.0.0:8808'
     generate:
     publish:
-    report: 'yard stats'
     quiet_flag: '--quiet'
