@@ -66,7 +66,6 @@ module Reviewer
 
       private
 
-
       # Ensures the level is valid by verifying it exists in Command::Verbosity::LEVELS
       #
       # @raise [InvalidLevelError] if the level does not exist in Command::Verbosity::LEVELS
