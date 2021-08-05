@@ -2,10 +2,9 @@
 **Note:** As of August 4th, 2021, Reviewer is a work in progress. While it's working great reviewing its own code, it's not quite ready for wider usage.
 
 [![build](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml)
-[![gem version](https://img.shields.io/gem/v/reviewer)](https://rubygems.org/gems/reviewer)
 [![coverage](https://img.shields.io/codecov/c/github/garrettdimon/reviewer?token=UuXUlQAA2e)](https://codecov.io/gh/garrettdimon/reviewer)
 [![last commit](https://img.shields.io/github/last-commit/garrettdimon/reviewer/main)](https://github.com/garrettdimon/reviewer/commits/main)
-
+[![gem version](https://img.shields.io/gem/v/reviewer)](https://rubygems.org/gems/reviewer)
 
 # What is Reviewer?
 
