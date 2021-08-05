@@ -15,8 +15,8 @@ module Reviewer
         attr_reader :flag, :level
 
         # A wrapper for translating a desired verbosity into the correct strings to append to the
-        # command so that any output is appropriately silenced for the context under which it's
-        # currently being executed.
+        #   command so that any output is appropriately silenced for the context under which it's
+        #   currently being executed.
         # @param flag [String] the tool-level flag to be used for silencing output
         # @param level: Reviewer::Command::Verbosity::TOOL_SILENCE [Symbol] the target level for
         #   silence for the the command

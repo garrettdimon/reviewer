@@ -113,6 +113,7 @@ DEPENDENCIES
   rubocop-minitest
   rubocop-rake
   simplecov
+  yard
 
 BUNDLED WITH
    2.2.25
