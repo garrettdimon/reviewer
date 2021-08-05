@@ -7,12 +7,13 @@ enabled_tool:
     home: 'https://example.com'
     install: 'https://example.com/install'
     ignore_syntax: 'https://example.com/ignore'
+    disable_syntax: 'https://example.com/disable'
   commands:
-    install: 'bundle exec gem install example'
-    prepare: 'bundle exec example update'
-    review: 'bundle exec example review'
-    format: 'bundle exec example format'
-    quiet_option: '--quiet'
+    install: 'ls -a'
+    prepare: 'ls -b'
+    review: 'ls -c'
+    format: 'ls -d'
+    quiet_option: '-q'
     max_exit_status: 3
   env:
     with_spaces: 'with spaces'
@@ -34,12 +35,13 @@ disabled_tool:
     home: 'https://example.com'
     install: 'https://example.com/install'
     ignore_syntax: 'https://example.com/ignore'
+    disable_syntax: 'https://example.com/disable'
   commands:
-    install: 'bundle exec gem install example'
-    prepare: 'bundle exec example update'
-    review: 'bundle exec example review'
-    format: 'bundle exec example format'
-    quiet_option: '--quiet'
+    install: 'ls -a'
+    prepare: 'ls -b'
+    review: 'ls -c'
+    format: 'ls -b'
+    quiet_option: '-q'
     max_exit_status: 3
   env:
     first: first
@@ -48,23 +50,58 @@ disabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
+# For testing a command that can be run safely
+list:
+  disabled: true
+  commands:
+    install: 'ls'
+    prepare: 'ls -a'
+    review: 'ls -l'
+    format: 'ls -la'
+
+# For Testing Tagged & Named
+tagged:
+  tags: [tagged]
+  commands:
+    review: 'ls'
+
 # For Testing Defaults and Runner
 minimum_viable_tool:
+  disabled: true
   commands:
     review: 'ls'
 
 # Intentionally Failing Command
 failing_command:
+  disabled: true
   commands:
     review: 'exit 1'
 
 # Intentionally Missing Command
 # Uses the Unix exit code for 'command not found'
 missing_command:
+  disabled: true
+  commands:
+    install: 'ls -a'
+    review: 'exit 127'
+  links:
+    install: 'https://example.com/install'
+
+# Intentionally Missing Command
+# No guidance on installation
+missing_command_without_guidance:
+  disabled: true
   commands:
     review: 'exit 127'
 
 # For Testing Seed String Replacement
 dynamic_seed_tool:
+  disabled: true
   commands:
-    review: 'bundle exec example review --seed $SEED'
+    review: 'ls -c --seed $SEED'
+
+# For Testing Seed String Replacement on Re-run Commands
+failing_dynamic_seed_tool:
+  disabled: true
+  commands:
+    review: 'exit 1 --seed $SEED'

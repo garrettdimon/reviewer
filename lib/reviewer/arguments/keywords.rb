@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'keywords/git'
-
 module Reviewer
   class Arguments
     # Handles interpreting all 'leftover' arguments and translating them to file-related,
@@ -13,19 +11,34 @@ module Reviewer
 
       alias raw provided
 
+      # Generates an instace of parsed keywords from the provided arguments
+      # @param *provided [Array<String>] the leftover (non-flag) arguments from the command line
+      #
+      # @return [Arguments::Keywords]
       def initialize(*provided)
         @provided = Array(provided.flatten)
       end
 
+      # Proves the full list of raw keyword arguments explicitly passed via command-line as an array
+      #
+      # @return [Array] full collection of the provided keyword arguments as a string
       def to_a
         provided
       end
 
+      # Provides the full list of raw keyword arguments explicitly passed via command-line as a
+      #   comma-separated string
+      #
+      # @return [String] comma-separated list of the file arguments as a string
       def to_s
         to_a.join(',')
       end
 
-      def inspect
+      # Summary of the state of keyword arguments based on how Reviewer parsed them
+      #
+      # @return [Hash] represents the summary of the keyword values parsed from the command-line and
+      #   grouped based on how they were parsed
+      def to_h
         {
           provided: provided,
           recognized: recognized,
@@ -35,6 +48,7 @@ module Reviewer
           for_tool_names: for_tool_names
         }
       end
+      alias inspect to_h
 
       # Extracts reserved keywords from the provided arguments
       #
@@ -109,7 +123,7 @@ module Reviewer
       #
       # @return [Array<String>] the list of intersecting values
       def intersection_with(values)
-        values.intersection(provided).uniq.sort
+        (values & provided).uniq.sort
       end
     end
   end

@@ -14,10 +14,10 @@ module Reviewer
       assert loader.is_a? Hash
     end
 
-    def test_hashes_configuration_with_indiffferent_access
+    def test_hashes_configuration_with_symbol_keys
       loader = Loader.new
       assert loader.configuration.key?(:enabled_tool)
-      assert loader.configuration.key?('enabled_tool')
+      refute loader.configuration.key?('enabled_tool')
     end
 
     def test_to_h

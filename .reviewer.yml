@@ -1,5 +1,5 @@
-bundler_audit:
-  name: Bundler Audit
+bundle_audit:
+  name: Bundle Audit
   description: Review Gem Dependencies for Security Issues
   tags: [critical, dependencies, ruby, dev]
   links:
@@ -11,6 +11,36 @@ bundler_audit:
     review: 'bundle exec bundle-audit check --no-update'
     quiet_option: '--quiet'
 
+tests:
+  name: Minitest
+  description: Unit Tests & Coverage
+  tags: [ruby, tests, dev]
+  links:
+    home:
+  commands:
+    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
+    quiet_option: '--silent'
+  reports:
+    open_on_fail: true
+    local_file: coverage/index.html
+    local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
+  env:
+    coverage: true
+
+reek:
+  name: Reek
+  description: Examine Ruby Classes for Code Smells
+  tags: [ruby, quality, dev]
+  links:
+    home: https://github.com/troessner/reek
+    install: https://github.com/troessner/reek#quickstart
+  commands:
+    install: 'bundle exec gem install reek'
+    review: 'bundle exec reek'
+  flags:
+    color:
+    documentation:
+
 flog:
   disabled: true # Flog provides guidance and is generally run solo
   name: Flog
@@ -21,10 +51,11 @@ flog:
     install: https://ruby.sadi.st/Flog.html
   commands:
     install: 'bundle exec gem install flog'
-    review: 'bundle exec flog'
+    review: 'bundle exec flog -g lib'
   flags:
     threshold: 10 # Percentage. i.e. Show the most concerning 10% of results
     group:
+    methods-only:
 
 flay:
   disabled: true # Flay provides guidance and is generally run solo
@@ -36,17 +67,11 @@ flay:
     install: https://ruby.sadi.st/Flay.html
   commands:
     install: 'bundle exec gem install flay'
-    review: 'bundle exec flay'
+    review: 'bundle exec flay ./lib'
+  flags:
+    liberal:
+    summary:
 
-tests:
-  name: Minitest
-  description: Unit Tests
-  tags: [ruby, tests, dev]
-  links:
-    home:
-  commands:
-    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
-    quiet_option: '--silent'
 
 rubocop:
   name: Rubocop
@@ -68,7 +93,6 @@ rubocop:
     color:
 
 inch:
-  disabled: true # Inch provides guidance and is generally run solo
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation

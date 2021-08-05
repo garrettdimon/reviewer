@@ -26,7 +26,13 @@ module Reviewer
     end
 
     def reset!
+      return unless File.exist?(file)
+
       FileUtils.rm(file)
+    end
+
+    def self.reset!
+      new.reset!
     end
   end
 end

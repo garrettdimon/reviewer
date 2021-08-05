@@ -2,20 +2,26 @@
 
 module Reviewer
   class Tool
-    # Converts/casts tool configuration values and provides default values if not set
+    # Converts/casts tool configuration values and provides default values if not set.
     class Settings
-      attr_reader :tool
+      attr_reader :tool_key, :config
 
-      def initialize(tool, config: nil)
-        @tool = tool
-        @config = config
+      alias key tool_key
+
+      def initialize(tool_key, config: nil)
+        @tool_key = tool_key.to_sym
+        @config = config || load_config
       end
 
-      def ==(other)
+      def hash
+        state.hash
+      end
+
+      def eql?(other)
         self.class == other.class &&
           state == other.state
       end
-      alias eql? ==
+      alias :== eql?
 
       def disabled?
         config.fetch(:disabled, false)
@@ -25,28 +31,8 @@ module Reviewer
         !disabled?
       end
 
-      def prepare_command?
-        commands.key?(:prepare) && commands[:prepare].present?
-      end
-
-      def install_command?
-        commands.key?(:install) && commands[:install].present?
-      end
-
-      def format_command?
-        commands.key?(:format) && commands[:format].present?
-      end
-
-      def install_link?
-        links.key?(:install) && links[:install].present?
-      end
-
-      def key
-        tool.to_sym
-      end
-
       def name
-        config.fetch(:name) { tool.to_s.titleize }
+        config.fetch(:name) { tool_key.to_s.capitalize }
       end
 
       def description
@@ -83,12 +69,12 @@ module Reviewer
 
       protected
 
-      def config
-        @config || Reviewer.tools.to_h.fetch(tool.to_sym) { {} }
-      end
-
       def state
         config.to_hash
+      end
+
+      def load_config
+        Reviewer.tools.to_h.fetch(key) { {} }
       end
     end
   end

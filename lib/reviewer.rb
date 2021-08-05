@@ -1,14 +1,23 @@
 # frozen_string_literal: true
 
-require 'active_support/core_ext/string'
 require 'benchmark'
+require 'forwardable'
+require 'logger'
+
+require_relative 'reviewer/conversions'
 
 require_relative 'reviewer/arguments'
+require_relative 'reviewer/batch'
+require_relative 'reviewer/command'
 require_relative 'reviewer/configuration'
+require_relative 'reviewer/guidance'
 require_relative 'reviewer/history'
+require_relative 'reviewer/keywords'
 require_relative 'reviewer/loader'
-require_relative 'reviewer/logger'
+require_relative 'reviewer/output'
+require_relative 'reviewer/printer'
 require_relative 'reviewer/runner'
+require_relative 'reviewer/shell'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
 require_relative 'reviewer/version'
@@ -18,7 +27,10 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    attr_writer :configuration
+    # Resets the loaded tools
+    def reset!
+      @tools = nil
+    end
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     # commands that are not disabled to have an entry for the `review` command.
@@ -55,9 +67,9 @@ module Reviewer
     # The primary output method for Reviewer to consistently display success/failure details for a
     # unique run of each tool and the collective summary when relevant.
     #
-    # @return [Reviewer::Logger] prints formatted output to the command line.
-    def logger
-      @logger ||= Logger.new
+    # @return [Reviewer::Output] prints formatted output to the console.
+    def output
+      @output ||= Output.new
     end
 
     # A file store for sharing information across runs
@@ -98,22 +110,11 @@ module Reviewer
     # @return [Hash] the exit status (in integer format) for each command run
     def perform(command_type, clear_screen: false)
       system('clear') if clear_screen
-      results = {}
-      benchmark_suite do
-        tools.current.each do |tool|
-          runner = Runner.new(tool, command_type, logger: logger)
-          exit_status = runner.run
-          results[tool.key] = exit_status
 
-          # If the tool fails, stop running other tools
-          break unless exit_status <= tool.max_exit_status
-        end
-      end
-      results
-    end
+      results = Batch.run(command_type, tools.current)
 
-    def benchmark_suite(&block)
-      logger.total_time(Benchmark.realtime(&block))
+      # Return the largest exit status
+      exit results.values.max
     end
   end
 end

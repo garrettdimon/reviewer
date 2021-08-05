@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'yaml'
-require 'active_support/core_ext/hash/indifferent_access'
 
 module Reviewer
   # Provides a collection of the configured tools
@@ -16,7 +15,7 @@ module Reviewer
 
     def initialize(file = Reviewer.configuration.file)
       @file = file
-      @configuration = HashWithIndifferentAccess.new(configuration_hash)
+      @configuration = configuration_hash
 
       validate_configuration!
     end
@@ -50,7 +49,7 @@ module Reviewer
     end
 
     def configuration_hash
-      @configuration_hash ||= YAML.load_file(@file)
+      @configuration_hash ||= Psych.safe_load_file(@file, symbolize_names: true)
     rescue Errno::ENOENT
       raise MissingConfigurationError, "Tools configuration file couldn't be found at `#{file}`"
     rescue Psych::SyntaxError => e

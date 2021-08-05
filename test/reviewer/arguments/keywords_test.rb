@@ -16,6 +16,17 @@ module Reviewer
         assert_equal %w[one two].sort, keywords.provided
       end
 
+      def test_string_casting
+        assert_equal '', Keywords.new.to_s
+        assert_equal 'ruby,test', Keywords.new(%w[ruby test]).to_s
+      end
+
+      def test_casting_to_hash
+        keywords = Keywords.new
+        assert keywords.to_h.key?(:provided)
+        assert keywords.to_h.key?(:for_tool_names)
+      end
+
       def test_raw_aliases_provided
         keywords = Keywords.new
         assert_equal keywords.provided, keywords.raw
@@ -25,7 +36,7 @@ module Reviewer
         first_tool_tags = Reviewer.tools.all.first.tags
         keywords = Keywords.new
         assert keywords.configured_tags.any?
-        assert_equal first_tool_tags, first_tool_tags.intersection(keywords.configured_tags)
+        assert_equal first_tool_tags, (first_tool_tags & keywords.configured_tags)
       end
 
       def test_exposes_configured_tool_keys_as_name_strings
@@ -64,19 +75,19 @@ module Reviewer
       def test_exposes_all_possible_keywords_from_reserved
         keywords = Keywords.new
         assert keywords.possible.include?(Keywords::RESERVED.first)
-        assert_equal Keywords::RESERVED.size, keywords.possible.intersection(Keywords::RESERVED).size
+        assert_equal Keywords::RESERVED.size, (keywords.possible & Keywords::RESERVED).size
       end
 
       def test_exposes_all_possible_keywords_from_configured_tags
         keywords = Keywords.new
         assert keywords.possible.include?(keywords.configured_tags.first)
-        assert_equal keywords.configured_tags.size, keywords.possible.intersection(keywords.configured_tags).size
+        assert_equal keywords.configured_tags.size, (keywords.possible & keywords.configured_tags).size
       end
 
       def test_exposes_all_possible_keywords_from_configured_tool_names
         keywords = Keywords.new
         assert keywords.possible.include?(keywords.configured_tool_names.first)
-        assert_equal keywords.configured_tool_names.size, keywords.possible.intersection(keywords.configured_tool_names).size
+        assert_equal keywords.configured_tool_names.size, (keywords.possible & keywords.configured_tool_names).size
       end
 
       def test_exposes_recognized_and_unrecognized_keywords
