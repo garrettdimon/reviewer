@@ -107,6 +107,7 @@ inch:
     install: 'bundle exec gem install inch'
     review: 'bundle exec inch'
 
+
 yard:
   disabled: true
   tags: [docs, ruby, dev]
@@ -118,9 +119,8 @@ yard:
     install: https://github.com/lsegal/yard#installing
   commands:
     install: 'bundle exec gem install yard'
-    prepare: "yardoc 'lib/**/*.rb'"
+    prepare: "yard doc 'lib/**/*.rb'"
     review: 'yard stats'
     serve: 'yard server --reload && open http://0.0.0.0:8808'
     generate:
-    publish:
     quiet_flag: '--quiet'
