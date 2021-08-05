@@ -10,7 +10,22 @@
 
 *Reviewer reduces the friction of using multiple automated code review tools so you can use them more frequently and consistently.*
 
-For more detailed information, the [Wiki](https://github.com/garrettdimon/reviewer/wiki) is the best place to start. Or if you'd like the full story, you can go straight to the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview).
+What if, instead of...
+
+```bash
+$ yarn audit --level moderate
+$ bundle exec bundle-audit check --no-update
+$ bundle exec rubocop --parallel
+$ bundle exec erblint --lint-all --enable-all-linters
+$ yarn stylelint .
+$ yarn eslint .
+```
+...you could just type...
+```
+$ rvw
+```
+
+That's just the tip of the iceberg, though. For the full story on Reviewer's capabilities and benefits, the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) is the best place to start. Or if you'd like to see how it's configured under the hood, the [Configuration Instructions](https://github.com/garrettdimon/reviewer/wiki/Configuration) go even deeper.
 
 ## License
 
