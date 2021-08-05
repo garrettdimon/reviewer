@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'slop'
 
   spec.add_development_dependency 'bundler-audit'
+  spec.add_development_dependency 'codecov'
   spec.add_development_dependency 'dead_end'
   spec.add_development_dependency 'flay'
   spec.add_development_dependency 'flog'

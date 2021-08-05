@@ -8,6 +8,9 @@ if ENV['COVERAGE']
     minimum_coverage_by_file 100
     refuse_coverage_drop
   end
+
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)

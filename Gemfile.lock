@@ -12,6 +12,8 @@ GEM
     bundler-audit (0.8.0)
       bundler (>= 1.2.0, < 3)
       thor (~> 1.0)
+    codecov (0.5.2)
+      simplecov (>= 0.15, < 0.22)
     coderay (1.1.3)
     colorize (0.8.1)
     dead_end (1.1.7)
@@ -96,6 +98,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler-audit
+  codecov
   dead_end
   flay
   flog
