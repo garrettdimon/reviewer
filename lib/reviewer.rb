@@ -27,7 +27,8 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    def reset
+    # Resets the loaded tools
+    def reset!
       @tools = nil
     end
 

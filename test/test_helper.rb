@@ -27,7 +27,7 @@ end
 # Ensure it's using the test configuration file since some tests intentionally
 # change it to test how it recovers when misconfigured
 def ensure_test_configuration!
-  Reviewer.reset
+  Reviewer.reset!
   Reviewer.configure do |config|
     # Use the test configuration file that has predictable example coverage
     config.file = Pathname('test/fixtures/files/test_commands.yml')

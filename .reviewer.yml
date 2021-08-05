@@ -93,7 +93,6 @@ rubocop:
     color:
 
 inch:
-  disabled: true # Inch provides guidance and is generally run solo
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation
