@@ -4,11 +4,6 @@ require 'test_helper'
 
 module Reviewer
   class ToolsTest < Minitest::Test
-    def setup
-      # Only load it once per ToolsTest run rather than every test
-      @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
-    end
-
     def test_exposes_all_configured_tools
       @tools = Tools.new
 

@@ -4,4 +4,4 @@ enabled_tool:
   description: 'Run the tests.'
   tags: [enabled, ruby]
   commands:
-    format: 'bundle exec example format'
+    format: 'ls -d'

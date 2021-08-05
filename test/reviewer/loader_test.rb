@@ -4,11 +4,6 @@ require 'test_helper'
 
 module Reviewer
   class LoaderTest < MiniTest::Test
-    def setup
-      # Only load it once per SettingsTest run rather than every test
-      @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
-    end
-
     def test_reads_the_yaml_configuration_file
       loader = Loader.new
       assert loader.configuration.is_a? Hash

@@ -36,6 +36,7 @@ module Reviewer
       # If it failed,
       guidance.show unless success?
 
+
       exit_status
     end
 

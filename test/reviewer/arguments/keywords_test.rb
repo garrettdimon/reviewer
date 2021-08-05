@@ -5,11 +5,6 @@ require 'test_helper'
 module Reviewer
   class Arguments
     class KeywordsTest < MiniTest::Test
-      def setup
-        # Only load it once per SettingsTest run rather than every test
-        @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
-      end
-
       def test_initializes_from_multiple_argument_formats
         keywords = Keywords.new('one')
         assert_equal ['one'], keywords.provided

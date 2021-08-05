@@ -5,9 +5,6 @@ require 'test_helper'
 module Reviewer
   class CommandTest < MiniTest::Test
     def setup
-      # Only load it once per SettingsTest run rather than every test
-      @@config ||= ensure_test_configuration! # rubocop:disable Style/ClassVars
-
       @command = Reviewer::Command.new(:enabled_tool, :review, :no_silence)
     end
 
@@ -28,7 +25,7 @@ module Reviewer
     end
 
     def test_can_be_cast_to_string
-      command_string = "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true bundle exec example review --third 'third flag' --fourth 'fourth flag'"
+      command_string = "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true ls -c --third 'third flag' --fourth 'fourth flag'"
 
       assert_equal command_string, @command.string
       assert_equal @command.string, @command.to_s
