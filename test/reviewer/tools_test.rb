@@ -17,6 +17,12 @@ module Reviewer
       end
     end
 
+    def test_includes_enabled_tools_if_non_specified
+      @tools = Tools.new
+      assert_equal 2, @tools.current.size
+      refute_includes @tools.current, Tool.new(:disabled_tool)
+    end
+
     def test_includes_enabled_tagged_tools
       @tools = Tools.new(tags: %w[ruby css], tool_names: [])
       assert_equal 1, @tools.current.size
