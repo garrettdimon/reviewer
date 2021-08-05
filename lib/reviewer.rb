@@ -33,8 +33,8 @@ module Reviewer
     end
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
-    # commands that are not disabled to have an entry for the `review` command.
-    # @param clear_streen [boolean] clears the screen to reduce noise when true
+    #   commands that are not disabled to have an entry for the `review` command.
+    # @param clear_screen [boolean] clears the screen to reduce noise when true
     #
     # @return [void] Prints output to the console
     def review(clear_screen: false)
@@ -42,7 +42,7 @@ module Reviewer
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
-    # @param clear_streen [boolean] clears the screen to reduce noise when true
+    # @param clear_screen [boolean] clears the screen to reduce noise when true
     #
     # @return [void] Prints output to the console
     def format(clear_screen: false)
@@ -57,7 +57,7 @@ module Reviewer
     end
 
     # An interface for the collection of configured tools for accessing subsets of tools
-    # based on enabled/disabled, tags, keywords, etc.
+    #   based on enabled/disabled, tags, keywords, etc.
     #
     # @return [Reviewer::Tools] exposes the set of tools to be run in a given context
     def tools
@@ -65,7 +65,7 @@ module Reviewer
     end
 
     # The primary output method for Reviewer to consistently display success/failure details for a
-    # unique run of each tool and the collective summary when relevant.
+    #   unique run of each tool and the collective summary when relevant.
     #
     # @return [Reviewer::Output] prints formatted output to the console.
     def output
@@ -101,8 +101,9 @@ module Reviewer
     private
 
     # Provides a consistent approach to running and benchmarking commmands and preventing further
-    # execution of later tools if a command fails.
+    #   execution of later tools if a command fails.
     # @param command_type [Symbol] the specific command to run for each tool
+    # @param clear_screen [Boolean] if true, clears the screen before a run
     #
     # @example Run the `review` command for each relevant tool
     #   perform(:review)
