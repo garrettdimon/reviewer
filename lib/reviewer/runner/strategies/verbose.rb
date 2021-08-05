@@ -3,7 +3,7 @@
 module Reviewer
   class Runner
     module Strategies
-      # Execution strategy to run a command verbosely
+      # Execution strategy for a runner to run a command verbosely
       class Verbose
         attr_accessor :runner
 

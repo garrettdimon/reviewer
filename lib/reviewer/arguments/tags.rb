@@ -14,8 +14,7 @@ module Reviewer
       # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
       #   be translated to a list of tags based on the tags used in the configuration file
       #
-      # @return [Arguments::Tags] the container for extracting tags from the provided command line
-      #   arguments
+      # @return [self]
       def initialize(provided: Reviewer.arguments.tags.raw, keywords: Reviewer.arguments.keywords.for_tags)
         @provided = Array(provided)
         @keywords = Array(keywords)
@@ -49,7 +48,7 @@ module Reviewer
       private
 
       # Combines the sorted list of unique tags by merging the explicitly-provided tag arguments
-      # as well as those that were recognized from any relevant keyword arguments.
+      #   as well as those that were recognized from any relevant keyword arguments.
       #
       # @return [Array] full list of tags passed via command-line including those matching keyword
       #   arguments

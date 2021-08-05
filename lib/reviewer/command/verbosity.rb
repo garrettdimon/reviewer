@@ -42,14 +42,23 @@ module Reviewer
         level <=> other.level
       end
 
+      # Converts to the verbosity level as a string
+      #
+      # @return [String] the verbosity level as a string
       def to_s
         level.to_s
       end
 
+      # Converts to the verbosity level index
+      #
+      # @return [Integer] the verbosity level as an integer from Command::Verbosity::LEVELS
       def to_i
         LEVELS.index(level)
       end
 
+      # Converts to the verbosity level as a symbol
+      #
+      # @return [Symbol] the verbosity level's underlying symbol
       def to_sym
         level
       end
@@ -57,6 +66,11 @@ module Reviewer
 
       private
 
+
+      # Ensures the level is valid by verifying it exists in Command::Verbosity::LEVELS
+      #
+      # @raise [InvalidLevelError] if the level does not exist in Command::Verbosity::LEVELS
+      # @return [void]
       def verify_level!
         raise InvalidLevelError, "Invalid Verbosity Level: '#{level}'" unless LEVELS.include?(level)
       end

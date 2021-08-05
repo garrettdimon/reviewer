@@ -3,7 +3,7 @@
 module Reviewer
   class Runner
     module Strategies
-      # Execution strategy to run a command quietly
+      # Execution strategy for a runner to run a command quietly
       class Quiet
         attr_accessor :runner
 

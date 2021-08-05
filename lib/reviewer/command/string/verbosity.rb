@@ -21,7 +21,7 @@ module Reviewer
         # @param level: Reviewer::Command::Verbosity::TOOL_SILENCE [Symbol] the target level for
         #   silence for the the command
         #
-        # @return [type] [description]
+        # @return [self]
         def initialize(flag, level: Reviewer::Command::Verbosity::TOOL_SILENCE)
           @flag = String(flag)
           @level = Verbosity(level)

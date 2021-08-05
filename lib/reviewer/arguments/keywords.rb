@@ -14,7 +14,7 @@ module Reviewer
       # Generates an instace of parsed keywords from the provided arguments
       # @param *provided [Array<String>] the leftover (non-flag) arguments from the command line
       #
-      # @return [Arguments::Keywords]
+      # @return [self]
       def initialize(*provided)
         @provided = Array(provided.flatten)
       end

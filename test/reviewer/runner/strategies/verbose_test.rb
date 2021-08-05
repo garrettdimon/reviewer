@@ -8,16 +8,14 @@ module Reviewer
       class VerboseTest < MiniTest::Test
         def test_verbose_runner_implementation
           verbose_runner = Runner.new(:list, :review, Runner::Strategies::Verbose)
-          result = nil
-          capture_subprocess_io { result = verbose_runner.run }
+          capture_subprocess_io { verbose_runner.run }
           assert verbose_runner.success?
         end
 
         def test_verbose_runner_implementation_with_prep
           History.reset!
           verbose_runner = Runner.new(:list, :review, Runner::Strategies::Verbose)
-          result = nil
-          capture_subprocess_io { result = verbose_runner.run }
+          capture_subprocess_io { verbose_runner.run }
           assert verbose_runner.success?
         end
       end

@@ -87,17 +87,21 @@ rubocop:
     review: 'bundle exec rubocop --parallel'
     format: 'bundle exec rubocop --auto-correct'
     quiet_option: '--format q'
-    files_flag: ''
-    files_list_separator: ' '
+  files:
+    flag: ''
+    separator: ' '
   flags:
     color:
 
+# The YARD Parser can also come in handy:
+#   https://yardoc.org/types
 inch:
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation
   links:
     home: https://rrrene.org/inch/
+    usage: https://www.rubydoc.info/gems/yard/file/docs/Tags.md
   commands:
     install: 'bundle exec gem install inch'
     review: 'bundle exec inch'
