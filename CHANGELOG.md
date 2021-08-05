@@ -3,6 +3,20 @@
 - TODO: Improve and streamline installation
 - TODO: Add support for targeting specific files
 
+## [0.1.4] - 2021-07-08
+
+On the surface, this release doesn't change much or provide drastically new functionality, but it begins to lay the foundation for something that could evolve in the long-term.
+
+- Mostly refactoring to support the long-term vision
+- Add Reek to dev dependencies
+- Enable Inch in the default commands
+- Reduce external dependencies
+- Broaden official support Ruby 2.5.9, 2.6.8, 2.7.4, and 3.0.2
+- Add more robust GitHub Actions integration
+- Add Code Coverage via SimpleCov and set the bar at 100%
+- Begin to expand documentation coverage
+- Improve UX of results, timing, output, and error recovery guidance
+
 ## [0.1.3] - 2021-07-07
 
 The most significant update to how the core commands work and how the command-line arguments are handled. Most of the overall structure is starting to feel stable enough to begin documenting and adding comments.
