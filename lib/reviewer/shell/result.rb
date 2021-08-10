@@ -32,6 +32,10 @@ module Reviewer
         @exit_status = status&.exitstatus
       end
 
+      def exists?
+        [stdout, stderr, exit_status].compact.any?
+      end
+
       # Determines whether re-running a command is entirely futile. Primarily to help when a command
       # fails within a batch and needs to be re-run to show the output
       #

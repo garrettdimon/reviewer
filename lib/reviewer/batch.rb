@@ -25,9 +25,6 @@ module Reviewer
       benchmark_batch do
         tools.each do |tool|
           runner = Runner.new(tool, command_type, strategy)
-
-          # With multiple tools, run each one quietly.
-          # Otherwise, with just one tool
           runner.run
 
           # Record the exit status
@@ -56,7 +53,11 @@ module Reviewer
     end
 
     def capture_results(runner)
-      @results[runner.tool.key] = runner.exit_status
+      # Since some tools can "succeed" with a positive exit status, the overall batch is only
+      # interested in subjective failure. So if the runner succeeded according to the tool's max
+      # exit status, it should record the tool's run as a success for the purposes of the larger
+      # batch success/failure
+      @results[runner.tool.key] = runner.success? ? 0 : runner.exit_status
     end
 
     # Records and prints the total runtime of a block
@@ -65,7 +66,7 @@ module Reviewer
     # @return [void] prints the elapsed time
     def benchmark_batch(&block)
       elapsed_time = Benchmark.realtime(&block)
-      output.info "\nTotal Time ".white + "#{elapsed_time.round(1)}s".bold
+      output.batch_summary(results.size, elapsed_time)
     end
   end
 end

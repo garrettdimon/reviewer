@@ -18,13 +18,14 @@ tests:
   links:
     home:
   commands:
-    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
+    review: "bundle exec rake"
     quiet_option: '--silent'
   reports:
     open_on_fail: true
     local_file: coverage/index.html
     local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
   env:
+    testopts: --seed=$SEED --color
     coverage: true
 
 reek:
@@ -123,4 +124,19 @@ yard:
     review: 'yard stats'
     serve: 'yard server --reload && open http://0.0.0.0:8808'
     generate:
+    quiet_flag: '--quiet'
+
+
+alex:
+  disabled: true
+  tags: [language, docs]
+  name: Yard
+  description: Generates Documentation
+  links:
+    home:
+    usage:
+    install:
+  commands:
+    install: 'yarn global add alex'
+    review: 'alex .'
     quiet_flag: '--quiet'

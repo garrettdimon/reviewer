@@ -1,13 +1,18 @@
 # frozen_string_literal: true
 
-require 'colorize'
-
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
-    SUCCESS = 'Success'
-    FAILURE = 'Failure ·'
-    DIVIDER = ('-' * 60).to_s
+    COLORS = {
+      default: 39,
+      red:     31,
+      green:   32,
+      yellow:  33,
+      gray:    37,
+      white:   97
+    }
+
+    DIVIDER = '-' * 60
 
     attr_reader :printer
 
@@ -15,29 +20,39 @@ module Reviewer
       @printer = printer
     end
 
-    def info(message)
-      printer.info message
+    def help(message)
+      line(:white) { message }
+    end
+
+    def batch_summary(tool_count, elapsed_time)
+      newline
+      text(:white, :bold)  { "~#{elapsed_time.round(1)} seconds" }
+      line(:white, :light) { " for #{tool_count} tools" }
     end
 
     def blank_line
-      printer.info
+      printer.<< "\n"
     end
+    alias newline blank_line
 
     def divider
       blank_line
-      printer.info DIVIDER.light_black
-      blank_line
+      line(:gray) { DIVIDER }
     end
 
     def tool_summary(tool)
-      printer.info "\n#{tool.name}".bold + ' · '.light_black + tool.description
+      blank_line
+      text(:white, :bold)  { tool.name }
+      text(:white, :light) { " #{tool.description}" }
+      newline
     end
 
     def current_command(command)
       command = String(command)
 
-      printer.info "\nNow Running:"
-      printer.info command.light_black
+      blank_line
+      line(:white, :bold) { 'Now Running:' }
+      line(:gray) { String(command) }
     end
 
     def exit_status(value)
@@ -45,33 +60,40 @@ module Reviewer
     end
 
     def success(timer)
-      message = SUCCESS.green.bold + " #{timer.total_seconds}s".green
-      message += " (#{timer.prep_percent}% preparation)".yellow if timer.prepped?
-
-      printer.info message
+      text(:green, :bold)  { 'Success' }
+      if timer.prepped?
+        text(:green) { " #{timer.total_seconds}s" }
+        text(:yellow)        { " (#{timer.prep_percent}% preparation ~#{timer.prep_seconds}s)" }
+      else
+        text(:white, :light) { " #{timer.total_seconds}s" }
+      end
+      newline
     end
 
     def failure(details, command: nil)
-      printer.error "#{FAILURE} #{details}".red.bold
+      text(:red, :bold)    { 'Failure' }
+      text(:white, :light) { " #{details}" }
+      newline
 
       return if command.nil?
 
       blank_line
-      printer.error 'Failed Command:'.red.bold
-      printer.error String(command).light_black
+
+      line(:white, :bold) { 'Failed Command:' }
+      line(:gray) { String(command) }
     end
 
     def unrecoverable(details)
-      printer.error 'Unrecoverable Error:'.red.bold
-      printer.error details
+      line(:red, :bold) { 'Unrecoverable Error:' }
+      line(:gray)       { details }
     end
 
     def guidance(summary, details)
       return if details.nil?
 
       blank_line
-      printer.info summary
-      printer.info details.to_s.light_black
+      line(:white, :bold) { summary }
+      line(:gray)         { details }
     end
 
     def missing_executable_guidance(command)
@@ -87,6 +109,31 @@ module Reviewer
     def syntax_guidance(ignore_link: nil, disable_link: nil)
       guidance('Selectively Ignore a Rule:', ignore_link)
       guidance('Fully Disable a Rule:', disable_link)
+    end
+
+    private
+
+    def text(color = nil, weight = nil)
+      printer.<< "\e[#{weighted(weight)};#{colorized(color)}m"
+      printer.<< yield
+      printer.<< "\e[0m" # Reset
+    end
+
+    def line(color = nil, weight = nil)
+      text(color, weight) { yield }
+      newline
+    end
+
+    def colorized(value)
+      COLORS.fetch(value) { COLORS[:default] }
+    end
+
+    def weighted(value)
+      case value
+      when :bold  then 1
+      when :light then 2
+      else             0
+      end
     end
   end
 end

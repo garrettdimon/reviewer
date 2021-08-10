@@ -24,14 +24,9 @@ module Reviewer
     end
 
     def run
-      # Show which tool is about to run
-      output.tool_summary(tool)
+      identify_tool
 
-      # Run the provided strategy
-      strategy.new(self).tap do |run_strategy|
-        run_strategy.prepare if run_prepare_step?
-        run_strategy.run
-      end
+      execute_strategy
 
       # If it failed,
       guidance.show unless success?
@@ -50,6 +45,22 @@ module Reviewer
         exit_status <= tool.max_exit_status
       else
         exit_status.zero?
+      end
+    end
+
+    def identify_tool
+      # If there's an existing result, the runner is being re-run, and identifying the tool would
+      # be redundant.
+      return if result.exists?
+
+      output.tool_summary(tool)
+    end
+
+    def execute_strategy
+      # Run the provided strategy
+      strategy.new(self).tap do |run_strategy|
+        run_strategy.prepare if run_prepare_step?
+        run_strategy.run
       end
     end
 

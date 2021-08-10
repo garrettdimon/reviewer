@@ -2,7 +2,6 @@ PATH
   remote: .
   specs:
     reviewer (0.1.4)
-      colorize
       slop
 
 GEM
@@ -15,7 +14,6 @@ GEM
     codecov (0.5.2)
       simplecov (>= 0.15, < 0.22)
     coderay (1.1.3)
-    colorize (0.8.1)
     dead_end (1.1.7)
     docile (1.4.0)
     erubis (2.7.0)

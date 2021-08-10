@@ -34,12 +34,12 @@ module Reviewer
         opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
 
         opts.on '-v', '--version', 'print the version' do
-          @output.info VERSION
+          @output.help VERSION
           exit
         end
 
         opts.on '-h', '--help', 'print the help' do
-          @output.info opts
+          @output.help opts
           exit
         end
       end

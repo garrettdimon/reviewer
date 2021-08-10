@@ -50,6 +50,7 @@ module Reviewer
 
           # Add a divider to visually delineate the results
           runner.output.divider
+          runner.output.blank_line
 
           # Run the command through the shell directly so no output is suppressed
           runner.shell.direct(runner.command)

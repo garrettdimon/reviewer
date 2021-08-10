@@ -42,21 +42,21 @@ module Reviewer
     def test_success_without_prep
       timer = Shell::Timer.new(main: 1.2345)
       out, _err = capture_subprocess_io { @output.success(timer) }
-      assert_match(/#{Reviewer::Output::SUCCESS}/i, out)
+      assert_match(/Success/i, out)
       refute_match(/preparation/i, out)
     end
 
     def test_success_with_prep
       timer = Shell::Timer.new(prep: 0.2345, main: 1.2345)
       out, _err = capture_subprocess_io { @output.success(timer) }
-      assert_match(/#{Reviewer::Output::SUCCESS}/i, out)
+      assert_match(/Success/i, out)
       assert_match(/preparation/i, out)
     end
 
     def test_failure
       details = 'Result Details'
       out, _err = capture_subprocess_io { @output.failure(details) }
-      assert_match(/#{Reviewer::Output::FAILURE}/i, out)
+      assert_match(/Failure/i, out)
       assert_match(/#{details}/i, out)
     end
 
@@ -99,7 +99,7 @@ module Reviewer
     def test_missing_executable_guidance
       command = Command.new(:missing_command, :review, :total_silence)
       out, _err = capture_subprocess_io { @output.missing_executable_guidance(command) }
-      assert_includes(out, Output::FAILURE)
+      assert_match(/Failure/i, out)
       assert_match(/#{command.tool.name}/i, out)
       assert_match(/Missing executable for/i, out)
       assert_match(/Try installing/i, out)
@@ -109,7 +109,7 @@ module Reviewer
     def test_missing_executable_guidance_without_installation_help
       command = Command.new(:missing_command_without_guidance, :review, :total_silence)
       out, _err = capture_subprocess_io { @output.missing_executable_guidance(command) }
-      assert_includes(out, Output::FAILURE)
+      assert_match(/Failure/i, out)
       assert_match(/#{command.tool.name}/i, out)
       assert_match(/Missing executable for/i, out)
       refute_match(/Try installing/i, out)
