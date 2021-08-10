@@ -32,13 +32,6 @@ module Reviewer
       assert_match(/#{command_string}/i, out)
     end
 
-    def test_exit_status_context
-      exit_status = 123
-      out, _err = capture_subprocess_io { @output.exit_status(exit_status) }
-      assert_match(/Exit Status/i, out)
-      assert_match(/#{exit_status}/i, out)
-    end
-
     def test_success_without_prep
       timer = Shell::Timer.new(main: 1.2345)
       out, _err = capture_subprocess_io { @output.success(timer) }

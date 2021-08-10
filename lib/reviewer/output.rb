@@ -18,18 +18,13 @@ module Reviewer
 
     attr_reader :printer
 
+    # Creates an instance of Output to print Reviewer activity and results to the console
+    # @param printer: Reviewer.configuration.printer [Reviewer::Printer] a logger designed to write
+    #   formatted output to the console based on the results of Reviewer commands
+    #
+    # @return [self]
     def initialize(printer: Reviewer.configuration.printer)
       @printer = printer
-    end
-
-    def help(message)
-      line(:white) { message }
-    end
-
-    def batch_summary(tool_count, elapsed_time)
-      newline
-      text(:white, :bold) { "~#{elapsed_time.round(1)} seconds" }
-      line(:white, :light) { " for #{tool_count} tools" }
     end
 
     def newline
@@ -41,22 +36,45 @@ module Reviewer
       line(:gray) { DIVIDER }
     end
 
-    def tool_summary(tool)
-      newline
-      text(:white, :bold) { tool.name } & text(:white, :light) { " #{tool.description}" }
-      newline
+    # Prints plain text to the console
+    # @param message [String] the text to write to the console
+    #
+    # @return [void]
+    def help(message)
+      line(:white) { message }
     end
 
-    def current_command(command)
-      command = String(command)
+    # Prints a summary of the total time and results for a batch run. If multiple tools, it will
+    #  show the total tool count
+    # @param tool_count [Integer] the number of commands run in the batch
+    # @param seconds [Float] the total number of seconds the batch ran in realtime
+    #
+    # @return [void]
+    def batch_summary(tool_count, seconds)
+      newline
+      text(:white, :bold) { "~#{seconds.round(1)} seconds" }
+      line(:white, :light) { " for #{tool_count} tools" } if tool_count > 1
+    end
 
+    # Print a tool summary using the name and description. Used before running a command to help
+    #   identify which tool is running at any given moment.
+    # @param tool [Tool] the tool to identify and describe
+    #
+    # @return [void]
+    def tool_summary(tool)
+      newline
+      text(:white, :bold) { tool.name } & line(:white, :light) { " #{tool.description}" }
+    end
+
+    # Prints the text of a command to the console to help proactively expose potentials issues with
+    #   syntax if Reviewer translated thte provided options in an unexpected way
+    # @param command [String, Command] the command to identify on the console
+    #
+    # @return [void] [description]
+    def current_command(command)
       newline
       line(:white, :bold) { 'Now Running:' }
       line(:gray) { String(command) }
-    end
-
-    def exit_status(value)
-      failure("Exit Status #{value}")
     end
 
     def success(timer)
