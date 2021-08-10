@@ -107,7 +107,7 @@ module Reviewer
     private
 
     def text(color = nil, weight = nil, &block)
-      printer << "\e[#{weighted(weight)};#{colorized(color)}m"
+      printer << "\e[#{style(color, weight)}m"
       printer << block.call
       printer << "\e[0m" # Reset
     end
@@ -117,12 +117,11 @@ module Reviewer
       newline
     end
 
-    def colorized(value)
-      COLORS.fetch(value) { COLORS[:default] }
-    end
+    def style(color, weight)
+      weight = WEIGHTS.fetch(weight) { WEIGHTS[:default] }
+      color = COLORS.fetch(color) { COLORS[:default] }
 
-    def weighted(value)
-      WEIGHTS.fetch(value) { WEIGHTS[:default] }
+      "#{weight};#{color}"
     end
   end
 end
