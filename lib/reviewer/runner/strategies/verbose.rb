@@ -41,8 +41,6 @@ module Reviewer
         #
         # @return [void]
         def run
-          # Display the exact command that's being run
-
           # Display the exact command syntax that's being run. This can come in handy if there's an
           # issue and the command can be copied/pasted or if the generated command somehow has some
           # incorrect syntax or options that need to be corrected.
@@ -50,7 +48,6 @@ module Reviewer
 
           # Add a divider to visually delineate the results
           runner.output.divider
-          runner.output.blank_line
 
           # Run the command through the shell directly so no output is suppressed
           runner.shell.direct(runner.command)

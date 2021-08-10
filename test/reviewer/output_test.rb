@@ -43,14 +43,14 @@ module Reviewer
       timer = Shell::Timer.new(main: 1.2345)
       out, _err = capture_subprocess_io { @output.success(timer) }
       assert_match(/Success/i, out)
-      refute_match(/preparation/i, out)
+      refute_match(/prep/i, out)
     end
 
     def test_success_with_prep
       timer = Shell::Timer.new(prep: 0.2345, main: 1.2345)
       out, _err = capture_subprocess_io { @output.success(timer) }
       assert_match(/Success/i, out)
-      assert_match(/preparation/i, out)
+      assert_match(/prep/i, out)
     end
 
     def test_failure

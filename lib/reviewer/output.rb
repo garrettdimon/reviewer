@@ -5,12 +5,14 @@ module Reviewer
   class Output
     COLORS = {
       default: 39,
-      red:     31,
-      green:   32,
-      yellow:  33,
-      gray:    37,
-      white:   97
-    }
+      red: 31,
+      green: 32,
+      yellow: 33,
+      gray: 37,
+      white: 97
+    }.freeze
+
+    WEIGHTS = { default: 0, bold: 1, light: 2 }.freeze
 
     DIVIDER = '-' * 60
 
@@ -60,13 +62,9 @@ module Reviewer
     end
 
     def success(timer)
-      text(:green, :bold)  { 'Success' }
-      if timer.prepped?
-        text(:green) { " #{timer.total_seconds}s" }
-        text(:yellow)        { " (#{timer.prep_percent}% preparation ~#{timer.prep_seconds}s)" }
-      else
-        text(:white, :light) { " #{timer.total_seconds}s" }
-      end
+      text(:green, :bold) { 'Success' }
+      text(:green) { " #{timer.total_seconds}s" }
+      text(:yellow) { " (#{timer.prep_percent}% prep ~#{timer.prep_seconds}s)" } if timer.prepped?
       newline
     end
 
@@ -78,7 +76,6 @@ module Reviewer
       return if command.nil?
 
       blank_line
-
       line(:white, :bold) { 'Failed Command:' }
       line(:gray) { String(command) }
     end
@@ -113,14 +110,14 @@ module Reviewer
 
     private
 
-    def text(color = nil, weight = nil)
+    def text(color = nil, weight = nil, &block)
       printer.<< "\e[#{weighted(weight)};#{colorized(color)}m"
-      printer.<< yield
+      printer.<< block.call
       printer.<< "\e[0m" # Reset
     end
 
-    def line(color = nil, weight = nil)
-      text(color, weight) { yield }
+    def line(color = nil, weight = nil, &block)
+      text(color, weight) { block.call }
       newline
     end
 
@@ -129,11 +126,7 @@ module Reviewer
     end
 
     def weighted(value)
-      case value
-      when :bold  then 1
-      when :light then 2
-      else             0
-      end
+      WEIGHTS.fetch(value) { WEIGHTS[:default] }
     end
   end
 end
