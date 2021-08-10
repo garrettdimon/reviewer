@@ -12,7 +12,11 @@ module Reviewer
       white: 97
     }.freeze
 
-    WEIGHTS = { default: 0, bold: 1, light: 2 }.freeze
+    WEIGHTS = {
+      default: 0,
+      bold: 1,
+      light: 2
+    }.freeze
 
     DIVIDER = '-' * 60
 

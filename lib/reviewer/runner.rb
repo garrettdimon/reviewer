@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'runner/strategies/quiet'
+require_relative 'runner/strategies/silent'
 require_relative 'runner/strategies/verbose'
 
 module Reviewer
@@ -16,7 +16,7 @@ module Reviewer
     def_delegators :@shell, :result, :timer
     def_delegators :result, :exit_status
 
-    def initialize(tool, command_type, strategy = Strategies::Quiet, output: Reviewer.output)
+    def initialize(tool, command_type, strategy = Strategies::Silent, output: Reviewer.output)
       @command = Command.new(tool, command_type)
       @strategy = strategy
       @shell = Shell.new

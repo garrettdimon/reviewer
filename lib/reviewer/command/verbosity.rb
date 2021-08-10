@@ -11,20 +11,16 @@ module Reviewer
       # Use the quiet flag and send everything to dev/null.
       # For some tools "quiet" means "less noisy" rather than truly silent.
       # So in those cases, dev/null handles lingering noise.
-      TOTAL_SILENCE = :total_silence
+      SILENT = :silent
 
       # Just the quiet flag for the tool. Basically, let the tool determine the useful output.
-      TOOL_SILENCE = :tool_silence
+      QUIET = :quiet
 
       # Let the output scroll for eternity
-      NO_SILENCE = :no_silence
+      VERBOSE = :verbose
 
       # For validation and casting purposes
-      LEVELS = [
-        TOTAL_SILENCE,
-        TOOL_SILENCE,
-        NO_SILENCE
-      ].freeze
+      LEVELS = [SILENT, QUIET, VERBOSE].freeze
 
       attr_accessor :level
 

@@ -18,11 +18,11 @@ module Reviewer
         #   command so that any output is appropriately silenced for the context under which it's
         #   currently being executed.
         # @param flag [String] the tool-level flag to be used for silencing output
-        # @param level: Reviewer::Command::Verbosity::TOOL_SILENCE [Symbol] the target level for
+        # @param level: Reviewer::Command::Verbosity::QUIET [Symbol] the target level for
         #   silence for the the command
         #
         # @return [self]
-        def initialize(flag, level: Reviewer::Command::Verbosity::TOOL_SILENCE)
+        def initialize(flag, level: Reviewer::Command::Verbosity::QUIET)
           @flag = String(flag)
           @level = Verbosity(level)
         end
@@ -40,8 +40,8 @@ module Reviewer
         #   for the context
         def to_a
           case level.key
-          when Reviewer::Command::Verbosity::TOTAL_SILENCE then [flag, SEND_TO_DEV_NULL].compact
-          when Reviewer::Command::Verbosity::TOOL_SILENCE  then [flag].compact
+          when Reviewer::Command::Verbosity::SILENT  then [flag, SEND_TO_DEV_NULL].compact
+          when Reviewer::Command::Verbosity::QUIET   then [flag].compact
           else []
           end
         end

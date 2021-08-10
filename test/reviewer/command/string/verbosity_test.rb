@@ -16,49 +16,49 @@ module Reviewer
         end
 
         def test_converts_to_array
-          total_silence = Verbosity.new(@flag, level: :total_silence)
-          assert_equal 2, total_silence.to_a.size
+          silent = Verbosity.new(@flag, level: :silent)
+          assert_equal 2, silent.to_a.size
         end
 
-        def test_includes_quiet_flag_for_total_silence
-          verbosity = Verbosity.new(@flag, level: :total_silence)
+        def test_includes_quiet_flag_for_silent
+          verbosity = Verbosity.new(@flag, level: :silent)
           assert_includes verbosity.to_a, @flag
         end
 
-        def test_includes_quiet_flag_for_tool_silence
-          verbosity = Verbosity.new(@flag, level: :tool_silence)
+        def test_includes_quiet_flag_for_quiet
+          verbosity = Verbosity.new(@flag, level: :quiet)
           assert_includes verbosity.to_a, @flag
         end
 
-        def test_does_not_include_quiet_flag_for_no_silence
-          verbosity = Verbosity.new(@flag, level: :no_silence)
+        def test_does_not_include_quiet_flag_for_verbose
+          verbosity = Verbosity.new(@flag, level: :verbose)
           refute_includes verbosity.to_a, @flag
         end
 
-        def test_sends_to_dev_null_for_total_silence
-          verbosity = Verbosity.new(@flag, level: :total_silence)
+        def test_sends_to_dev_null_for_silent
+          verbosity = Verbosity.new(@flag, level: :silent)
           assert_includes verbosity.to_a, Verbosity::SEND_TO_DEV_NULL
         end
 
-        def test_does_not_send_to_dev_null_for_tool_silence
-          verbosity = Verbosity.new(@flag, level: :tool_silence)
+        def test_does_not_send_to_dev_null_for_quiet
+          verbosity = Verbosity.new(@flag, level: :quiet)
           refute_includes verbosity.to_a, Verbosity::SEND_TO_DEV_NULL
         end
 
-        def test_does_not_send_to_dev_null_for_no_silence
-          verbosity = Verbosity.new(@flag, level: :no_silence)
+        def test_does_not_send_to_dev_null_for_verbose
+          verbosity = Verbosity.new(@flag, level: :verbose)
           refute_includes verbosity.to_a, Verbosity::SEND_TO_DEV_NULL
         end
 
         def test_adjusts_based_on_target_level
-          total_silence = Verbosity.new(@flag, level: :total_silence)
-          assert_equal "#{@flag} #{Verbosity::SEND_TO_DEV_NULL}", total_silence.to_s
+          silent = Verbosity.new(@flag, level: :silent)
+          assert_equal "#{@flag} #{Verbosity::SEND_TO_DEV_NULL}", silent.to_s
 
-          tool_silence = Verbosity.new(@flag, level: :tool_silence)
-          assert_equal @flag, tool_silence.to_s
+          quiet = Verbosity.new(@flag, level: :quiet)
+          assert_equal @flag, quiet.to_s
 
-          no_silence = Verbosity.new(@flag, level: :no_silence)
-          assert_equal '', no_silence.to_s
+          verbose = Verbosity.new(@flag, level: :verbose)
+          assert_equal '', verbose.to_s
         end
       end
     end

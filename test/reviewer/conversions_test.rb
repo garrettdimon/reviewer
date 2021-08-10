@@ -28,22 +28,22 @@ module Reviewer
     end
 
     def test_verbosity_from_verbosity_instance
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
+      verbosity = Command::Verbosity.new(Command::Verbosity::SILENT)
       assert_equal verbosity, Verbosity(verbosity)
     end
 
     def test_verbosity_from_symbol
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
-      assert_equal verbosity, Verbosity(:total_silence)
+      verbosity = Command::Verbosity.new(Command::Verbosity::SILENT)
+      assert_equal verbosity, Verbosity(:silent)
     end
 
     def test_verbosity_from_string
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
-      assert_equal verbosity, Verbosity('total_silence')
+      verbosity = Command::Verbosity.new(Command::Verbosity::SILENT)
+      assert_equal verbosity, Verbosity('silent')
     end
 
     def test_verbosity_from_integer
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
+      verbosity = Command::Verbosity.new(Command::Verbosity::SILENT)
       assert_equal verbosity, Verbosity(0)
     end
 

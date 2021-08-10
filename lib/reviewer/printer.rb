@@ -11,7 +11,8 @@ module Reviewer
     #
     # @return [type] [description]
     def call(_severity, _time, _progname, message)
-      "#{message}\n"
+      # Explicitly calling `.dump` to safely escape non-printing values
+      message.dump
     end
   end
 

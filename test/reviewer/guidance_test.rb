@@ -9,7 +9,7 @@ module Reviewer
     end
 
     def test_missing_executable_guidance
-      command = Command.new(:missing_command, :review, :total_silence)
+      command = Command.new(:missing_command, :review, :silent)
       process_status = MockProcessStatus.new(exitstatus: 127, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
@@ -23,7 +23,7 @@ module Reviewer
     end
 
     def test_missing_executable_guidance_without_installation_help
-      command = Command.new(:missing_command_without_guidance, :review, :total_silence)
+      command = Command.new(:missing_command_without_guidance, :review, :silent)
       process_status = MockProcessStatus.new(exitstatus: 127, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
@@ -37,7 +37,7 @@ module Reviewer
     end
 
     def test_unrecoverable_guidance
-      command = Command.new(:missing_command, :review, :total_silence)
+      command = Command.new(:missing_command, :review, :silent)
       process_status = MockProcessStatus.new(exitstatus: 126, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
@@ -47,7 +47,7 @@ module Reviewer
     end
 
     def test_syntax_guidance
-      command = Command.new(:enabled_tool, :review, :total_silence)
+      command = Command.new(:enabled_tool, :review, :silent)
       process_status = MockProcessStatus.new(exitstatus: 1, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
@@ -57,7 +57,7 @@ module Reviewer
     end
 
     def test_syntax_guidance_with_ignore_link
-      command = Command.new(:enabled_tool, :review, :total_silence)
+      command = Command.new(:enabled_tool, :review, :silent)
       process_status = MockProcessStatus.new(exitstatus: 1, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
@@ -68,7 +68,7 @@ module Reviewer
     end
 
     def test_syntax_guidance_with_disable_link
-      command = Command.new(:enabled_tool, :review, :total_silence)
+      command = Command.new(:enabled_tool, :review, :silent)
       process_status = MockProcessStatus.new(exitstatus: 1, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 

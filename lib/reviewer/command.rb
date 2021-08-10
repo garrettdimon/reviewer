@@ -16,10 +16,10 @@ module Reviewer
     # command type, and verbosity.
     # @param tool [Tool, Symbol] a tool or tool key to use to look up the command and options
     # @param type [Symbol] the desired command type (:install, :prepare, :review, :format)
-    # @param verbosity = Verbosity::TOTAL_SILENCE [Symbol] the desired verbosity for the command
+    # @param verbosity = Verbosity::SILENT [Symbol] the desired verbosity for the command
     #
     # @return [Command] the intersection of a tool, command type, and verbosity
-    def initialize(tool, type, verbosity = Verbosity::TOTAL_SILENCE)
+    def initialize(tool, type, verbosity = Verbosity::SILENT)
       @tool = Tool(tool)
       @type = type.to_sym
       @verbosity = Verbosity(verbosity)

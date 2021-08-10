@@ -7,16 +7,16 @@ module Reviewer
     class StringTest < MiniTest::Test
       def setup
         @settings = ::Reviewer::Tool::Settings.new(:enabled_tool)
-        @level = Reviewer::Command::Verbosity::TOTAL_SILENCE
+        @level = Reviewer::Command::Verbosity::SILENT
       end
 
       def test_verbosity_changes_command
-        total_silence = Command::String.new(:install, tool_settings: @settings, verbosity: @level)
-        assert_includes total_silence.to_s, '-q > /dev/null'
+        silent = Command::String.new(:install, tool_settings: @settings, verbosity: @level)
+        assert_includes silent.to_s, '-q > /dev/null'
 
-        no_silence = Command::String.new(:install, tool_settings: @settings, verbosity: :no_silence)
-        refute_includes no_silence.to_s, '-q'
-        refute_includes no_silence.to_s, Reviewer::Command::String::Verbosity::SEND_TO_DEV_NULL
+        verbose = Command::String.new(:install, tool_settings: @settings, verbosity: :verbose)
+        refute_includes verbose.to_s, '-q'
+        refute_includes verbose.to_s, Reviewer::Command::String::Verbosity::SEND_TO_DEV_NULL
       end
 
       def test_can_control_seed_via_string_replacement

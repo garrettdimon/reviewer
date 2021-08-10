@@ -49,7 +49,7 @@ module Reviewer
     end
 
     def strategy
-      multiple_tools? ? Runner::Strategies::Quiet : Runner::Strategies::Verbose
+      multiple_tools? ? Runner::Strategies::Silent : Runner::Strategies::Verbose
     end
 
     def capture_results(runner)

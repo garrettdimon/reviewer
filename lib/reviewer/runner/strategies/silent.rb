@@ -4,17 +4,17 @@ module Reviewer
   class Runner
     module Strategies
       # Execution strategy for a runner to run a command quietly
-      class Quiet
+      class Silent
         attr_accessor :runner
 
         # Create an instance of the quiet strategy for a command runner so that any output is fully
         # suppressed so as to not create too much noise when running multiple commands.
         # @param runner [Runner] the instance of the runner to apply the strategy to
         #
-        # @return [Runner::Strategies::Quiet] an instance of the relevant quiet strategy
+        # @return [Runner::Strategies::Silent] an instance of the relevant quiet strategy
         def initialize(runner)
           @runner = runner
-          @runner.command.verbosity = Reviewer::Command::Verbosity::TOTAL_SILENCE
+          @runner.command.verbosity = Reviewer::Command::Verbosity::SILENT
         end
 
         # The prepare command strategy when running a command quietly

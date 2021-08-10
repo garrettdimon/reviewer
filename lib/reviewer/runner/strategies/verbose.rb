@@ -15,7 +15,7 @@ module Reviewer
         # @return [Runner::Strategies::Verbose] an instance of the relevant verbose strategy
         def initialize(runner)
           @runner = runner
-          @runner.command.verbosity = Reviewer::Command::Verbosity::NO_SILENCE
+          @runner.command.verbosity = Reviewer::Command::Verbosity::VERBOSE
         end
 
         # The prepare command strategy when running a command verbosely
