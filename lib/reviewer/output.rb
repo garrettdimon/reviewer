@@ -78,13 +78,15 @@ module Reviewer
     end
 
     def success(timer)
-      text(:green, :bold) { 'Success' } & text(:green) { " #{timer.total_seconds}s" }
+      text(:green, :bold) { 'Success' }
+      text(:green) { " #{timer.total_seconds}s" }
       text(:yellow) { " (#{timer.prep_percent}% prep ~#{timer.prep_seconds}s)" } if timer.prepped?
       newline
     end
 
     def failure(details, command: nil)
-      text(:red, :bold) { 'Failure' } & text(:white, :light) { " #{details}" }
+      text(:red, :bold) { 'Failure' }
+      text(:white, :light) { " #{details}" }
       newline
 
       return if command.nil?
@@ -105,21 +107,6 @@ module Reviewer
       newline
       line(:white, :bold) { summary }
       line(:gray) { details }
-    end
-
-    def missing_executable_guidance(command)
-      tool = command.tool
-      installation_command = Command.new(tool, :install, :no_silence).string if tool.installable?
-      install_link = tool.install_link
-
-      failure("Missing executable for '#{tool}'", command: command)
-      guidance('Try installing the tool:', installation_command)
-      guidance('Read the installation guidance:', install_link)
-    end
-
-    def syntax_guidance(ignore_link: nil, disable_link: nil)
-      guidance('Selectively Ignore a Rule:', ignore_link)
-      guidance('Fully Disable a Rule:', disable_link)
     end
 
     private

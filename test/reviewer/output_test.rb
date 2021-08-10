@@ -72,41 +72,5 @@ module Reviewer
       out, _err = capture_subprocess_io { @output.guidance('Test', nil) }
       assert out.strip.empty?
     end
-
-    def test_syntax_guidance_with_ignore_link
-      link = 'https://example.com/ignore'
-      out, _err = capture_subprocess_io { @output.syntax_guidance(ignore_link: link) }
-      assert_includes(out, 'Selectively Ignore a Rule:')
-      assert_includes(out, link)
-    end
-
-    def test_syntax_guidance_with_disable_link
-      link = 'https://example.com/disable'
-      out, _err = capture_subprocess_io do
-        @output.syntax_guidance(disable_link: link)
-      end
-      assert_includes(out, 'Fully Disable a Rule:')
-      assert_includes(out, link)
-    end
-
-    def test_missing_executable_guidance
-      command = Command.new(:missing_command, :review, :total_silence)
-      out, _err = capture_subprocess_io { @output.missing_executable_guidance(command) }
-      assert_match(/Failure/i, out)
-      assert_match(/#{command.tool.name}/i, out)
-      assert_match(/Missing executable for/i, out)
-      assert_match(/Try installing/i, out)
-      assert_match(/Read the installation guidance/i, out)
-    end
-
-    def test_missing_executable_guidance_without_installation_help
-      command = Command.new(:missing_command_without_guidance, :review, :total_silence)
-      out, _err = capture_subprocess_io { @output.missing_executable_guidance(command) }
-      assert_match(/Failure/i, out)
-      assert_match(/#{command.tool.name}/i, out)
-      assert_match(/Missing executable for/i, out)
-      refute_match(/Try installing/i, out)
-      refute_match(/Read the installation guidance/i, out)
-    end
   end
 end

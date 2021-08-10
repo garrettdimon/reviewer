@@ -50,7 +50,13 @@ module Reviewer
     #
     # @return [void] prints missing executable guidance
     def show_missing_executable_guidance
-      output.missing_executable_guidance(command)
+      tool = command.tool
+      installation_command = Command.new(tool, :install, :no_silence).string if tool.installable?
+      install_link = tool.install_link
+
+      output.failure("Missing executable for '#{tool}'", command: command)
+      output.guidance('Try installing the tool:', installation_command)
+      output.guidance('Read the installation guidance:', install_link)
     end
 
     # Shows the recovery guidance for when a command generates an unrecoverable error
@@ -64,10 +70,8 @@ module Reviewer
     #
     # @return [void] prints syntax guidance
     def show_syntax_guidance
-      output.syntax_guidance(
-        ignore_link: command.tool.links[:ignore_syntax],
-        disable_link: command.tool.links[:disable_syntax]
-      )
+      output.guidance('Selectively Ignore a Rule:', command.tool.links[:ignore_syntax])
+      output.guidance('Fully Disable a Rule:', command.tool.links[:disable_syntax])
     end
   end
 end
