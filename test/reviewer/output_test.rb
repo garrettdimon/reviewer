@@ -15,8 +15,8 @@ module Reviewer
       assert_match(/#{tool.description}/i, out)
     end
 
-    def test_blank_line
-      out, _err = capture_subprocess_io { @output.blank_line }
+    def test_newline
+      out, _err = capture_subprocess_io { @output.newline }
       assert_match(/\n/i, out)
     end
 

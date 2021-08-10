@@ -28,31 +28,29 @@ module Reviewer
 
     def batch_summary(tool_count, elapsed_time)
       newline
-      text(:white, :bold)  { "~#{elapsed_time.round(1)} seconds" }
+      text(:white, :bold) { "~#{elapsed_time.round(1)} seconds" }
       line(:white, :light) { " for #{tool_count} tools" }
     end
 
-    def blank_line
-      printer.<< "\n"
+    def newline
+      printer << "\n"
     end
-    alias newline blank_line
 
     def divider
-      blank_line
+      newline
       line(:gray) { DIVIDER }
     end
 
     def tool_summary(tool)
-      blank_line
-      text(:white, :bold)  { tool.name }
-      text(:white, :light) { " #{tool.description}" }
+      newline
+      text(:white, :bold) { tool.name } & text(:white, :light) { " #{tool.description}" }
       newline
     end
 
     def current_command(command)
       command = String(command)
 
-      blank_line
+      newline
       line(:white, :bold) { 'Now Running:' }
       line(:gray) { String(command) }
     end
@@ -62,35 +60,33 @@ module Reviewer
     end
 
     def success(timer)
-      text(:green, :bold) { 'Success' }
-      text(:green) { " #{timer.total_seconds}s" }
+      text(:green, :bold) { 'Success' } & text(:green) { " #{timer.total_seconds}s" }
       text(:yellow) { " (#{timer.prep_percent}% prep ~#{timer.prep_seconds}s)" } if timer.prepped?
       newline
     end
 
     def failure(details, command: nil)
-      text(:red, :bold)    { 'Failure' }
-      text(:white, :light) { " #{details}" }
+      text(:red, :bold) { 'Failure' } & text(:white, :light) { " #{details}" }
       newline
 
       return if command.nil?
 
-      blank_line
+      newline
       line(:white, :bold) { 'Failed Command:' }
       line(:gray) { String(command) }
     end
 
     def unrecoverable(details)
       line(:red, :bold) { 'Unrecoverable Error:' }
-      line(:gray)       { details }
+      line(:gray) { details }
     end
 
     def guidance(summary, details)
       return if details.nil?
 
-      blank_line
+      newline
       line(:white, :bold) { summary }
-      line(:gray)         { details }
+      line(:gray) { details }
     end
 
     def missing_executable_guidance(command)
@@ -111,9 +107,9 @@ module Reviewer
     private
 
     def text(color = nil, weight = nil, &block)
-      printer.<< "\e[#{weighted(weight)};#{colorized(color)}m"
-      printer.<< block.call
-      printer.<< "\e[0m" # Reset
+      printer << "\e[#{weighted(weight)};#{colorized(color)}m"
+      printer << block.call
+      printer << "\e[0m" # Reset
     end
 
     def line(color = nil, weight = nil, &block)
