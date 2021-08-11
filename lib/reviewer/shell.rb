@@ -22,7 +22,7 @@ module Reviewer
       @result = Result.new
     end
 
-    # Run a command without capturing the output. This ensures the results are displayed the same as
+    # Run a command without capturing the output. This ensures the results are displayed realtime
     # if the command was run directly in the shell. So it keeps any color or other formatting that
     # would be stripped out by capturing $stdout as a basic string.
     # @param command [String] the command to run

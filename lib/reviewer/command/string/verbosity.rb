@@ -7,11 +7,6 @@ module Reviewer
       class Verbosity
         include ::Reviewer::Conversions
 
-        # Even when tools provide a quiet flag, not all treat it as complete silence. In order to
-        # ensure no extraneous noise is written to the console in some contexts, command output
-        # occasionally needs to be sent to dev null to ensure there's no clutter.
-        SEND_TO_DEV_NULL = '> /dev/null'
-
         attr_reader :flag, :level
 
         # A wrapper for translating a desired verbosity into the correct strings to append to the
@@ -40,8 +35,7 @@ module Reviewer
         #   for the context
         def to_a
           case level.key
-          when Reviewer::Command::Verbosity::SILENT  then [flag, SEND_TO_DEV_NULL].compact
-          when Reviewer::Command::Verbosity::QUIET   then [flag].compact
+          when Reviewer::Command::Verbosity::QUIET then [flag].compact
           else []
           end
         end

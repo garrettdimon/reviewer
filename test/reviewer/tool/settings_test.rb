@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Tool
-    class SettingsTest < MiniTest::Test
+    class SettingsTest < MiniTest::Test # rubocop:disable Metrics/ClassLength
       def setup
         @tool = :example
         @config = {
@@ -63,6 +63,14 @@ module Reviewer
         @config[:tags] = %w[ruby css]
         @settings = Settings.new(@tool, config: @config)
         assert_equal @config[:tags], @settings.tags
+      end
+
+      def test_provides_the_tool_verbosities_with_empty_hash_as_default
+        assert_equal({}, @settings.verbosities)
+
+        @config[:verbosities] = { quiet: '--quiet' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal @config[:verbosities], @settings.verbosities
       end
 
       def test_provides_the_tool_links_with_empty_hash_as_default

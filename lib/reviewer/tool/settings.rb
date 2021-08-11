@@ -43,6 +43,10 @@ module Reviewer
         config.fetch(:tags) { [] }
       end
 
+      def verbosities
+        config.fetch(:verbosities) { {} }
+      end
+
       def links
         config.fetch(:links) { {} }
       end

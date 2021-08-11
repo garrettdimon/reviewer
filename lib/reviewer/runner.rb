@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative 'runner/strategies/silent'
-require_relative 'runner/strategies/verbose'
+require_relative 'runner/strategies/captured'
+require_relative 'runner/strategies/passthrough'
 
 module Reviewer
   # Wrapper for executng a command and printing the results
@@ -14,9 +14,9 @@ module Reviewer
 
     def_delegators :@command, :tool
     def_delegators :@shell, :result, :timer
-    def_delegators :result, :exit_status
+    def_delegators :result, :exit_status, :output?, :rerunnable?
 
-    def initialize(tool, command_type, strategy = Strategies::Silent, output: Reviewer.output)
+    def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output)
       @command = Command.new(tool, command_type)
       @strategy = strategy
       @shell = Shell.new

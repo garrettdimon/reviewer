@@ -8,6 +8,10 @@ enabled_tool:
     install: 'https://example.com/install'
     ignore_syntax: 'https://example.com/ignore'
     disable_syntax: 'https://example.com/disable'
+  verbosities:
+    quiet: '--quiet'
+    verbose: '--verbose'
+    trace: '--trace'
   commands:
     install: 'ls -a'
     prepare: 'ls -b'

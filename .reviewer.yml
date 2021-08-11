@@ -29,6 +29,7 @@ tests:
     coverage: true
 
 reek:
+  disabled: true
   name: Reek
   description: Examine Ruby Classes for Code Smells
   tags: [ruby, quality, dev]

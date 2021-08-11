@@ -18,7 +18,7 @@ module Reviewer
         executable_not_found: "can't find executable"
       }.freeze
 
-      attr_accessor :stdout, :stderr, :exit_status
+      attr_accessor :stdout, :stderr, :status, :exit_status
 
       # An instance of a result from running a local command
       # @param stdout = nil [String] standard out output from a command
@@ -29,6 +29,7 @@ module Reviewer
       def initialize(stdout = nil, stderr = nil, status = nil)
         @stdout = stdout
         @stderr = stderr
+        @status = status
         @exit_status = status&.exitstatus
       end
 
@@ -36,12 +37,16 @@ module Reviewer
         [stdout, stderr, exit_status].compact.any?
       end
 
-      # Determines whether re-running a command is entirely futile. Primarily to help when a command
+      def output?
+        [stdout, stderr].reject { |value| value.nil? || value.strip.empty? }.any?
+      end
+
+      # Determines if re-running a command is entirely futile. Primarily to help when a command
       # fails within a batch and needs to be re-run to show the output
       #
       # @return [Boolean] true if the exit status code is greater than or equal to 126
-      def total_failure?
-        exit_status >= EXIT_STATUS_CODES[:cannot_execute]
+      def rerunnable?
+        exit_status < EXIT_STATUS_CODES[:cannot_execute]
       end
 
       # Determines whether a command simply cannot be executed.
@@ -66,7 +71,11 @@ module Reviewer
       #
       # @return [String] stdout if present, otherwise stderr
       def to_s
-        stderr.strip.empty? ? stdout : stderr
+        result_string = ''
+        result_string += stderr
+        result_string += stdout
+
+        result_string.strip
       end
     end
   end

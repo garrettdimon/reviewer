@@ -7,7 +7,7 @@ module Reviewer
     module Strategies
       class SilentTest < MiniTest::Test
         def test_quiet_runner_implementation
-          quiet_runner = Runner.new(:list, :review, Runner::Strategies::Silent)
+          quiet_runner = Runner.new(:list, :review, Runner::Strategies::Captured)
 
           result = nil
           capture_subprocess_io { result = quiet_runner.run }
@@ -17,7 +17,7 @@ module Reviewer
 
         def test_quiet_runner_implementation_with_prep
           History.reset!
-          quiet_runner = Runner.new(:list, :review, Runner::Strategies::Silent)
+          quiet_runner = Runner.new(:list, :review, Runner::Strategies::Captured)
 
           result = nil
           capture_subprocess_io { result = quiet_runner.run }
@@ -26,25 +26,25 @@ module Reviewer
         end
 
         def test_quiet_runner_standard_failure_implementation
-          quiet_runner = Runner.new(:failing_command, :review, Runner::Strategies::Silent)
+          quiet_runner = Runner.new(:failing_command, :review, Runner::Strategies::Captured)
 
           result = nil
           capture_subprocess_io { result = quiet_runner.run }
           refute quiet_runner.success?
-          refute quiet_runner.result.total_failure?
+          assert quiet_runner.rerunnable?
           assert_equal 1, result
-          assert_equal Runner::Strategies::Verbose, quiet_runner.strategy
+          assert_equal Runner::Strategies::Passthrough, quiet_runner.strategy
         end
 
         def test_quiet_runner_total_failure_implementation
-          quiet_runner = Runner.new(:missing_command, :review, Runner::Strategies::Silent)
+          quiet_runner = Runner.new(:missing_command, :review, Runner::Strategies::Captured)
 
           result = nil
           capture_subprocess_io { result = quiet_runner.run }
           refute quiet_runner.success?
-          assert quiet_runner.result.total_failure?
+          refute quiet_runner.rerunnable?
           assert_equal 127, result
-          assert_equal Runner::Strategies::Silent, quiet_runner.strategy
+          assert_equal Runner::Strategies::Captured, quiet_runner.strategy
         end
       end
     end

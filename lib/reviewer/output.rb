@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'io/console'
+
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
@@ -18,7 +20,7 @@ module Reviewer
       light: 2
     }.freeze
 
-    DIVIDER = '-' * 60
+    DIVIDER = '·'
 
     attr_reader :printer
 
@@ -31,13 +33,17 @@ module Reviewer
       @printer = printer
     end
 
+    def clear
+      system('clear')
+    end
+
     def newline
       printer << "\n"
     end
 
     def divider
       newline
-      line(:gray) { DIVIDER }
+      line(:default, :light) { DIVIDER * console_width }
     end
 
     # Prints plain text to the console
@@ -45,7 +51,7 @@ module Reviewer
     #
     # @return [void]
     def help(message)
-      line(:white) { message }
+      line(:default) { message }
     end
 
     # Prints a summary of the total time and results for a batch run. If multiple tools, it will
@@ -56,8 +62,8 @@ module Reviewer
     # @return [void]
     def batch_summary(tool_count, seconds)
       newline
-      text(:white, :bold) { "~#{seconds.round(1)} seconds" }
-      line(:white, :light) { " for #{tool_count} tools" } if tool_count > 1
+      text(:default, :bold) { "~#{seconds.round(1)} seconds" }
+      line(:gray, :light) { " for #{tool_count} tools" } if tool_count > 1
     end
 
     # Print a tool summary using the name and description. Used before running a command to help
@@ -67,7 +73,7 @@ module Reviewer
     # @return [void]
     def tool_summary(tool)
       newline
-      text(:white, :bold) { tool.name } & line(:white, :light) { " #{tool.description}" }
+      text(:default, :bold) { tool.name } & line(:white, :light) { " #{tool.description}" }
     end
 
     # Prints the text of a command to the console to help proactively expose potentials issues with
@@ -77,7 +83,7 @@ module Reviewer
     # @return [void] [description]
     def current_command(command)
       newline
-      line(:white, :bold) { 'Now Running:' }
+      line(:default, :bold) { 'Now Running:' }
       line(:gray) { String(command) }
     end
 
@@ -90,13 +96,13 @@ module Reviewer
 
     def failure(details, command: nil)
       text(:red, :bold) { 'Failure' }
-      text(:white, :light) { " #{details}" }
+      text(:default, :light) { " #{details}" }
       newline
 
       return if command.nil?
 
       newline
-      line(:white, :bold) { 'Failed Command:' }
+      line(:default, :bold) { 'Failed Command:' }
       line(:gray) { String(command) }
     end
 
@@ -109,8 +115,14 @@ module Reviewer
       return if details.nil?
 
       newline
-      line(:white, :bold) { summary }
+      line(:default, :bold) { summary }
       line(:gray) { details }
+    end
+
+    def unfiltered(value)
+      return if value.nil? || value.strip.empty?
+
+      printer << value
     end
 
     private
@@ -131,6 +143,12 @@ module Reviewer
       color = COLORS.fetch(color) { COLORS[:default] }
 
       "#{weight};#{color}"
+    end
+
+    def console_width
+      _height, width = IO.console.winsize
+
+      width
     end
   end
 end

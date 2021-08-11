@@ -5,9 +5,9 @@ require 'test_helper'
 module Reviewer
   class Runner
     module Strategies
-      class VerboseTest < MiniTest::Test
+      class PassthroughTest < MiniTest::Test
         def test_verbose_runner_implementation
-          verbose_runner = Runner.new(:list, :review, Runner::Strategies::Verbose)
+          verbose_runner = Runner.new(:list, :review, Runner::Strategies::Passthrough)
           result = nil
           capture_subprocess_io { result = verbose_runner.run }
           assert_equal 0, result
@@ -16,7 +16,7 @@ module Reviewer
 
         def test_verbose_runner_implementation_with_prep
           History.reset!
-          verbose_runner = Runner.new(:list, :review, Runner::Strategies::Verbose)
+          verbose_runner = Runner.new(:list, :review, Runner::Strategies::Passthrough)
           result = nil
           capture_subprocess_io { result = verbose_runner.run }
           assert_equal 0, result

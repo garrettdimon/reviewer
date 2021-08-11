@@ -110,7 +110,7 @@ module Reviewer
     #
     # @return [Hash] the exit status (in integer format) for each command run
     def perform(command_type, clear_screen: false)
-      system('clear') if clear_screen
+      output.clear if clear_screen
 
       results = Batch.run(command_type, tools.current)
 

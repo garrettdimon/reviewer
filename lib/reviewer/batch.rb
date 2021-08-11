@@ -49,7 +49,7 @@ module Reviewer
     end
 
     def strategy
-      multiple_tools? ? Runner::Strategies::Silent : Runner::Strategies::Verbose
+      multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
     end
 
     def capture_results(runner)
@@ -66,6 +66,10 @@ module Reviewer
     # @return [void] prints the elapsed time
     def benchmark_batch(&block)
       elapsed_time = Benchmark.realtime(&block)
+
+      # If there's failures, skip showing the total time to focus on the issues
+      return if @results.values.sum.positive?
+
       output.batch_summary(results.size, elapsed_time)
     end
   end

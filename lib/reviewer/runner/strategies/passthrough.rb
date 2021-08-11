@@ -3,22 +3,22 @@
 module Reviewer
   class Runner
     module Strategies
-      # Execution strategy for a runner to run a command verbosely
-      class Verbose
+      # Execution strategy for a runner to run a command transparently
+      class Passthrough
         attr_accessor :runner
 
-        # Create an instance of the verbose strategy for a command runner. This strategy ensures
-        # that when a command is run, the output isn't suppressed. Essentially, it's a pass-through
-        # wrapper for running a command and displaying the results.
+        # Create an instance of the passthrough strategy for a command runner. This strategy ensures
+        # that when a command is run, the output isn't suppressed. Essentially, it's a transparent
+        # wrapper for running a command and displaying the results realtime.
         # @param runner [Runner] the instance of the runner to apply the strategy to
         #
-        # @return [Runner::Strategies::Verbose] an instance of the relevant verbose strategy
+        # @return [self]
         def initialize(runner)
           @runner = runner
           @runner.command.verbosity = Reviewer::Command::Verbosity::VERBOSE
         end
 
-        # The prepare command strategy when running a command verbosely
+        # The prepare command strategy when running a command transparently
         #
         # @return [void]
         def prepare
@@ -37,7 +37,7 @@ module Reviewer
           runner.shell.direct(runner.prepare_command)
         end
 
-        # The run command strategy when running a command verbosely
+        # The run command strategy when running a command transparently
         #
         # @return [void]
         def run
