@@ -9,7 +9,6 @@ bundle_audit:
     install: 'bundle exec gem install bundler-audit'
     prepare: 'bundle exec bundle-audit update'
     review: 'bundle exec bundle-audit check --no-update'
-    quiet_option: '--quiet'
 
 tests:
   name: Minitest
@@ -19,7 +18,6 @@ tests:
     home:
   commands:
     review: "bundle exec rake"
-    quiet_option: '--silent'
   reports:
     open_on_fail: true
     local_file: coverage/index.html
@@ -88,7 +86,6 @@ rubocop:
     install: 'bundle exec gem install rubocop'
     review: 'bundle exec rubocop --parallel'
     format: 'bundle exec rubocop --auto-correct'
-    quiet_option: '--format q'
   files:
     flag: ''
     separator: ' '

@@ -8,16 +8,11 @@ enabled_tool:
     install: 'https://example.com/install'
     ignore_syntax: 'https://example.com/ignore'
     disable_syntax: 'https://example.com/disable'
-  verbosities:
-    quiet: '--quiet'
-    verbose: '--verbose'
-    trace: '--trace'
   commands:
     install: 'ls -a'
     prepare: 'ls -b'
     review: 'ls -c'
     format: 'ls -d'
-    quiet_option: '-q'
     max_exit_status: 3
   env:
     with_spaces: 'with spaces'
@@ -45,7 +40,6 @@ disabled_tool:
     prepare: 'ls -b'
     review: 'ls -c'
     format: 'ls -b'
-    quiet_option: '-q'
     max_exit_status: 3
   env:
     first: first

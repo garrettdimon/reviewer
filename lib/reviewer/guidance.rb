@@ -51,7 +51,7 @@ module Reviewer
     # @return [void] prints missing executable guidance
     def show_missing_executable_guidance
       tool = command.tool
-      installation_command = Command.new(tool, :install, :verbose).string if tool.installable?
+      installation_command = Command.new(tool, :install).string if tool.installable?
       install_link = tool.install_link
 
       output.failure("Missing executable for '#{tool}'", command: command)

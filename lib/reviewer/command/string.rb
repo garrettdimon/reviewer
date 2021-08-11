@@ -2,20 +2,18 @@
 
 require_relative 'string/env'
 require_relative 'string/flags'
-require_relative 'string/verbosity'
 
 module Reviewer
   class Command
-    # Assembles tool tool_settings into a usable command string for the command type and verbosity
+    # Assembles tool tool_settings into a usable command string for the command type
     class String
       include Conversions
 
-      attr_reader :command_type, :tool_settings, :verbosity
+      attr_reader :command_type, :tool_settings
 
-      def initialize(command_type, tool_settings:, verbosity: nil)
+      def initialize(command_type, tool_settings:)
         @command_type = command_type
         @tool_settings = tool_settings
-        @verbosity = Verbosity(verbosity)
       end
 
       def to_s
@@ -30,7 +28,6 @@ module Reviewer
           env_variables,
           body,
           flags,
-          verbosity_options
         ].compact
       end
 
@@ -46,17 +43,9 @@ module Reviewer
         # Flags to be used for `review` commands.
         # 1. The `review` commands are the only commands that use flags
         # 2. If no flags are configured, this won't do much
-        #
-        # Note: Since verbosity is handled separately, flags for 'quiet' are handled separately at a
-        #   lower level by design and excluded from this check. They are not included with the other
-        #   configured flags.
         return nil unless flags?
 
         Flags.new(tool_settings.flags).to_s
-      end
-
-      def verbosity_options
-        Verbosity.new(tool_settings.quiet_option, level: verbosity.level).to_s
       end
 
       private

@@ -43,10 +43,6 @@ module Reviewer
         config.fetch(:tags) { [] }
       end
 
-      def verbosities
-        config.fetch(:verbosities) { {} }
-      end
-
       def links
         config.fetch(:links) { {} }
       end
@@ -65,10 +61,6 @@ module Reviewer
 
       def max_exit_status
         commands.fetch(:max_exit_status, 0)
-      end
-
-      def quiet_option
-        commands.fetch(:quiet_option, '')
       end
 
       protected

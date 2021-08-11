@@ -15,7 +15,6 @@ module Reviewer
         # @return [self]
         def initialize(runner)
           @runner = runner
-          @runner.command.verbosity = Reviewer::Command::Verbosity::SILENT
         end
 
         # The prepare command strategy when running a command and capturing the results

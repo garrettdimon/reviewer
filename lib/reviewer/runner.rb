@@ -69,7 +69,7 @@ module Reviewer
     end
 
     def prepare_command
-      @prepare_command ||= Command.new(tool, :prepare, command.verbosity)
+      @prepare_command ||= Command.new(tool, :prepare)
     end
 
     def update_last_prepared_at

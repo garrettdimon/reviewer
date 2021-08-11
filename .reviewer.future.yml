@@ -50,7 +50,7 @@
 
 # Tools
 # - rvw <tool_key>           // shortcut for `rvw <tool_key>:review`
-# - rvw <tool_key>:<command> // runs <command> for <tool_key> in verbose mode
+# - rvw <tool_key>:<command> // runs <command> for <tool_key> in passthrough mode
 # - rvw <tool_key>:<link>    // opens the <link> via `open <link>` if present, otherwise, shares that it's not configured
 # - rvw <tool_key>:settings  // displays all settings for <tool_key>
 # - rvw <tool_key>:commands  // displays all configured commands for <tool_key>
@@ -114,7 +114,7 @@ reviewer:
 keywords:
   # Compact version
   mgc:   'format last_commit ruby erb'
-  # Verbose version of `mgc` (a little more self-documenting and explicit)
+  # Long-form version of `mgc` (a little more self-documenting and explicit)
   magic: '--command=format --keywords=last_commit --tags=ruby,erb'
   # Long-form of `mgc` (most self-documentating and explicit)
   magic:

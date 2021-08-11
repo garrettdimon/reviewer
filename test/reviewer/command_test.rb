@@ -5,12 +5,12 @@ require 'test_helper'
 module Reviewer
   class CommandTest < MiniTest::Test
     def setup
-      @command = Reviewer::Command.new(:enabled_tool, :review, :verbose)
+      @command = Reviewer::Command.new(:enabled_tool, :review)
     end
 
     def test_maintains_seed_despite_changes
       original_seed = @command.seed
-      @command.verbosity = Command::Verbosity::SILENT
+      @command.type = :install
       assert_equal original_seed, @command.seed
     end
 
@@ -31,17 +31,11 @@ module Reviewer
       assert_equal @command.string, @command.to_s
     end
 
-    def test_defaults_verbosity_to_silent
-      command = Command.new(:enabled_tool, :review)
-      verbosity = Command::Verbosity.new(Command::Verbosity::SILENT)
-      assert_equal verbosity, command.verbosity
-    end
+    def test_generates_fresh_string_after_type_change
+      assert_equal :review, @command.type
 
-    def test_generates_fresh_string_after_verbosity_change
-      assert_equal Command::Verbosity::VERBOSE, @command.verbosity.level
-
-      @command.verbosity = Command::Verbosity::SILENT
-      assert_equal Command::Verbosity::SILENT, @command.verbosity.level
+      @command.type = :install
+      assert_equal :install, @command.type
     end
   end
 end
