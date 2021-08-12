@@ -10,7 +10,12 @@ module Reviewer
   class Shell
     extend Forwardable
 
-    attr_reader :timer, :result
+    RAKE_EXIT_DRIVEL = <<~DRIVEL
+      rake aborted!
+      Command failed with status (1)
+    DRIVEL
+
+    attr_reader :timer, :result, :captured_results
 
     def_delegators :@result, :exit_status
 
@@ -45,14 +50,37 @@ module Reviewer
     def capture_results(command)
       command = String(command)
 
-      captured_results = Open3.capture3(command)
-      @result = Result.new(*captured_results)
+      @captured_results = Open3.capture3(command)
+
+      @result = Result.new(*clean_captured_results)
     end
 
     def print_results(command)
       command = String(command)
 
       system(command)
+    end
+
+    # Removes any rake unhelpful rake exit status details from $stderr. Reviewew uses `exit` when a
+    #   command fails so that the resulting command-line exit status can be interpreted correctly
+    #   in CI and similar environments. Without that exit status, those environments wouldn't
+    #   recognize the failure. As a result, Rake almost always adds noise that begins with the value
+    #   in RAKE_EXIT_DRIVEL when `exit` is called. Frequently, that RAKE_EXIT_DRIVEL is the only
+    #   information in $stderr, and it's not helpful in the human-readable output, but other times
+    #   when a valid exception occurs, there's useful error information preceding RAKE_EXIT_DRIVEL.
+    #   So this ensures that the unhelpful part is always removed so the output is cluttered with
+    #   red herrings since the command is designed to fail with an exit status of 1 under normal
+    #   operation with tool failures.
+    def clean_captured_results
+      # Just so it's clear what captured_results[1] is referring to.
+      stderr = captured_results[1]
+
+      # We don't want to modify if it if there's no rake exit status noise in there.
+      return captured_results unless stderr&.include?(RAKE_EXIT_DRIVEL)
+
+      @captured_results[1] = stderr.split(RAKE_EXIT_DRIVEL).first
+
+      captured_results
     end
   end
 end

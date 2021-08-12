@@ -23,7 +23,7 @@ tests:
     local_file: coverage/index.html
     local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
   env:
-    testopts: --seed=$SEED --color
+    testopts: --seed=$SEED
     coverage: true
 
 reek:

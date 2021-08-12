@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'io/console'
+require 'io/console' # For determining console width/height
 
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console
@@ -125,7 +125,7 @@ module Reviewer
       printer << value
     end
 
-    private
+    protected
 
     def text(color = nil, weight = nil, &block)
       printer << "\e[#{style(color, weight)}m"

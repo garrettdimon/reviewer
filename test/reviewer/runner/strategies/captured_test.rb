@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class Runner
     module Strategies
-      class SilentTest < MiniTest::Test
+      class CapturedTest < MiniTest::Test
         def test_quiet_runner_implementation
           quiet_runner = Runner.new(:list, :review, Runner::Strategies::Captured)
 
@@ -22,6 +22,7 @@ module Reviewer
           result = nil
           capture_subprocess_io { result = quiet_runner.run }
           assert quiet_runner.success?
+          assert false
           assert_equal 0, result
         end
 
@@ -33,6 +34,7 @@ module Reviewer
           refute quiet_runner.success?
           assert quiet_runner.rerunnable?
           assert_equal 1, result
+          raise StandardError, 'Highly exceptional!'
           assert_equal Runner::Strategies::Passthrough, quiet_runner.strategy
         end
 

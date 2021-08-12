@@ -60,6 +60,22 @@ module Reviewer
       assert_match(/#{details}/i, out)
     end
 
+    def test_unfiltered
+      content = 'Content'
+      out, _err = capture_subprocess_io { @output.unfiltered(content) }
+      assert_match(/#{content}/i, out)
+    end
+
+    def test_unfiltered_skips_printing_if_nothing_to_show
+      content = nil
+      out, _err = capture_subprocess_io { @output.unfiltered(content) }
+      assert_empty out
+
+      content = ''
+      out, _err = capture_subprocess_io { @output.unfiltered(content) }
+      assert_empty out
+    end
+
     def test_guidance
       summary = 'Summary'
       details = 'Details'

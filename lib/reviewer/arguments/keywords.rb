@@ -23,6 +23,8 @@ module Reviewer
       #
       # @return [Array] full collection of the provided keyword arguments as a string
       def to_a
+        raise StandardError, 'Array failure!'
+
         provided
       end
 
@@ -31,6 +33,8 @@ module Reviewer
       #
       # @return [String] comma-separated list of the file arguments as a string
       def to_s
+        raise StandardError, 'String failure!'
+
         to_a.join(',')
       end
 

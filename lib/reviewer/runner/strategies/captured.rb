@@ -72,11 +72,23 @@ module Reviewer
           runner.output.divider
         end
 
+        # If the command sent output to stdout/stderr as most will, simply display what was captured
+        #
+        # @return [void]
         def show_captured_output
           runner.output.unfiltered(runner.result.stdout)
-          runner.output.unfiltered(runner.result.stderr)
+
+          return if (runner.result.stderr.nil? || runner.result.stderr.empty?)
+
+          runner.output.divider
+          runner.output.newline
+          runner.output.guidance('Runtime Errors:', runner.result.stderr)
         end
 
+        # If for some reason, the command didn't send anything to stdout/stderr, the only option to
+        # show results is to rerun it via the passthrough strategy
+        #
+        # @return [void]
         def rerun_via_passthrough
           return unless runner.rerunnable?
 
