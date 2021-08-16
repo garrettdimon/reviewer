@@ -2,7 +2,7 @@
 
 if ENV['COVERAGE']
   require 'simplecov'
-  require "simplecov_json_formatter"
+  require 'simplecov_json_formatter'
 
   SimpleCov.print_error_status = false
   SimpleCov.start do
@@ -22,11 +22,12 @@ if ENV['COVERAGE']
   else
     # With the JSON formatter, Reviewwer can look at the results and show guidance without needing
     # to open the HTML view
-    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new([
+    formatters = [
       SimpleCov::Formatter::SimpleFormatter,
       SimpleCov::Formatter::HTMLFormatter,
-      SimpleCov::Formatter::JSONFormatter,
-    ])
+      SimpleCov::Formatter::JSONFormatter
+    ]
+    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(formatters)
   end
 end
 
