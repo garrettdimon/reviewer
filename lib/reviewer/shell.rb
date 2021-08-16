@@ -53,14 +53,14 @@ module Reviewer
       start_time ||= Time.now
       command = String(command)
 
-      display_timer(start_time, average_time) do
+      display_progress(start_time, average_time) do
         @captured_results = Open3.capture3(command)
       end
 
       @result = Result.new(*clean_captured_results)
     end
 
-    def display_timer(start_time, average_time, &block)
+    def display_progress(start_time, average_time, &block)
       result = nil
       thread = Thread.new { block.call }
 
@@ -69,10 +69,10 @@ module Reviewer
         progress = if average_time.zero?
                      "#{elapsed}s"
                    else
-                     "#{((elapsed / average_time) * 100).round}%"
+                     "~#{((elapsed / average_time) * 100).round}%"
                    end
 
-        $stdout.print "....#{progress}\r"
+        $stdout.print "> #{progress}\r"
         $stdout.flush
       end
 
