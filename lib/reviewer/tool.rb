@@ -100,6 +100,24 @@ module Reviewer
       Reviewer.history.set(key, :last_prepared_at, last_prepared_at)
     end
 
+    def average_time(command)
+      times = get_timing(command)
+
+      times.any? ? times.sum / times.size : 0
+    end
+
+    def get_timing(command)
+      Reviewer.history.get(key, command.raw_string) || []
+    end
+
+    def record_timing(command, time)
+      return if time.nil?
+
+      timing = get_timing(command).take(4) << time.round(2)
+
+      Reviewer.history.set(key, command.raw_string, timing)
+    end
+
     # Determines whether the `prepare` command was run recently enough
     #
     # @return [Boolean] true if a prepare command exists, a timestamp exists, and it was run more

@@ -10,6 +10,8 @@ module Reviewer
   class Shell
     extend Forwardable
 
+    # A lot of tools are run via rake which inclues some unhelpful drive when there's a non-zero
+    #   exit status. This is what it starts with so Reviewer can recognize and remove it.
     RAKE_EXIT_DRIVEL = <<~DRIVEL
       rake aborted!
       Command failed with status (1)
@@ -37,22 +39,44 @@ module Reviewer
       result.exit_status = print_results(command) ? 0 : 1
     end
 
-    def capture_prep(command)
-      timer.record_prep { capture_results(command) }
+    def capture_prep(command, start_time = nil, average_time = 0)
+      timer.record_prep { capture_results(command, start_time, average_time) }
     end
 
-    def capture_main(command)
-      timer.record_main { capture_results(command) }
+    def capture_main(command, start_time = nil, average_time = 0)
+      timer.record_main { capture_results(command, start_time, average_time) }
     end
 
     private
 
-    def capture_results(command)
+    def capture_results(command, start_time, average_time)
+      start_time ||= Time.now
       command = String(command)
 
-      @captured_results = Open3.capture3(command)
+      display_timer(start_time, average_time) do
+        @captured_results = Open3.capture3(command)
+      end
 
       @result = Result.new(*clean_captured_results)
+    end
+
+    def display_timer(start_time, average_time, &block)
+      result = nil
+      thread = Thread.new { block.call }
+
+      while thread.alive?
+        elapsed = (Time.now - start_time).to_f.round(1)
+        progress = if average_time.zero?
+                     "#{elapsed}s"
+                   else
+                     "#{((elapsed / average_time) * 100).round}%"
+                   end
+
+        $stdout.print "....#{progress}\r"
+        $stdout.flush
+      end
+
+      result
     end
 
     def print_results(command)
@@ -61,7 +85,7 @@ module Reviewer
       system(command)
     end
 
-    # Removes any rake unhelpful rake exit status details from $stderr. Reviewew uses `exit` when a
+    # Removes any unhelpful rake exit status details from $stderr. Reviewew uses `exit` when a
     #   command fails so that the resulting command-line exit status can be interpreted correctly
     #   in CI and similar environments. Without that exit status, those environments wouldn't
     #   recognize the failure. As a result, Rake almost always adds noise that begins with the value

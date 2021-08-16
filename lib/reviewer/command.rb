@@ -47,8 +47,6 @@ module Reviewer
       @seed
     end
 
-    private
-
     # The raw command string before any substitutions. For example, since seeds need to remain
     # consistent from one run to the next, they're
     #
@@ -56,6 +54,8 @@ module Reviewer
     def raw_string
       @raw_string ||= String.new(type, tool_settings: tool.settings).to_s
     end
+
+    private
 
     # The version of the command with the SEED_SUBSTITUTION_VALUE replaced
     #

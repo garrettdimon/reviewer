@@ -27,7 +27,7 @@ module Reviewer
         [
           env_variables,
           body,
-          flags,
+          flags
         ].compact
       end
 

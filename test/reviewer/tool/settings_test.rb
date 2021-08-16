@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Tool
-    class SettingsTest < MiniTest::Test # rubocop:disable Metrics/ClassLength
+    class SettingsTest < MiniTest::Test
       def setup
         @tool = :example
         @config = {

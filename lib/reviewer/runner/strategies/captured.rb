@@ -8,6 +8,8 @@ module Reviewer
       class Captured
         attr_accessor :runner
 
+        attr_reader :start_time
+
         # Create an instance of the captured strategy for a command runner so that any output is
         #    fully suppressed so as to not create too much noise when running multiple commands.
         # @param runner [Runner] the instance of the runner to apply the strategy to
@@ -15,25 +17,32 @@ module Reviewer
         # @return [self]
         def initialize(runner)
           @runner = runner
+          @start_time = Time.now
         end
 
         # The prepare command strategy when running a command and capturing the results
         #
         # @return [void]
         def prepare
+          command = runner.prepare_command
+          average = runner.tool.average_time(command)
+
           # Running the prepare command, so make sure the timestamp is updated
           runner.update_last_prepared_at
 
           # Run the prepare command, suppressing the output and capturing the realtime benchmark
-          runner.shell.capture_prep(runner.prepare_command)
+          runner.shell.capture_prep(command, start_time, average)
         end
 
         # The run command strategy when running a command and capturing the results
         #
         # @return [void]
         def run
+          command = runner.command
+          average = runner.tool.average_time(command)
+
           # Run the primary command, suppressing the output and capturing the realtime benchmark
-          runner.shell.capture_main(runner.command)
+          runner.shell.capture_main(command, start_time, average)
 
           # If it's successful, show that it was a success and how long it took to run, otherwise,
           # it wasn't successful and we got some explaining to do...
@@ -46,6 +55,7 @@ module Reviewer
         #
         # @return [void]
         def show_timing_result
+          runner.record_timing
           runner.output.success(runner.timer)
         end
 
@@ -75,10 +85,10 @@ module Reviewer
         # If the command sent output to stdout/stderr as most will, simply display what was captured
         #
         # @return [void]
-        def show_captured_output
+        def show_captured_output # rubocop:disable Metrics/AbcSize
           runner.output.unfiltered(runner.result.stdout)
 
-          return if (runner.result.stderr.nil? || runner.result.stderr.empty?)
+          return if runner.result.stderr.nil? || runner.result.stderr.empty?
 
           runner.output.divider
           runner.output.newline

@@ -77,6 +77,18 @@ module Reviewer
       tool.last_prepared_at = Time.now
     end
 
+    # Saves the last 5 elapsed times for the commands used this run by using the raw command as a
+    #   unique key. This enables the ability to compare times across runs while taking into
+    #   consideration that different iterations of the command may be running on fewer files. So
+    #   comparing a full run to the average time for a partial run wouldn't be helpful. By using the
+    #   raw command string, it will always be apples to apples.
+    #
+    # @return [void]
+    def record_timing
+      tool.record_timing(prepare_command, timer.prep)
+      tool.record_timing(command, timer.main)
+    end
+
     def guidance
       @guidance ||= Reviewer::Guidance.new(command: command, result: result, output: output)
     end
