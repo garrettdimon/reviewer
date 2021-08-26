@@ -28,7 +28,7 @@ module Reviewer
           runner.run
 
           # Record the exit status
-          capture_results(runner)
+          record_exit_status(runner)
 
           # If the tool fails, stop running other tools
           break unless runner.success?
@@ -52,7 +52,7 @@ module Reviewer
       multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
     end
 
-    def capture_results(runner)
+    def record_exit_status(runner)
       # Since some tools can "succeed" with a positive exit status, the overall batch is only
       # interested in subjective failure. So if the runner succeeded according to the tool's max
       # exit status, it should record the tool's run as a success for the purposes of the larger
