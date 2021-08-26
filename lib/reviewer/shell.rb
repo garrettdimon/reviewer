@@ -36,7 +36,9 @@ module Reviewer
     #
     # @return [Integer] exit status vaue of 0 when successful or 1 when unsuccessful
     def direct(command)
-      result.exit_status = print_results(command) ? 0 : 1
+      command = String(command)
+
+      result.exit_status = system(command) ? 0 : 1
     end
 
     def capture_prep(command, start_time = nil, average_time = 0)
@@ -77,12 +79,6 @@ module Reviewer
       end
 
       result
-    end
-
-    def print_results(command)
-      command = String(command)
-
-      system(command)
     end
 
     # Removes any unhelpful rake exit status details from $stderr. Reviewew uses `exit` when a
