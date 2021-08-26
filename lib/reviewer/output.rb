@@ -3,6 +3,92 @@
 require 'io/console' # For determining console width/height
 
 module Reviewer
+  # Wrapper to encapsulate some lower-level details of printing to $stdout
+  class Printer
+    Token = Struct.new(:style, :content) do
+      STYLES = {
+        success: %i[bold green],
+        failure: %i[bold red],
+        source: %i[italic default],
+        bold: %i[bold default],
+        default: %i[default default],
+        muted: %i[light gray]
+      }.freeze
+
+      WEIGHTS = {
+        default: 0,
+        bold: 1,
+        light: 2,
+        italic: 3
+      }.freeze
+
+      COLORS = {
+        black: 30,
+        red: 31,
+        green: 32,
+        yellow: 33,
+        blue: 34,
+        magenta: 35,
+        cyan: 36,
+        gray: 37,
+        default: 39
+      }.freeze
+
+      def to_s
+        "\e[#{weight};#{color}m#{content}#{reset}"
+      end
+
+      private
+
+      def weight
+        WEIGHTS.fetch(style_components[0])
+      end
+
+      def color
+        COLORS.fetch(style_components[1])
+      end
+
+      def reset
+        "\e[0m"
+      end
+
+      def style_components
+        STYLES[style]
+      end
+    end
+
+    attr_reader :stream
+
+    # Creates an instance of Output to print Reviewer activity and results to the console
+    def initialize(stream = $stdout)
+      @stream = stream.tap do |str|
+        # If the IO channel supports flushing the output immediately, then ensure it's enabled
+        str.sync = str.respond_to?(:sync=)
+      end
+    end
+
+    def text(style, content)
+      formatted_content = style_enabled? ? Token.new(style, content).to_s : content
+
+      print formatted_content
+    end
+
+    def print(*args)
+      stream.print(*args)
+    end
+
+    def puts(*args)
+      stream.puts(*args)
+    end
+    alias newline puts
+
+    private
+
+    def style_enabled?
+      stream.tty?
+    end
+  end
+
   # Friendly API for printing nicely-formatted output to the console
   class Output
     COLORS = {
@@ -21,24 +107,16 @@ module Reviewer
 
     DIVIDER = '·'
 
-    attr_reader :stream
+    attr_reader :printer
 
     # Creates an instance of Output to print Reviewer activity and results to the console
-    def initialize(stream = $stdout)
-      @stream = stream.tap do |str|
-        # If the IO channel supports flushing the output immediately, then ensure it's enabled
-        str.sync = str.respond_to?(:sync=)
-      end
+    def initialize(printer = Printer.new)
+      @printer = printer
     end
 
-    def print(*args)
-      stream.print(*args)
+    def newline
+      printer.newline
     end
-
-    def puts(*args)
-      stream.puts(*args)
-    end
-    alias newline puts
 
     def clear
       system('clear')
@@ -130,15 +208,15 @@ module Reviewer
     def unfiltered(value)
       return if value.nil? || value.strip.empty?
 
-      print value
+      printer.print value
     end
 
     protected
 
     def text(color = nil, weight = nil, &block)
-      print "\e[#{style(color, weight)}m"
-      print block.call
-      print "\e[0m" # Reset
+      printer.print "\e[#{style(color, weight)}m"
+      printer.print block.call
+      printer.print "\e[0m" # Reset
     end
 
     def line(color = nil, weight = nil, &block)
