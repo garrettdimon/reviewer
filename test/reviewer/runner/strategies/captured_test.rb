@@ -22,7 +22,6 @@ module Reviewer
           result = nil
           capture_subprocess_io { result = quiet_runner.run }
           assert quiet_runner.success?
-          assert false
           assert_equal 0, result
         end
 
@@ -34,7 +33,6 @@ module Reviewer
           refute quiet_runner.success?
           assert quiet_runner.rerunnable?
           assert_equal 1, result
-          raise StandardError, 'Highly exceptional!'
           assert_equal Runner::Strategies::Passthrough, quiet_runner.strategy
         end
 

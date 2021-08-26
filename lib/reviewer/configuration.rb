@@ -18,7 +18,6 @@ module Reviewer
     def initialize
       @file = Pathname(DEFAULT_CONFIG_LOCATION)
       @history_file = Pathname(DEFAULT_HISTORY_LOCATION)
-      @printer = ::Reviewer::Printer.new
 
       # Future Configuration Options:
       # - seed_substitution_value(string): Currently a constant of `$SEED` in Reviewer::Command, but

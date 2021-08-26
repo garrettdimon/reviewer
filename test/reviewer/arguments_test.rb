@@ -17,29 +17,25 @@ module Reviewer
     end
 
     def test_prints_version_information
-      disable_output_suppression do
-        args = %w[-v]
-        # rubocop:disable Lint/SuppressedException
-        out, _err = capture_subprocess_io do
-          Arguments.new(args)
-        rescue SystemExit
-        end
-        # rubocop:enable Lint/SuppressedException
-        assert_match(/#{Reviewer::VERSION}/i, out)
+      args = %w[-v]
+      # rubocop:disable Lint/SuppressedException
+      out, _err = capture_subprocess_io do
+        Arguments.new(args)
+      rescue SystemExit
       end
+      # rubocop:enable Lint/SuppressedException
+      assert_match(/#{Reviewer::VERSION}/i, out)
     end
 
     def test_prints_help_information
-      disable_output_suppression do
-        args = %w[-h]
-        # rubocop:disable Lint/SuppressedException
-        out, _err = capture_subprocess_io do
-          Arguments.new(args)
-        rescue SystemExit
-        end
-        # rubocop:enable Lint/SuppressedException
-        assert_match(/a list of comma/i, out)
+      args = %w[-h]
+      # rubocop:disable Lint/SuppressedException
+      out, _err = capture_subprocess_io do
+        Arguments.new(args)
+      rescue SystemExit
       end
+      # rubocop:enable Lint/SuppressedException
+      assert_match(/a list of comma/i, out)
     end
 
     def test_parses_multiple_tags_from_command_line

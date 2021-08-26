@@ -10,8 +10,7 @@ module Reviewer
       red: 31,
       green: 32,
       yellow: 33,
-      gray: 37,
-      white: 97
+      gray: 37
     }.freeze
 
     WEIGHTS = {
@@ -22,23 +21,27 @@ module Reviewer
 
     DIVIDER = '·'
 
-    attr_reader :printer
+    attr_reader :stream
 
     # Creates an instance of Output to print Reviewer activity and results to the console
-    # @param printer: Reviewer.configuration.printer [Reviewer::Printer] a logger designed to write
-    #   formatted output to the console based on the results of Reviewer commands
-    #
-    # @return [self]
-    def initialize(printer: Reviewer.configuration.printer)
-      @printer = printer
+    def initialize(stream = $stdout)
+      @stream = stream.tap do |str|
+        # If the IO channel supports flushing the output immediately, then ensure it's enabled
+        str.sync = str.respond_to?(:sync=)
+      end
     end
+
+    def print(*args)
+      stream.print(*args)
+    end
+
+    def puts(*args)
+      stream.puts(*args)
+    end
+    alias newline puts
 
     def clear
       system('clear')
-    end
-
-    def newline
-      printer << "\n"
     end
 
     def divider
@@ -63,7 +66,11 @@ module Reviewer
     def batch_summary(tool_count, seconds)
       newline
       text(:default, :bold) { "~#{seconds.round(1)} seconds" }
-      line(:gray, :light) { " for #{tool_count} tools" } if tool_count > 1
+      if tool_count > 1
+        line(:gray, :light) { " for #{tool_count} tools" }
+      else
+        newline
+      end
     end
 
     # Print a tool summary using the name and description. Used before running a command to help
@@ -73,7 +80,8 @@ module Reviewer
     # @return [void]
     def tool_summary(tool)
       newline
-      text(:default, :bold) { tool.name } & line(:white, :light) { " #{tool.description}" }
+      text(:default, :bold) { tool.name }
+      line(:gray, :light) { " #{tool.description}" }
     end
 
     # Prints the text of a command to the console to help proactively expose potentials issues with
@@ -122,15 +130,15 @@ module Reviewer
     def unfiltered(value)
       return if value.nil? || value.strip.empty?
 
-      printer << value
+      print value
     end
 
     protected
 
     def text(color = nil, weight = nil, &block)
-      printer << "\e[#{style(color, weight)}m"
-      printer << block.call
-      printer << "\e[0m" # Reset
+      print "\e[#{style(color, weight)}m"
+      print block.call
+      print "\e[0m" # Reset
     end
 
     def line(color = nil, weight = nil, &block)
