@@ -36,6 +36,7 @@ require 'reviewer'
 
 require 'dead_end'
 require 'minitest/autorun'
+require 'minitest/heat'
 
 # Makes it easy to mock process statuses
 MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true)
