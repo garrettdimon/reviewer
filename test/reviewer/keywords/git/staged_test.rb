@@ -25,6 +25,16 @@ module Reviewer
           assert Staged.list.is_a?(Array)
         end
 
+        def test_parses_empty_git_command_output
+          empty_staged_files_list = <<~EMPTY_GIT_OUTPUT
+          EMPTY_GIT_OUTPUT
+
+          # Instead of staging files, stub the Open3 call.
+          Open3.stub :capture3, [empty_staged_files_list, nil, ProcessStatus.new(true)] do
+            assert_equal [], Staged.list
+          end
+        end
+
         def test_parses_git_command_output
           staged_files_list = <<~GIT_OUTPUT
             lib/reviewer.rb

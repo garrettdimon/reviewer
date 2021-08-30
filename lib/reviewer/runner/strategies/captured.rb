@@ -25,13 +25,11 @@ module Reviewer
         # @return [void]
         def prepare
           command = runner.prepare_command
-          average = runner.tool.average_time(command)
+
+          display_progress(command) { runner.shell.capture_prep(command) }
 
           # Running the prepare command, so make sure the timestamp is updated
           runner.update_last_prepared_at
-
-          # Run the prepare command, suppressing the output and capturing the realtime benchmark
-          runner.shell.capture_prep(command, start_time, average)
         end
 
         # The run command strategy when running a command and capturing the results
@@ -39,10 +37,8 @@ module Reviewer
         # @return [void]
         def run
           command = runner.command
-          average = runner.tool.average_time(command)
 
-          # Run the primary command, suppressing the output and capturing the realtime benchmark
-          runner.shell.capture_main(command, start_time, average)
+          display_progress(command) { runner.shell.capture_main(command) }
 
           # If it's successful, show that it was a success and how long it took to run, otherwise,
           # it wasn't successful and we got some explaining to do...
@@ -50,6 +46,29 @@ module Reviewer
         end
 
         private
+
+        def display_progress(command, &block)
+          start_time = Time.now
+          average_time = runner.tool.average_time(command)
+
+          thread = Thread.new { block.call }
+
+          while thread.alive?
+            elapsed = (Time.now - start_time).to_f.round(1)
+            progress = if average_time.zero?
+                         "#{elapsed}s"
+                       else
+                         "~#{((elapsed / average_time) * 100).round}%"
+                       end
+
+            $stdout.print "> #{progress}\r"
+            $stdout.flush
+          end
+        end
+
+        def usable_output_captured?
+          [runner.stdout, runner.stderr].reject { |value| value.nil? || value.strip.empty? }.any?
+        end
 
         # Prints "Success" and the resulting timing details before moving on to the next tool
         #
@@ -64,35 +83,47 @@ module Reviewer
         # options that could be corrected.
         #
         # @return [void]
-        def show_command_output # rubocop:disable Metrics/AbcSize
+        def show_command_output
           # If there's a failure, clear the successful command output to focus on the issues
           runner.output.clear
 
           # Show the exit status and failed command
           runner.output.failure("Exit Status #{runner.exit_status}", command: runner.command)
 
-          # Delineate the reviewer output from the command's raw output
-          runner.output.divider
-          runner.output.newline
-
           # If it can't be rerun, then don't try
-          runner.output? ? show_captured_output : rerun_via_passthrough
-
-          # Delineate the end of the raw output from any additional guidance displayed by reviewer
-          runner.output.divider
+          usable_output_captured? ? show_captured_output : rerun_via_passthrough
         end
 
         # If the command sent output to stdout/stderr as most will, simply display what was captured
         #
         # @return [void]
-        def show_captured_output # rubocop:disable Metrics/AbcSize
-          runner.output.unfiltered(runner.result.stdout)
+        def show_captured_output
+          show_captured_stdout
+          show_captured_stderr
+        end
 
-          return if runner.result.stderr.nil? || runner.result.stderr.empty?
+        # If there's a useful stdout value, display it with a divider to visually separate it.
+        #
+        # @return [void]
+        def show_captured_stdout
+          return if runner.stdout.nil? || runner.stdout.empty?
 
           runner.output.divider
           runner.output.newline
-          runner.output.guidance('Runtime Errors:', runner.result.stderr)
+          runner.output.unfiltered(runner.stdout)
+        end
+
+        # If there's a useful stderr value, display it with a divider to visually separate it.
+        #
+        # @return [void]
+        def show_captured_stderr
+          return if runner.stderr.nil? || runner.stderr.empty?
+
+          scrubbed_stderr = Reviewer::Output::Scrubber.new(runner.stderr).clean
+
+          runner.output.divider
+          runner.output.newline
+          runner.output.guidance('Runtime Errors:', scrubbed_stderr)
         end
 
         # If for some reason, the command didn't send anything to stdout/stderr, the only option to
@@ -103,6 +134,8 @@ module Reviewer
           return unless runner.rerunnable?
 
           runner.strategy = Strategies::Passthrough
+
+          runner.output.divider
           runner.run
         end
       end

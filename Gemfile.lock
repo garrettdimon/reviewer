@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     reviewer (0.1.4)
+      rainbow
       slop
 
 GEM

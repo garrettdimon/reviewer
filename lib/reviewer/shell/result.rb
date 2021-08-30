@@ -37,10 +37,6 @@ module Reviewer
         [stdout, stderr, exit_status].compact.any?
       end
 
-      def output?
-        [stdout, stderr].reject { |value| value.nil? || value.strip.empty? }.any?
-      end
-
       # Determines if re-running a command is entirely futile. Primarily to help when a command
       # fails within a batch and needs to be re-run to show the output
       #

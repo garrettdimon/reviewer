@@ -2,7 +2,6 @@
 
 if ENV['COVERAGE']
   require 'simplecov'
-  require 'simplecov_json_formatter'
 
   SimpleCov.print_error_status = false
   SimpleCov.start do
@@ -13,21 +12,22 @@ if ENV['COVERAGE']
   end
 
   SimpleCov.at_exit do
-    # SimpleCov.result.format!
+    SimpleCov.result.format!
   end
 
   if ENV['CI'] == 'true'
+    # Use Code Cov in CI
     require 'codecov'
     SimpleCov.formatter = SimpleCov::Formatter::Codecov
   else
-    # With the JSON formatter, Reviewwer can look at the results and show guidance without needing
-    # to open the HTML view
-    formatters = [
-      SimpleCov::Formatter::SimpleFormatter,
+    # With the JSON formatter, Reviewer can look at the results and show guidance without needing
+    # to open the HTML view.
+    require 'simplecov_json_formatter'
+    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new([
+      # SimpleCov::Formatter::SimpleFormatter,
       SimpleCov::Formatter::HTMLFormatter,
-      SimpleCov::Formatter::JSONFormatter
-    ]
-    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(formatters)
+      # SimpleCov::Formatter::JSONFormatter
+    ])
   end
 end
 

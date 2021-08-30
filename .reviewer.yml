@@ -24,7 +24,7 @@ tests:
     local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
   env:
     testopts: --seed=$SEED
-    coverage: true
+    # coverage: false
 
 reek:
   name: Reek

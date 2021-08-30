@@ -14,7 +14,7 @@ module Reviewer
 
     def_delegators :@command, :tool
     def_delegators :@shell, :result, :timer
-    def_delegators :result, :exit_status, :output?, :rerunnable?
+    def_delegators :result, :exit_status, :stdout, :stderr, :rerunnable?
 
     def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output)
       @command = Command.new(tool, command_type)

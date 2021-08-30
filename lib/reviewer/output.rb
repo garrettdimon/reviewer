@@ -2,109 +2,12 @@
 
 require 'io/console' # For determining console width/height
 
+require_relative 'output/printer'
+require_relative 'output/scrubber'
+
 module Reviewer
-  # Wrapper to encapsulate some lower-level details of printing to $stdout
-  class Printer
-    Token = Struct.new(:style, :content) do
-      STYLES = {
-        success: %i[bold green],
-        failure: %i[bold red],
-        source: %i[italic default],
-        bold: %i[bold default],
-        default: %i[default default],
-        muted: %i[light gray]
-      }.freeze
-
-      WEIGHTS = {
-        default: 0,
-        bold: 1,
-        light: 2,
-        italic: 3
-      }.freeze
-
-      COLORS = {
-        black: 30,
-        red: 31,
-        green: 32,
-        yellow: 33,
-        blue: 34,
-        magenta: 35,
-        cyan: 36,
-        gray: 37,
-        default: 39
-      }.freeze
-
-      def to_s
-        "\e[#{weight};#{color}m#{content}#{reset}"
-      end
-
-      private
-
-      def weight
-        WEIGHTS.fetch(style_components[0])
-      end
-
-      def color
-        COLORS.fetch(style_components[1])
-      end
-
-      def reset
-        "\e[0m"
-      end
-
-      def style_components
-        STYLES[style]
-      end
-    end
-
-    attr_reader :stream
-
-    # Creates an instance of Output to print Reviewer activity and results to the console
-    def initialize(stream = $stdout)
-      @stream = stream.tap do |str|
-        # If the IO channel supports flushing the output immediately, then ensure it's enabled
-        str.sync = str.respond_to?(:sync=)
-      end
-    end
-
-    def text(style, content)
-      formatted_content = style_enabled? ? Token.new(style, content).to_s : content
-
-      print formatted_content
-    end
-
-    def print(*args)
-      stream.print(*args)
-    end
-
-    def puts(*args)
-      stream.puts(*args)
-    end
-    alias newline puts
-
-    private
-
-    def style_enabled?
-      stream.tty?
-    end
-  end
-
   # Friendly API for printing nicely-formatted output to the console
   class Output
-    COLORS = {
-      default: 39,
-      red: 31,
-      green: 32,
-      yellow: 33,
-      gray: 37
-    }.freeze
-
-    WEIGHTS = {
-      default: 0,
-      bold: 1,
-      light: 2
-    }.freeze
-
     DIVIDER = '·'
 
     attr_reader :printer
@@ -114,17 +17,17 @@ module Reviewer
       @printer = printer
     end
 
-    def newline
-      printer.newline
-    end
-
     def clear
       system('clear')
     end
 
+    def newline
+      printer.puts(:default, '')
+    end
+
     def divider
       newline
-      line(:default, :light) { DIVIDER * console_width }
+      printer.print(:muted, DIVIDER * console_width)
     end
 
     # Prints plain text to the console
@@ -132,7 +35,7 @@ module Reviewer
     #
     # @return [void]
     def help(message)
-      line(:default) { message }
+      printer.puts(:default, message)
     end
 
     # Prints a summary of the total time and results for a batch run. If multiple tools, it will
@@ -142,13 +45,8 @@ module Reviewer
     #
     # @return [void]
     def batch_summary(tool_count, seconds)
-      newline
-      text(:default, :bold) { "~#{seconds.round(1)} seconds" }
-      if tool_count > 1
-        line(:gray, :light) { " for #{tool_count} tools" }
-      else
-        newline
-      end
+      printer.print(:bold, "~#{seconds.round(1)} seconds")
+      printer.puts(:muted, " for #{tool_count} tools") if tool_count > 1
     end
 
     # Print a tool summary using the name and description. Used before running a command to help
@@ -157,9 +55,8 @@ module Reviewer
     #
     # @return [void]
     def tool_summary(tool)
-      newline
-      text(:default, :bold) { tool.name }
-      line(:gray, :light) { " #{tool.description}" }
+      printer.print(:bold, tool.name)
+      printer.puts(:muted, " #{tool.description}")
     end
 
     # Prints the text of a command to the console to help proactively expose potentials issues with
@@ -168,68 +65,49 @@ module Reviewer
     #
     # @return [void] [description]
     def current_command(command)
-      newline
-      line(:default, :bold) { 'Now Running:' }
-      line(:gray) { String(command) }
+      printer.puts(:bold, 'Now Running:')
+      printer.puts(:default, String(command))
     end
 
     def success(timer)
-      text(:green, :bold) { 'Success' }
-      text(:green) { " #{timer.total_seconds}s" }
-      text(:yellow) { " (#{timer.prep_percent}% prep ~#{timer.prep_seconds}s)" } if timer.prepped?
+      printer.print(:success, 'Success')
+      printer.print(:success_light, " #{timer.total_seconds}s")
+      printer.print(:warning_light, " (#{timer.prep_percent}% prep ~#{timer.prep_seconds}s)") if timer.prepped?
+      newline
       newline
     end
 
     def failure(details, command: nil)
-      text(:red, :bold) { 'Failure' }
-      text(:default, :light) { " #{details}" }
-      newline
+      printer.print(:failure, 'Failure')
+      printer.puts(:muted, " #{details}")
 
       return if command.nil?
 
       newline
-      line(:default, :bold) { 'Failed Command:' }
-      line(:gray) { String(command) }
+      printer.puts(:bold, 'Failed Command:')
+      printer.puts(:muted, String(command))
     end
 
     def unrecoverable(details)
-      line(:red, :bold) { 'Unrecoverable Error:' }
-      line(:gray) { details }
+      printer.puts(:error, 'Unrecoverable Error:')
+      printer.puts(:muted, details)
     end
 
     def guidance(summary, details)
       return if details.nil?
 
       newline
-      line(:default, :bold) { summary }
-      line(:gray) { details }
+      printer.puts(:bold, summary)
+      printer.puts(:muted, details)
     end
 
     def unfiltered(value)
       return if value.nil? || value.strip.empty?
 
-      printer.print value
+      printer.stream << value
     end
 
     protected
-
-    def text(color = nil, weight = nil, &block)
-      printer.print "\e[#{style(color, weight)}m"
-      printer.print block.call
-      printer.print "\e[0m" # Reset
-    end
-
-    def line(color = nil, weight = nil, &block)
-      text(color, weight) { block.call }
-      newline
-    end
-
-    def style(color, weight)
-      weight = WEIGHTS.fetch(weight) { WEIGHTS[:default] }
-      color = COLORS.fetch(color) { COLORS[:default] }
-
-      "#{weight};#{color}"
-    end
 
     def console_width
       _height, width = IO.console.winsize

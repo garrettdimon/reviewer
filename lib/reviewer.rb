@@ -3,6 +3,7 @@
 require 'benchmark'
 require 'forwardable'
 require 'logger'
+require 'rainbow'
 
 require_relative 'reviewer/conversions'
 
