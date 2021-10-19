@@ -3,7 +3,9 @@
 module Reviewer
   class Runner
     module Strategies
-      # Execution strategy for a runner to run a command transparently
+      # Execution strategy for a runner to run a command transparently—displaying the command's
+      #   output in realtime as it runs (as opposed to capturing and suppressing the output unless
+      #   the command fails)
       class Passthrough
         attr_accessor :runner
 
