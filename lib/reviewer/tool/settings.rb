@@ -60,10 +60,16 @@ module Reviewer
         config.fetch(:flags) { {} }
       end
 
+      # The collection of configured commands for the tool
+      #
+      # @return [Hash] all of the commands configured for the tool
       def commands
         config.fetch(:commands) { {} }
       end
 
+      # The largest exit status that can still be considered a success for the command
+      #
+      # @return [Integer] the configured `max_exit_status` for the tool or 0 if one isn't configured
       def max_exit_status
         commands.fetch(:max_exit_status, 0)
       end

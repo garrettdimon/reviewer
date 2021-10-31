@@ -6,6 +6,7 @@ module Reviewer
       # Execution strategy for a runner to run a command transparently-displaying the command's
       #   output in realtime as it runs (as opposed to capturing and suppressing the output unless
       #   the command fails)
+      # @attr [Runner] the instance of the runner that will be executed with this strategy
       class Passthrough
         attr_accessor :runner
 

@@ -5,6 +5,8 @@ module Reviewer
     module Strategies
       # Execution strategy for a runner to run a command quietly by capturing the output and only
       #   displaying it if there's a failure that justifies it
+      # @attr [Runner] the instance of the runner that will be executed with this strategy
+      # @attr_reader [Time] the start time for the strategy_for timing purposes
       class Captured
         attr_accessor :runner
 

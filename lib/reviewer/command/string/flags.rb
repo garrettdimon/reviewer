@@ -3,10 +3,15 @@
 module Reviewer
   class Command
     class String
-      # Assembles tool flag settings into a single string or array
+      # Translates tool flag settings from the tool's configuration values into a single string or
+      #   array that can be used to generate the command string
       class Flags
         attr_reader :flag_pairs
 
+        # Creates an instance of command-string friendly flags
+        # @param flag_pairs [Hash] the flags (keys) and their values
+        #
+        # @return [self] [description]
         def initialize(flag_pairs)
           @flag_pairs = flag_pairs
         end
