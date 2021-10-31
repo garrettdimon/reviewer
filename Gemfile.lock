@@ -9,7 +9,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
-    bundler-audit (0.8.0)
+    bundler-audit (0.9.0.1)
       bundler (>= 1.2.0, < 3)
       thor (~> 1.0)
     codecov (0.6.0)
@@ -35,7 +35,7 @@ GEM
     kwalify (0.7.2)
     method_source (1.0.0)
     minitest (5.14.4)
-    minitest-heat (0.0.2)
+    minitest-heat (0.0.10)
       minitest
     parallel (1.20.1)
     parser (3.0.2.0)
@@ -103,7 +103,7 @@ DEPENDENCIES
   inch
   minitest
   minitest-heat
-  psych (~> 3.3.2)
+  psych
   rake (~> 13.0)
   reek
   reviewer!
