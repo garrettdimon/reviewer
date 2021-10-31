@@ -8,8 +8,7 @@ module Reviewer
     attr_reader :command_type, :tools, :output, :results
 
     # Generates an instance of Batch for running multiple tools together
-    # @param command_type [Symbol] the type of command to run for each tool. One of: :install,
-    #   :prepare, :review, :format
+    # @param command_type [Symbol] the type of command to run for each tool.
     # @param tools [Array<Tool>] the tools to run the commands for
     # @param output: Reviewer.output [Output] the output channel to print results to
     #
@@ -23,11 +22,11 @@ module Reviewer
 
     def run
       benchmark_batch do
-        tools.each do |tool|
+        matching_tools.each do |tool|
           runner = Runner.new(tool, command_type, strategy)
           runner.run
 
-          # Record the exit status
+          # Record the exit status for this tool
           record_exit_status(runner)
 
           # If the tool fails, stop running other tools
@@ -71,6 +70,14 @@ module Reviewer
       return if @results.values.sum.positive?
 
       output.batch_summary(results.size, elapsed_time)
+    end
+
+    # Returns the set of tools matching the provided command. So when formatting, if a tool does not
+    #   have a format command, then it will be skipped.
+    #
+    # @return [Array<Tool>] the enabled tools that support the provided command
+    def matching_tools
+      tools.select { |tool| tool.settings.commands.key?(command_type) }
     end
   end
 end
