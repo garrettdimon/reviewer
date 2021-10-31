@@ -23,11 +23,13 @@ if ENV['COVERAGE']
     # With the JSON formatter, Reviewer can look at the results and show guidance without needing
     # to open the HTML view.
     require 'simplecov_json_formatter'
-    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new([
+
+    formatters = [
       # SimpleCov::Formatter::SimpleFormatter,
-      SimpleCov::Formatter::HTMLFormatter,
-      # SimpleCov::Formatter::JSONFormatter
-    ])
+      # SimpleCov::Formatter::JSONFormatter,
+      SimpleCov::Formatter::HTMLFormatter
+    ]
+    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(formatters)
   end
 end
 

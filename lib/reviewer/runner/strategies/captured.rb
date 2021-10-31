@@ -55,7 +55,7 @@ module Reviewer
         #   progress updated and printed
         #
         # @return [void]
-        def display_progress(command, &block)
+        def display_progress(command, &block) # rubocop:disable Metrics/AbcSize
           start_time = Time.now
           average_time = runner.tool.average_time(command)
 
@@ -118,7 +118,7 @@ module Reviewer
         # If there's a useful stdout value, display it with a divider to visually separate it.
         #
         # @return [void]
-        def show_captured_stdout
+        def show_captured_stdout # rubocop:disable Metrics/AbcSize
           return if runner.stdout.nil? || runner.stdout.empty?
 
           runner.output.divider
@@ -129,7 +129,7 @@ module Reviewer
         # If there's a useful stderr value, display it with a divider to visually separate it.
         #
         # @return [void]
-        def show_captured_stderr
+        def show_captured_stderr # rubocop:disable Metrics/AbcSize
           return if runner.stderr.nil? || runner.stderr.empty?
 
           scrubbed_stderr = Reviewer::Output::Scrubber.new(runner.stderr).clean
