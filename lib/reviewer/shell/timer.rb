@@ -8,15 +8,29 @@ module Reviewer
     class Timer
       attr_accessor :prep, :main
 
+      # A 'Smart' timer that understands preparation time and main time and can easily do the math
+      #   to help determine what percentage of time was prep.
+      # @param prep: nil [Float] the amount of time in seconds the preparation command ran
+      # @param main: nil [Float] the amount of time in seconds the primary command ran
+      #
+      # @return [self]
       def initialize(prep: nil, main: nil)
         @prep = prep
         @main = main
       end
 
+      # Records the execution time for the block and assigns it to the `prep` time
+      # @param &block [Block] the commands to be timed
+      #
+      # @return [Float] the execution time for the preparation
       def record_prep(&block)
         @prep = record(&block)
       end
 
+      # Records the execution time for the block and assigns it to the `main` time
+      # @param &block [Block] the commands to be timed
+      #
+      # @return [Float] the execution time for the main command
       def record_main(&block)
         @main = record(&block)
       end
