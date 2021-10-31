@@ -20,9 +20,14 @@ module Reviewer
       @results = {}
     end
 
+    # Iterates over the tools in the batch to successfully run the commands. Also times the entire
+    #   batch in order to provide a total execution time.
+    #
+    # @return [Results] the results summary for all commands run
     def run
       benchmark_batch do
         matching_tools.each do |tool|
+          # Create and execute a runner for the given tool, command type, and strategy
           runner = Runner.new(tool, command_type, strategy)
           runner.run
 
@@ -37,10 +42,6 @@ module Reviewer
       results
     end
 
-    def self.run(*args)
-      new(*args).run
-    end
-
     private
 
     def multiple_tools?
@@ -51,6 +52,13 @@ module Reviewer
       multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
     end
 
+    # Notes the exit status for the runner based on whether the runner was considered successful or
+    #   not based on the configured `max_exit_status` for the tool. For example, some tools use exit
+    #   status to convey significance. So even though it returns a non-zero exit status like 2, it
+    #   can still be successful.
+    # @param runner [Runner] the instance of the runner that's being inspected
+    #
+    # @return [Integer] the adjusted exit status for the runner
     def record_exit_status(runner)
       # Since some tools can "succeed" with a positive exit status, the overall batch is only
       # interested in subjective failure. So if the runner succeeded according to the tool's max

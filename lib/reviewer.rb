@@ -112,7 +112,7 @@ module Reviewer
     def perform(command_type, clear_screen: false)
       output.clear if clear_screen
 
-      results = Batch.run(command_type, tools.current)
+      results = Batch.new(command_type, tools.current).run
 
       # Return the largest exit status
       exit results.values.max
