@@ -23,10 +23,17 @@ module Reviewer
 
     attr_reader :output
 
-    # A catch all for aguments passed to reviewer via the command-line.
+    # A catch all for aguments passed to reviewer via the command-line so they can be interpreted
+    #   and made available via the relevant classes.
     # @param options = ARGV [Hash] options to parse and extract the relevant values for a run
     #
-    # @return [Reviewer::Arguments] the full collection of arguments provided via the command line
+    # @example Using all options: `rvw keyword_one keyword_two --files ./example.rb,./example_test.rb --tags syntax`
+    #   reviewer = Reviewer::Arguments.new
+    #   reviewer.files.to_a # => ['./example.rb','./example_test.rb']
+    #   reviewer.tags.to_a # => ['syntax']
+    #   reviewer.keywords.to_a # => ['keyword_one', 'keyword_two']
+    #
+    # @return [self]
     def initialize(options = ARGV)
       @output = Output.new
       @options = Slop.parse options do |opts|

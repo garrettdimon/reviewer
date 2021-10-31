@@ -2,12 +2,17 @@
 
 module Reviewer
   class Tool
-    # Converts/casts tool configuration values and provides default values if not set.
+    # Converts/casts tool configuration values and provides appropriate default values if not set.
     class Settings
       attr_reader :tool_key, :config
 
       alias key tool_key
 
+      # Creates an instance of settings for retrieving values from the configuration file.
+      # @param tool_key [Symbol] the unique identifier for the tool in the config file
+      # @param config: nil [Hash] the configuration values to examine for the settings
+      #
+      # @return [self]
       def initialize(tool_key, config: nil)
         @tool_key = tool_key.to_sym
         @config = config || load_config

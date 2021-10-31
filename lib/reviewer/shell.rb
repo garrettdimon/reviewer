@@ -48,7 +48,6 @@ module Reviewer
       command = String(command)
 
       @captured_results = Open3.capture3(command)
-
       @result = Result.new(*@captured_results)
     end
   end

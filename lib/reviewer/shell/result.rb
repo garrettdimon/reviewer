@@ -20,12 +20,18 @@ module Reviewer
 
       attr_accessor :stdout, :stderr, :status, :exit_status
 
-      # An instance of a result from running a local command
+      # An instance of a result from running a local command. Captures the values for `$stdout`,
+      #   `$stderr`, and the exit status of the command to provide a reliable way of interpreting
+      #   the results for commands that otherwise use these values inconsistently.
       # @param stdout = nil [String] standard out output from a command
       # @param stderr = nil [String] standard error output from a command
       # @param status = nil [ProcessStatus] an instance of ProcessStatus for a command
       #
-      # @return [Shell::Result] result from running a command-line command
+      # @example Using with `Open3.capture3`
+      #   captured_results = Open3.capture3(command)
+      #   result = Result.new(*captured_results)
+      #
+      # @return [self]
       def initialize(stdout = nil, stderr = nil, status = nil)
         @stdout = stdout
         @stderr = stderr
