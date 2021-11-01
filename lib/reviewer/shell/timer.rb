@@ -9,7 +9,8 @@ module Reviewer
       attr_accessor :prep, :main
 
       # A 'Smart' timer that understands preparation time and main time and can easily do the math
-      #   to help determine what percentage of time was prep.
+      #   to help determine what percentage of time was prep. The times can be passed in directly or
+      #   recorded using the `record_prep` and `record_main` methods
       # @param prep: nil [Float] the amount of time in seconds the preparation command ran
       # @param main: nil [Float] the amount of time in seconds the primary command ran
       #

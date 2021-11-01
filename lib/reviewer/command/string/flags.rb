@@ -11,11 +11,14 @@ module Reviewer
         # Creates an instance of command-string friendly flags
         # @param flag_pairs [Hash] the flags (keys) and their values
         #
-        # @return [self] [description]
+        # @return [self]
         def initialize(flag_pairs)
           @flag_pairs = flag_pairs
         end
 
+        # Creates a string-friendly format to use in a command
+        #
+        # @return [String] a string of flags that can be safely passed to a command
         def to_s
           to_a.join(' ')
         end
