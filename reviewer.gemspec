@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'colorize'
   spec.add_dependency 'slop'
+  spec.add_dependency 'psych', '>= 3.3.0'
 
   spec.add_development_dependency 'bundler-audit'
   spec.add_development_dependency 'codecov'

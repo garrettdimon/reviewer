@@ -3,6 +3,7 @@ PATH
   specs:
     reviewer (0.1.4)
       colorize
+      psych (>= 3.3.0)
       slop
 
 GEM
