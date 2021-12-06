@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Provides a unified approach to managing automated code quality tools.'
   spec.homepage      = 'https://github.com/garrettdimon/reviewer'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.9')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.1.0-dev')
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['bug_tracker_uri'] = 'https://github.com/garrettdimon/reviewer/issues'
@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.metadata['documentation_uri'] = 'https://www.rubydoc.info/gems/reviewer'
   spec.metadata['source_code_uri'] = 'https://github.com/garrettdimon/reviewer'
   spec.metadata['wiki_uri'] = 'https://github.com/garrettdimon/reviewer/wiki'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -35,7 +36,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler-audit'
   spec.add_development_dependency 'codecov'
-  spec.add_development_dependency 'dead_end'
   spec.add_development_dependency 'flay'
   spec.add_development_dependency 'flog'
   spec.add_development_dependency 'inch'

@@ -36,7 +36,6 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'reviewer'
 
-require 'dead_end'
 require 'minitest/autorun'
 require 'minitest/heat'
 
