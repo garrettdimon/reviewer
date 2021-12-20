@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Provides a unified approach to managing automated code quality tools.'
   spec.homepage      = 'https://github.com/garrettdimon/reviewer'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 3.1.0-dev')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.0.3')
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['bug_tracker_uri'] = 'https://github.com/garrettdimon/reviewer/issues'
