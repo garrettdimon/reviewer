@@ -33,17 +33,17 @@ GEM
       yard (~> 0.9.12)
     kwalify (0.7.2)
     method_source (1.0.0)
-    minitest (5.14.4)
-    minitest-heat (1.0.0)
+    minitest (5.15.0)
+    minitest-heat (1.1.0)
       minitest
     parallel (1.21.0)
-    parser (3.0.3.1)
+    parser (3.0.3.2)
       ast (~> 2.4.1)
     path_expander (1.1.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    psych (4.0.2)
+    psych (4.0.3)
       stringio
     rainbow (3.0.0)
     rake (13.0.6)
@@ -62,7 +62,7 @@ GEM
       rubocop-ast (>= 1.12.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.14.0)
+    rubocop-ast (1.15.0)
       parser (>= 3.0.1.1)
     rubocop-minitest (0.17.0)
       rubocop (>= 0.90, < 2.0)
@@ -116,4 +116,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   2.3.0.dev
+   2.2.33
