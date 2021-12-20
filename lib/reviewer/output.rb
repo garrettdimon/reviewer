@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'io/console' # For determining console width/height
+require 'io/console/size' # For determining console width/height
 
 require_relative 'output/printer'
 require_relative 'output/scrubber'
