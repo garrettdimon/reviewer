@@ -8,6 +8,7 @@ require_relative 'output/scrubber'
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
+    DEFAULT_CONSOLE_WIDTH = 120
     DIVIDER = '·'
 
     attr_reader :printer
@@ -110,6 +111,8 @@ module Reviewer
     protected
 
     def console_width
+      return DEFAULT_CONSOLE_WIDTH if IO.console.nil?
+
       _height, width = IO.console.winsize
 
       width
