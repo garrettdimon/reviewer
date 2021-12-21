@@ -95,6 +95,7 @@ rubocop:
 # The YARD Parser can also come in handy:
 #   https://yardoc.org/types
 inch:
+  disabled: true
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation Quality

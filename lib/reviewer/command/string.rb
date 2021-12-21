@@ -31,7 +31,6 @@ module Reviewer
         ].compact
       end
 
-
       # The string of environment variables built from a tool's configuration settings
       #
       # @return [String] the environment variable names and values concatened for the command
