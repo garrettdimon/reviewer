@@ -4,6 +4,7 @@ require 'io/console/size' # For determining console width/height
 
 require_relative 'output/printer'
 require_relative 'output/scrubber'
+require_relative 'output/token'
 
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console

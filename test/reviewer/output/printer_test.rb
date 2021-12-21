@@ -10,7 +10,7 @@ module Reviewer
       end
 
       def test_builds_style_tokens
-        token = Printer::Token.new(:success, 'success')
+        token = Token.new(:success, 'success')
         assert_equal "\e[0;32msuccess\e[0m", token.to_s
       end
 

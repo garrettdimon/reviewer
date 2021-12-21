@@ -12,6 +12,10 @@ module Reviewer
 
       attr_accessor :raw
 
+      # Creates a scrubber instance for the provided text content
+      # @param raw [String] the text to be scrubbed of unhelpful content
+      #
+      # @return [String] the original text after being scrubbed of unhlepful content
       def initialize(raw)
         @raw = raw || ''
       end

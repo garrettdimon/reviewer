@@ -31,6 +31,10 @@ module Reviewer
         ].compact
       end
 
+
+      # The string of environment variables built from a tool's configuration settings
+      #
+      # @return [String] the environment variable names and values concatened for the command
       def env_variables
         Env.new(tool_settings.env).to_s
       end
@@ -39,10 +43,12 @@ module Reviewer
         tool_settings.commands.fetch(command_type)
       end
 
+      # Gets the flags to be used in conjunction with the review command for a tool
+      #   1. The `review` commands are the only commands that use flags
+      #   2. If no flags are configured, this won't do anything
+      #
+      # @return [String] the concatenated list of flags to pass to the review command
       def flags
-        # Flags to be used for `review` commands.
-        # 1. The `review` commands are the only commands that use flags
-        # 2. If no flags are configured, this won't do much
         return nil unless flags?
 
         Flags.new(tool_settings.flags).to_s
