@@ -69,7 +69,7 @@ module Reviewer
                          "~#{((elapsed / average_time) * 100).round}%"
                        end
 
-            $stdout.print "> #{progress}\r"
+            $stdout.print "> #{progress} \r"
             $stdout.flush
           end
         end
