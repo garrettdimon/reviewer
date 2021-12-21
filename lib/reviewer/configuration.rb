@@ -4,6 +4,14 @@ require 'pathname'
 
 module Reviewer
   # Configuration values container for Reviewer
+  #
+  # @!attribute file
+  #   @return [Pathname] the pathname for the primary configuraton file
+  # @!attribute history_file
+  #   @return [Pathname] the pathname for the history file to store data across runs
+  #
+  # @author [garrettdimon]
+  #
   class Configuration
     DEFAULT_PATH = Dir.pwd.freeze
 

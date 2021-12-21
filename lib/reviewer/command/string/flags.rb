@@ -23,6 +23,9 @@ module Reviewer
           to_a.join(' ')
         end
 
+        # Creates an array of all flag name/value pairs
+        #
+        # @return [Array<String>] array of all flag strings to use to when running the command
         def to_a
           flags = []
           flag_pairs.each { |key, value| flags << flag(key, value) }
