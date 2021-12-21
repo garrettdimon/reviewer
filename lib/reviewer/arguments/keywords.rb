@@ -4,6 +4,9 @@ module Reviewer
   class Arguments
     # Handles interpreting all 'leftover' arguments and translating them to file-related,
     # tag-related, or tool-related arguments
+    #
+    # @!attribute provided
+    #   @return [Array<String>] the keywords extracted from the command-line arguments
     class Keywords
       RESERVED = %w[staged].freeze
 
@@ -11,7 +14,7 @@ module Reviewer
 
       alias raw provided
 
-      # Generates an instace of parsed keywords from the provided arguments
+      # Generates an instance of parsed keywords from the provided arguments
       # @param *provided [Array<String>] the leftover (non-flag) arguments from the command line
       #
       # @return [self]

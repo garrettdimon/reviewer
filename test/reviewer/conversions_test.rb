@@ -26,31 +26,5 @@ module Reviewer
         Tool(1)
       end
     end
-
-    def test_verbosity_from_verbosity_instance
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
-      assert_equal verbosity, Verbosity(verbosity)
-    end
-
-    def test_verbosity_from_symbol
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
-      assert_equal verbosity, Verbosity(:total_silence)
-    end
-
-    def test_verbosity_from_string
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
-      assert_equal verbosity, Verbosity('total_silence')
-    end
-
-    def test_verbosity_from_integer
-      verbosity = Command::Verbosity.new(Command::Verbosity::TOTAL_SILENCE)
-      assert_equal verbosity, Verbosity(0)
-    end
-
-    def test_verbosity_from_unrecognized
-      assert_raises TypeError do
-        Verbosity(nil)
-      end
-    end
   end
 end

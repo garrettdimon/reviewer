@@ -8,11 +8,19 @@ module Reviewer
 
       alias raw provided
 
-      # Generates an instace of parsed tags from the provided arguments
+      # Generates an instace of parsed tags from the provided arguments by merging tag arguments
+      #   that were provided via either flags or keywords
       # @param provided: Reviewer.arguments.tags.raw [Array<String>] tag arguments provided
       #   directly via the -t or --tags flag on the command line.
       # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
       #   be translated to a list of tags based on the tags used in the configuration file
+      #
+      # @example Using keywords: `rvw ruby` (assuming a 'ruby' tag is defined)
+      #   Reviewer::Arguments::Tags.new.to_a # => ['ruby']
+      # @example Using the `-t` flag: `rvw -t ruby`
+      #   Reviewer::Arguments::Tags.new.to_a # => ['ruby']
+      # @example Using the `--tags` flag: `rvw -t ruby,css`
+      #   Reviewer::Arguments::Tags.new.to_a # => ['css', 'ruby']
       #
       # @return [self]
       def initialize(provided: Reviewer.arguments.tags.raw, keywords: Reviewer.arguments.keywords.for_tags)

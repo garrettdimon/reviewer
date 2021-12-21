@@ -1,0 +1,221 @@
+# This represents the long-term vision for reviewer. It's a sort of documentation-driven design, but
+#  it's also heavily based on the initial exploration and iteration to determine what's possible and
+#  what's practical based on testing out a variety of command types and structures.
+
+# Options for `rvw` command
+# -c <file>, --config=<file>
+# -f <file>,<file>..., --files=<file>,<file>...
+# -t <tag>,<tag>..., --tags=<tag>,<tag>...
+# -l <tool_key>,<tool_key>..., --tools=<tool_key>,<tool_key>...
+# -c <command>, --command=<command>
+# -k, --keywords
+# -s, --settings
+# -h, --help
+# -v, --version
+# <keyword>
+
+# Implicit Keywords:
+# - every <tag>
+# - every <tool_key>
+#   - <tool_key>:settings
+#   - <tool_key>:links
+#   - every <tool_key>:<link>
+#   - <tool_key>:commands
+#   - every <tool_key>:<command>
+
+# Reserved Keywords:
+# - every link type
+# - every command type
+# - staged               // currently staged git files
+# - untracked            // currently untracked git files
+# - fresh                // untracked files updated in last 5 minutes
+#   - fresh_15           //                             ... 15 minutes
+#   - fresh_30           //                             ... 30 minutes
+#   - fresh_60           //                             ... 60 minutes
+# - stale                // untracked files updated more than 5 minutes ago
+#   - stale_15           //                               ... 15 minutes
+#   - stale_30           //                               ... 30 minutes
+#   - stale_60           //                               ... 60 minutes
+# - branch|diff          // All files created or updated on the current branch
+# - last_commit          // All files created or updated in the last commit
+# - current              // alias for branch or diff?
+
+# Command Examples:
+
+# The Basics
+# - rvw           // runs :review command for all enabled tools
+# - rvw <command> // runs <command> for all enabled tools (not disabled or solo)
+# - rvw <keyword> // runs :review command for all enabled tools and translates the <keyword>
+# - rvw <tag>     // runs :review command for all enabled tools tagged with <tag>
+
+# Tools
+# - rvw <tool_key>           // shortcut for `rvw <tool_key>:review`
+# - rvw <tool_key>:<command> // runs <command> for <tool_key> in passthrough mode
+# - rvw <tool_key>:<link>    // opens the <link> via `open <link>` if present, otherwise, shares that it's not configured
+# - rvw <tool_key>:settings  // displays all settings for <tool_key>
+# - rvw <tool_key>:commands  // displays all configured commands for <tool_key>
+# - rvw <tool_key>:links     // displays all configured links for <tool_key>
+
+# Combos
+# - rvw <keyword> <tag>                          // ex. `rvw staged ruby` -> `rvw review staged ruby`
+# - rvw <command> <tag>                          // ex. `rvw format ruby` -> `rvw format ruby`
+# - rvw <command> <reserved_keyword>             // ex. `rvw install ruby`
+# - rvw <command> <reserved_keyword> <tag>       // ex. `rvw format last_commit ruby`
+# - rvw <command> <reserved_keyword> <tag> <tag> // ex. `rvw format last_commit ruby erb`
+
+reviewer:
+  # Whether to run tools consecutively or in parallel if available
+  # :linear - It would suck if your first command is `bundle audit` and fails but 6 other tools
+  #   are running in parallel but will take time to fail. So :linear with :stop as the behavior
+  #   ensures you don't attepmt commands.
+  # :parallel - Reviewer will attempt to run commands on multiple threads/processors for more speed.
+  #   Best used when groups of commands are not dependent on each other.
+  default_batch_mode: <:linear|:safe, :parallel|:fast>
+
+  # Fallback failure behavior for all commands where it isn't explicitly defined. Applies to
+  #   linear runs independent of each other. So if you have two batches (ex. ruby, javascript), and
+  #   one batch fails immediately, the remaining commands willn ot be run. But the other batch will
+  #   safely continue independently.
+  # Optional. Defaults to :fast.
+  # :stop - Don't run any additional commands in that batch.
+  # :continue - Keep running the other commands.
+  default_command_failure_behavior_in_batch: <:stop, :continue>
+
+  # Fallback install behavior for all commands where it isn't explicitly defined.
+  # Maybe if the install command is present, `:auto` is implied?
+  # Optional. Defaults to :guidance.
+  # - :guidance shows the installation command and/or link for manual installation.
+  # - :auto attempts to automatically install if the command is missing
+  # - :skip quietly moves on without worrying about it
+  default_install_behavior: <:guidance, :auto, :skip>
+
+  # Fallback behavior for displaying results.
+  # Optional. Defaults to :full
+  # - :full - Re-run the command directly so you see the full output
+  # - :fast - Show the results, but potentially lose colorizing and some formatting
+  default_results_behavior: <:full, :fast, :timer>
+
+  # Fallback definition for determining whether a command is slow.
+  # Only used if :default_results_behavior is :timer
+  # Optional. Defaults to 10 seconds
+  default_slow_window: <integer seconds>
+
+  # Fallback defintion for determining whether a command needs to be prepped again.
+  # Optional. Defaults to 6 hours
+  default_prep_window: <integer hours>
+
+  # Primarily for debugging/improving performance of reviewer. But if low-level performance info is
+  #   interesting, it can be enabled.
+  # Optional. Defaults to :min
+  # :min - Shows simply the total time for each command. Breaks out install/prep % if relevant.
+  timer_detail: <:min, :max>
+
+# Custom-defined keywords for shortcuts
+keywords:
+  # Compact version
+  mgc:   'format last_commit ruby erb'
+  # Long-form version of `mgc` (a little more self-documenting and explicit)
+  magic: '--command=format --keywords=last_commit --tags=ruby,erb'
+  # Long-form of `mgc` (most self-documentating and explicit)
+  magic:
+    - '--command=format'
+    - '--keywords=last_commit'
+    - '--tags=ruby,erb'
+
+# The real core of the configuration for each individual tool.
+tools:
+  <tool_key>: # Required. ex. 'rubocop', 'bundler-audit', etc.
+    status: <:enabled, :disabled, :solo> # Optional. Tools are enabled by default
+    name: # Optional. Defaults to <tool_key> capitalized
+    description: # Optional. Remind folks of the specific task this tool performs.
+    tags: [one, two, three] # Optional. For running groups of commands.
+    batch: # Optional. Only used if run in batch mode. ex. Run ruby commands on one thread and yarn commands on another.
+    install_behavior: <:auto, :guidance> # Optional. Defaults to Reviewer default.
+    failure_behavior: <:continue, :fast, :informative> # Optional
+    links:
+      home:
+      repo:
+      support:
+      install:
+      usage:
+      options:
+      syntax:
+      ignore:
+      disable:
+    files_syntax:
+      flag:
+      separator:
+      quotes:
+    shared_options: # Optional. Used for all commands.
+      prefix: 'bundle exec'
+      stale: <hours>
+      base: '<command>'
+      quiet: '--quiet'
+      max_exit_status:
+      flags:
+        <flag>: '<value>'
+      env:
+        <env_var>: '<value>'
+      raw:
+        - '<value>'
+    commands:
+      install:
+        desc:
+        stale:
+        prefix:
+        base:
+        quiet:
+        max_exit_status:
+        flags:
+        env:
+        raw:
+      prepare:
+        desc:
+        stale:
+        prefix:
+        base:
+        quiet:
+        max_exit_status:
+        flags:
+        env:
+        raw:
+      review:
+        desc:
+        stale:
+        prefix:
+        base:
+        quiet:
+        max_exit_status:
+        flags:
+        env:
+        raw:
+      format:
+        desc:
+        stale:
+        prefix:
+        base:
+        quiet:
+        max_exit_status:
+        flags:
+        env:
+        raw:
+      serve:
+        desc:
+        stale:
+        prefix:
+        base:
+        quiet:
+        max_exit_status:
+        flags:
+        env:
+        raw:
+      generate:
+        desc:
+        stale:
+        prefix:
+        base:
+        quiet:
+        max_exit_status:
+        flags:
+        env:
+        raw:

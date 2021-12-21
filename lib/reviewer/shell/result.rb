@@ -18,26 +18,37 @@ module Reviewer
         executable_not_found: "can't find executable"
       }.freeze
 
-      attr_accessor :stdout, :stderr, :exit_status
+      attr_accessor :stdout, :stderr, :status, :exit_status
 
-      # An instance of a result from running a local command
+      # An instance of a result from running a local command. Captures the values for `$stdout`,
+      #   `$stderr`, and the exit status of the command to provide a reliable way of interpreting
+      #   the results for commands that otherwise use these values inconsistently.
       # @param stdout = nil [String] standard out output from a command
       # @param stderr = nil [String] standard error output from a command
       # @param status = nil [ProcessStatus] an instance of ProcessStatus for a command
       #
-      # @return [Shell::Result] result from running a command-line command
+      # @example Using with `Open3.capture3`
+      #   captured_results = Open3.capture3(command)
+      #   result = Result.new(*captured_results)
+      #
+      # @return [self]
       def initialize(stdout = nil, stderr = nil, status = nil)
         @stdout = stdout
         @stderr = stderr
+        @status = status
         @exit_status = status&.exitstatus
       end
 
-      # Determines whether re-running a command is entirely futile. Primarily to help when a command
+      def exists?
+        [stdout, stderr, exit_status].compact.any?
+      end
+
+      # Determines if re-running a command is entirely futile. Primarily to help when a command
       # fails within a batch and needs to be re-run to show the output
       #
       # @return [Boolean] true if the exit status code is greater than or equal to 126
-      def total_failure?
-        exit_status >= EXIT_STATUS_CODES[:cannot_execute]
+      def rerunnable?
+        exit_status < EXIT_STATUS_CODES[:cannot_execute]
       end
 
       # Determines whether a command simply cannot be executed.
@@ -62,7 +73,11 @@ module Reviewer
       #
       # @return [String] stdout if present, otherwise stderr
       def to_s
-        stderr.strip.empty? ? stdout : stderr
+        result_string = ''
+        result_string += stderr
+        result_string += stdout
+
+        result_string.strip
       end
     end
   end

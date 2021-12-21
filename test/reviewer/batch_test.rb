@@ -12,7 +12,7 @@ module Reviewer
       tools = [Tool.new(:list)]
 
       capture_subprocess_io do
-        @result = Batch.run(:review, tools)
+        @result = Batch.new(:review, tools).run
       end
 
       expected_result = { list: 0 }
@@ -23,7 +23,7 @@ module Reviewer
       tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
 
       capture_subprocess_io do
-        @result = Batch.run(:review, tools)
+        @result = Batch.new(:review, tools).run
       end
 
       expected_result = { list: 0, minimum_viable_tool: 0 }

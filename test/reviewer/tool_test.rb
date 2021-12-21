@@ -51,7 +51,7 @@ module Reviewer
       tool_two = Tool.new(:enabled_tool)
       tool_one.last_prepared_at = timestamp
 
-      assert_equal timestamp, tool_one.last_prepared_at
+      assert_equal timestamp.to_s, tool_one.last_prepared_at.to_s
       assert_equal tool_one.last_prepared_at, tool_two.last_prepared_at
     end
 

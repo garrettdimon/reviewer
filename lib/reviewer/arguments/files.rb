@@ -9,11 +9,18 @@ module Reviewer
 
       alias raw provided
 
-      # Generates and instance of files from the provided arguments
+      # Generates an instance of files from the provided arguments
       # @param provided: Reviewer.arguments.files.raw [Array, String] file arguments provided
       #   directly via the -f or --files flag on the command line.
       # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
       #   be translated to a list of files (ex. 'staged')
+      #
+      # @example Using the `-f` flag: `rvw -f ./file.rb`
+      #   reviewer = Reviewer::Arguments::Files.new(provided: ['./file.rb'], keywords: [])
+      #   reviewer.to_a # => ['./file.rb']
+      # @example Using the `--files` flag: `rvw --files ./file.rb,./directory/file.rb
+      #   reviewer = Reviewer::Arguments::Files.new(provided: ['./file.rb','./directory/file.rb'], keywords: [])
+      #   reviewer.to_a # => ['./file.rb','./directory/file.rb']
       #
       # @return [self]
       def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords)

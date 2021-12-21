@@ -4,6 +4,14 @@ require 'pathname'
 
 module Reviewer
   # Configuration values container for Reviewer
+  #
+  # @!attribute file
+  #   @return [Pathname] the pathname for the primary configuraton file
+  # @!attribute history_file
+  #   @return [Pathname] the pathname for the history file to store data across runs
+  #
+  # @author [garrettdimon]
+  #
   class Configuration
     DEFAULT_PATH = Dir.pwd.freeze
 
@@ -18,7 +26,6 @@ module Reviewer
     def initialize
       @file = Pathname(DEFAULT_CONFIG_LOCATION)
       @history_file = Pathname(DEFAULT_HISTORY_LOCATION)
-      @printer = ::Reviewer::Printer.new
 
       # Future Configuration Options:
       # - seed_substitution_value(string): Currently a constant of `$SEED` in Reviewer::Command, but

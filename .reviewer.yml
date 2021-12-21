@@ -9,7 +9,6 @@ bundle_audit:
     install: 'bundle exec gem install bundler-audit'
     prepare: 'bundle exec bundle-audit update'
     review: 'bundle exec bundle-audit check --no-update'
-    quiet_option: '--quiet'
 
 tests:
   name: Minitest
@@ -18,14 +17,14 @@ tests:
   links:
     home:
   commands:
-    review: "bundle exec rake TESTOPTS='--seed=$SEED'"
-    quiet_option: '--silent'
+    review: "bundle exec rake"
   reports:
     open_on_fail: true
     local_file: coverage/index.html
     local_uri: 'file:///Users/garrettdimon/Code/reviewer/coverage/index.html#_AllFiles'
   env:
-    coverage: true
+    testopts: --seed=$SEED
+    # coverage: false
 
 reek:
   name: Reek
@@ -86,22 +85,56 @@ rubocop:
     install: 'bundle exec gem install rubocop'
     review: 'bundle exec rubocop --parallel'
     format: 'bundle exec rubocop --auto-correct'
-    quiet_option: '--format q'
   files:
     flag: ''
     separator: ' '
   flags:
     color:
 
+
 # The YARD Parser can also come in handy:
 #   https://yardoc.org/types
 inch:
+  disabled: true
   tags: [docs, ruby, dev]
   name: Inch
-  description: Review Ruby Documentation
+  description: Review Ruby Documentation Quality
   links:
     home: https://rrrene.org/inch/
     usage: https://www.rubydoc.info/gems/yard/file/docs/Tags.md
   commands:
     install: 'bundle exec gem install inch'
     review: 'bundle exec inch'
+
+
+yard:
+  disabled: true
+  tags: [docs, ruby, dev]
+  name: Yard
+  description: Generates Documentation
+  links:
+    home: https://yardoc.org
+    usage: https://www.rubydoc.info/gems/yard/file/docs/GettingStarted.md#using
+    install: https://github.com/lsegal/yard#installing
+  commands:
+    install: 'bundle exec gem install yard'
+    prepare: "yard doc 'lib/**/*.rb'"
+    review: 'yard stats'
+    serve: 'yard server --reload && open http://0.0.0.0:8808'
+    generate:
+    quiet_flag: '--quiet'
+
+
+alex:
+  disabled: true
+  tags: [language, docs]
+  name: Yard
+  description: Generates Documentation
+  links:
+    home:
+    usage:
+    install:
+  commands:
+    install: 'yarn global add alex'
+    review: 'alex .'
+    quiet_flag: '--quiet'

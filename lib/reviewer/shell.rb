@@ -10,7 +10,7 @@ module Reviewer
   class Shell
     extend Forwardable
 
-    attr_reader :timer, :result
+    attr_reader :timer, :result, :captured_results
 
     def_delegators :@result, :exit_status
 
@@ -22,14 +22,16 @@ module Reviewer
       @result = Result.new
     end
 
-    # Run a command without capturing the output. This ensures the results are displayed the same as
+    # Run a command without capturing the output. This ensures the results are displayed realtime
     # if the command was run directly in the shell. So it keeps any color or other formatting that
     # would be stripped out by capturing $stdout as a basic string.
     # @param command [String] the command to run
     #
     # @return [Integer] exit status vaue of 0 when successful or 1 when unsuccessful
     def direct(command)
-      result.exit_status = print_results(command) ? 0 : 1
+      command = String(command)
+
+      result.exit_status = system(command) ? 0 : 1
     end
 
     def capture_prep(command)
@@ -45,14 +47,8 @@ module Reviewer
     def capture_results(command)
       command = String(command)
 
-      captured_results = Open3.capture3(command)
-      @result = Result.new(*captured_results)
-    end
-
-    def print_results(command)
-      command = String(command)
-
-      system(command)
+      @captured_results = Open3.capture3(command)
+      @result = Result.new(*@captured_results)
     end
   end
 end

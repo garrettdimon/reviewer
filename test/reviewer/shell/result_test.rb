@@ -18,15 +18,15 @@ module Reviewer
       def test_considered_total_failure_when_exit_status_is_too_high
         @process_status.exitstatus = 0
         result = Result.new('Standard Out', '', @process_status)
-        refute result.total_failure?
+        assert result.rerunnable?
 
         @process_status.exitstatus = 1
         result = Result.new('Standard Out', '', @process_status)
-        refute result.total_failure?
+        assert result.rerunnable?
 
         @process_status.exitstatus = 126
         result = Result.new('Standard Out', '', @process_status)
-        assert result.total_failure?
+        refute result.rerunnable?
       end
 
       def test_recognizes_missing_executable_from_stderr
@@ -56,10 +56,11 @@ module Reviewer
       end
 
       def test_casting_to_string_uses_stderr_if_present
-        stdout = 'Standard Out'
         stderr = 'Standard Error'
+        stdout = 'Standard Out'
         result = Result.new(stdout, stderr, @process_status)
-        assert_equal stderr, result.to_s
+        assert_includes result.to_s, stderr
+        assert_includes result.to_s, stdout
       end
     end
   end

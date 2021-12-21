@@ -13,7 +13,6 @@ enabled_tool:
     prepare: 'ls -b'
     review: 'ls -c'
     format: 'ls -d'
-    quiet_option: '-q'
     max_exit_status: 3
   env:
     with_spaces: 'with spaces'
@@ -41,7 +40,6 @@ disabled_tool:
     prepare: 'ls -b'
     review: 'ls -c'
     format: 'ls -b'
-    quiet_option: '-q'
     max_exit_status: 3
   env:
     first: first

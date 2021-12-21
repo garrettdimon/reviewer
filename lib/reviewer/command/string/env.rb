@@ -10,7 +10,7 @@ module Reviewer
         # Creates an instance of env variables for a tool to help generate the command string
         # @param env_pairs [Hash] [description]
         #
-        # @return [self] an instance of
+        # @return [self]
         def initialize(env_pairs)
           @env_pairs = env_pairs
         end

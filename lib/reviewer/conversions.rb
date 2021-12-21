@@ -12,16 +12,5 @@ module Reviewer
       end
     end
     module_function :Tool
-
-    def Verbosity(value) # rubocop:disable Naming/MethodName
-      case value
-      when Command::Verbosity then value
-      when Symbol             then Command::Verbosity.new(value)
-      when String             then Command::Verbosity.new(value.to_sym)
-      when Integer            then Command::Verbosity.new(Command::Verbosity::LEVELS[value])
-      else raise TypeError, "Cannot convert #{value} to Verbosity"
-      end
-    end
-    module_function :Verbosity
   end
 end

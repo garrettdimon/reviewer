@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'date'
+
 require_relative 'tool/settings'
 
 module Reviewer
@@ -87,9 +89,11 @@ module Reviewer
 
     # Specifies when the tool last had it's `prepare` command run
     #
-    # @return [DateTime] timestamp of when the `prepare` command was last run
+    # @return [Time] timestamp of when the `prepare` command was last run
     def last_prepared_at
-      Reviewer.history.get(key, :last_prepared_at)
+      date_string = Reviewer.history.get(key, :last_prepared_at)
+
+      date_string == '' || date_string.nil? ? nil : DateTime.parse(date_string).to_time
     end
 
     # Sets the timestamp for when the tool last ran its `prepare` command
@@ -97,7 +101,25 @@ module Reviewer
     #
     # @return [DateTime] timestamp of when the `prepare` command was last run
     def last_prepared_at=(last_prepared_at)
-      Reviewer.history.set(key, :last_prepared_at, last_prepared_at)
+      Reviewer.history.set(key, :last_prepared_at, last_prepared_at.to_s)
+    end
+
+    def average_time(command)
+      times = get_timing(command)
+
+      times.any? ? times.sum / times.size : 0
+    end
+
+    def get_timing(command)
+      Reviewer.history.get(key, command.raw_string) || []
+    end
+
+    def record_timing(command, time)
+      return if time.nil?
+
+      timing = get_timing(command).take(4) << time.round(2)
+
+      Reviewer.history.set(key, command.raw_string, timing)
     end
 
     # Determines whether the `prepare` command was run recently enough
