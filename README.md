@@ -1,6 +1,12 @@
 # [Reviewer](https://github.com/garrettdimon/reviewer)
 by [Garrett Dimon](https://garrettdimon.com)
 
+---
+
+**Note:** As of December 2021, Reviewer is a work in progress. While it's working great reviewing its own code, it's not quite ready for wider usage. Once, it's ready, it will provide more helpful installation and usage details.
+
+---
+
 *With Reviewer, you can seamlessly use multiple automated code review tools with orders of magnitude less friction so you can use them more frequently and consistently.*
 
 So instead of remembering and typing...
@@ -18,8 +24,6 @@ $ rvw
 ```
 
 That's just the tip of the iceberg, though. For the full story on Reviewer's capabilities and benefits, the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) is the best place to start. Or if you'd like to see how it's configured under the hood, the [Configuration Instructions](https://github.com/garrettdimon/reviewer/wiki/Configuration) go even deeper.
-
-**Note:** As of August 2021, Reviewer is a work in progress. While it's working great reviewing its own code, it's not quite ready for wider usage. Once, it's ready, it will provide more helpful installation and usage details.
 
 [![build](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml)
 [![coverage](https://img.shields.io/codecov/c/github/garrettdimon/reviewer?token=UuXUlQAA2e)](https://codecov.io/gh/garrettdimon/reviewer)
