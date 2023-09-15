@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class GuidanceTest < MiniTest::Test
+  class GuidanceTest < Minitest::Test
     def setup
       @output = Output.new
     end

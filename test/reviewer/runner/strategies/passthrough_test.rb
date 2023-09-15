@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class Runner
     module Strategies
-      class PassthroughTest < MiniTest::Test
+      class PassthroughTest < Minitest::Test
         def setup
           @strategy = Runner::Strategies::Passthrough
         end

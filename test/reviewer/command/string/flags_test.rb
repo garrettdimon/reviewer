@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class Command
     class String
-      class FlagsTest < MiniTest::Test
+      class FlagsTest < Minitest::Test
         def setup
           @flag_pairs = {
             f: true,

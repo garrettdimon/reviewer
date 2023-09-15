@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class Runner
     module Strategies
-      class CapturedTest < MiniTest::Test
+      class CapturedTest < Minitest::Test
         def setup
           @strategy = Runner::Strategies::Captured
         end

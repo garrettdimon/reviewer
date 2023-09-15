@@ -30,7 +30,7 @@ module Reviewer
         def env(key, value)
           return nil if key.to_s.strip.empty? || value.to_s.strip.empty?
 
-          value = needs_quotes?(value) ? "'#{value}'" : value
+          value = "'#{value}'" if needs_quotes?(value)
 
           "#{key.to_s.strip.upcase}=#{value.to_s.strip}"
         end

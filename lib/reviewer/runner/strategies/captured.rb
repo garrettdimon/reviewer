@@ -80,7 +80,11 @@ module Reviewer
         #
         # @return [Boolean] true if either stdout or stderr contain printable content
         def usable_output_captured?
-          [runner.stdout, runner.stderr].reject { |value| value.nil? || value.strip.empty? }.any?
+          [runner.stdout, runner.stderr].reject do |value|
+            value.nil? || value.strip.empty?
+          end.any?
+        rescue Encoding::CompatibilityError
+          false
         end
 
         # Prints "Success" and the resulting timing details before moving on to the next tool
