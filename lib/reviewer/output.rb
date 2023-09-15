@@ -10,7 +10,7 @@ module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
     DEFAULT_CONSOLE_WIDTH = 120
-    DIVIDER = '·'
+    DIVIDER = '.'
 
     attr_reader :printer
 

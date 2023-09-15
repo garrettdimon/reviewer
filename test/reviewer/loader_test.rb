@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class LoaderTest < MiniTest::Test
+  class LoaderTest < Minitest::Test
     def test_reads_the_yaml_configuration_file
       loader = Loader.new
       assert loader.configuration.is_a? Hash

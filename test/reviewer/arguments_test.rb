@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class ArgumentsTest < MiniTest::Test
+  class ArgumentsTest < Minitest::Test
     def test_has_an_empty_array_of_tags_by_default
       args = %w[]
       arguments = Arguments.new(args)

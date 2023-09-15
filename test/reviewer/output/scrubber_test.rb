@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Output
-    class ScrubberTest < MiniTest::Test
+    class ScrubberTest < Minitest::Test
       def test_scrubs_rake_aborted_content
         raw_stderr = <<~STDERR
           some text before

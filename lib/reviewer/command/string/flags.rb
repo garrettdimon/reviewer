@@ -37,7 +37,7 @@ module Reviewer
         def flag(key, value)
           dash = key.to_s.size == 1 ? '-' : '--'
 
-          value = needs_quotes?(value) ? "'#{value}'" : value
+          value = "'#{value}'" if needs_quotes?(value)
 
           "#{dash}#{key} #{value}".strip
         end

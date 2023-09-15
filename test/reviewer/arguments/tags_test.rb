@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Arguments
-    class TagsTest < MiniTest::Test
+    class TagsTest < Minitest::Test
       def test_array_casting
         assert_equal [], Tags.new.to_a
         assert_equal %w[css html ruby], Tags.new(provided: %w[css], keywords: %w[ruby html]).to_a

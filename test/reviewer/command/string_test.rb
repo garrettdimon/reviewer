@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Command
-    class StringTest < MiniTest::Test
+    class StringTest < Minitest::Test
       def setup
         @settings = ::Reviewer::Tool::Settings.new(:enabled_tool)
       end

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class BatchTest < MiniTest::Test
+  class BatchTest < Minitest::Test
     def setup
       @result = nil
     end
