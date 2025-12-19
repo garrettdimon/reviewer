@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Arguments
-    class KeywordsTest < MiniTest::Test
+    class KeywordsTest < Minitest::Test
       def test_initializes_from_multiple_argument_formats
         keywords = Keywords.new('one')
         assert_equal ['one'], keywords.provided

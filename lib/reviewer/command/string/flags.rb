@@ -27,9 +27,7 @@ module Reviewer
         #
         # @return [Array<String>] array of all flag strings to use to when running the command
         def to_a
-          flags = []
-          flag_pairs.each { |key, value| flags << flag(key, value) }
-          flags
+          flag_pairs.map { |key, value| flag(key, value) }
         end
 
         private
@@ -37,7 +35,7 @@ module Reviewer
         def flag(key, value)
           dash = key.to_s.size == 1 ? '-' : '--'
 
-          value = needs_quotes?(value) ? "'#{value}'" : value
+          value = "'#{value}'" if needs_quotes?(value)
 
           "#{dash}#{key} #{value}".strip
         end

@@ -71,8 +71,8 @@ module Reviewer
     # @param &block [type] section of code to be timed
     #
     # @return [void] prints the elapsed time
-    def benchmark_batch(&block)
-      elapsed_time = Benchmark.realtime(&block)
+    def benchmark_batch(&)
+      elapsed_time = Benchmark.realtime(&)
 
       # If there's failures, skip showing the total time to focus on the issues
       return if @results.values.sum.positive?

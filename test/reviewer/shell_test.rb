@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class ShellTest < MiniTest::Test
+  class ShellTest < Minitest::Test
     def setup
       @shell = Shell.new
     end

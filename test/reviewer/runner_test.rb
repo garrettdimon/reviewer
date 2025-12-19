@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class RunnerTest < MiniTest::Test
+  class RunnerTest < Minitest::Test
     def test_determines_success_based_on_configured_max_exit_status_for_review
       runner = Runner.new(:enabled_tool, :review)
       max_exit_status = 3

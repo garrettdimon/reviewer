@@ -52,7 +52,7 @@ module Reviewer
     #
     # @return [type] [description]
     def raw_string
-      @raw_string ||= String.new(type, tool_settings: tool.settings).to_s
+      @raw_string ||= String.new(type, tool_settings: tool.settings).to_s # rubocop:disable Lint/RedundantTypeConversion
     end
 
     private

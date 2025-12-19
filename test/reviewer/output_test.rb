@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class OutputTest < MiniTest::Test
+  class OutputTest < Minitest::Test
     def setup
       @output = Output.new
     end

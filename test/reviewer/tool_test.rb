@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class ToolTest < MiniTest::Test
+  class ToolTest < Minitest::Test
     def setup
       @tool = Tool.new(:enabled_tool)
       @mvt = Tool.new(:minimum_viable_tool)

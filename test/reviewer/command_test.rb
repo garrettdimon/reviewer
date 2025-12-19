@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class CommandTest < MiniTest::Test
+  class CommandTest < Minitest::Test
     def setup
       @command = Reviewer::Command.new(:enabled_tool, :review)
     end

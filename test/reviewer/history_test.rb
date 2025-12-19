@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class HistoryTest < MiniTest::Test
+  class HistoryTest < Minitest::Test
     def setup
       @history = History.new
     end

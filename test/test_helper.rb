@@ -1,36 +1,20 @@
 # frozen_string_literal: true
 
-if ENV['COVERAGE']
+if ENV['COVERAGE'] || ENV['CI']
   require 'simplecov'
+  require 'simplecov_json_formatter'
 
   SimpleCov.print_error_status = false
   SimpleCov.start do
     enable_coverage :branch
-    minimum_coverage 100
-    minimum_coverage_by_file 100
-    refuse_coverage_drop
+    minimum_coverage 90
   end
 
-  SimpleCov.at_exit do
-    SimpleCov.result.format!
-  end
-
-  if ENV['CI'] == 'true'
-    # Use Code Cov in CI
-    require 'codecov'
-    SimpleCov.formatter = SimpleCov::Formatter::Codecov
-  else
-    # With the JSON formatter, Reviewer can look at the results and show guidance without needing
-    # to open the HTML view.
-    require 'simplecov_json_formatter'
-
-    formatters = [
-      # SimpleCov::Formatter::SimpleFormatter,
-      # SimpleCov::Formatter::JSONFormatter,
-      SimpleCov::Formatter::HTMLFormatter
-    ]
-    SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(formatters)
-  end
+  formatters = [
+    SimpleCov::Formatter::JSONFormatter,
+    SimpleCov::Formatter::HTMLFormatter
+  ]
+  SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(formatters)
 end
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)

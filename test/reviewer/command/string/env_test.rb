@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   module Commands
     class String
-      class EnvTest < MiniTest::Test
+      class EnvTest < Minitest::Test
         def setup
           @env_pairs = {
             environment: 'production',
