@@ -47,19 +47,13 @@ module Reviewer
       exit_status
     end
 
-    def success?
-      # Some review tools return a range of non-zero exit statuses and almost never return 0.
-      # (`yarn audit` is a good example.) Those tools can be configured to accept a non-zero exit
-      # status so they aren't constantly considered to be failing over minor issues.
-      #
-      # But when other command types (prepare, install, format) are run, they either succeed or they
-      # fail. With no shades of gray in those cases, anything other than a 0 is a failure.
-      if command.type == :review
-        exit_status <= tool.max_exit_status
-      else
-        exit_status.zero?
-      end
-    end
+    # Some review tools return a range of non-zero exit statuses and almost never return 0.
+    # (`yarn audit` is a good example.) Those tools can be configured to accept a non-zero exit
+    # status so they aren't constantly considered to be failing over minor issues.
+    #
+    # But when other command types (prepare, install, format) are run, they either succeed or they
+    # fail. With no shades of gray in those cases, anything other than a 0 is a failure.
+    def success? = command.type == :review ? exit_status <= tool.max_exit_status : exit_status.zero?
 
     # Prints the tool name and description to the console as a frame of reference
     #
@@ -88,25 +82,18 @@ module Reviewer
     #   be a superfluous run of the preparation.
     #
     # @return [Boolean] true the primary command is not prepare and the tool needs to be prepare
-    def run_prepare_step?
-      command.type != :prepare && tool.prepare?
-    end
+    def run_prepare_step? = command.type != :prepare && tool.prepare?
 
     # Creates_an instance of the prepare command for a tool
     #
     # @return [Comman] the current tool's prepare command
-    def prepare_command
-      @prepare_command ||= Command.new(tool, :prepare)
-    end
+    def prepare_command = @prepare_command ||= Command.new(tool, :prepare)
 
     # Updates the 'last prepared at' timestamp that Reviewer uses to know if a tool's preparation
     #   step is stale and needs to be run again.
     #
     # @return [Time] the timestamp `last_prepared_at` is updated to
-    def update_last_prepared_at
-      # Touch the `last_prepared_at` timestamp for the tool so it waits before running again.
-      tool.last_prepared_at = Time.now
-    end
+    def update_last_prepared_at = tool.last_prepared_at = Time.now
 
     # Saves the last 5 elapsed times for the commands used this run by using the raw command as a
     #   unique key. This enables the ability to compare times across runs while taking into
@@ -124,8 +111,6 @@ module Reviewer
     #   get back on track in the event of an unsuccessful run.
     #
     # @return [Guidance] the relevant guidance based on the result of the runner
-    def guidance
-      @guidance ||= Reviewer::Guidance.new(command: command, result: result, output: output)
-    end
+    def guidance = @guidance ||= Reviewer::Guidance.new(command: command, result: result, output: output)
   end
 end

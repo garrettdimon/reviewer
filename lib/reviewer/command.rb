@@ -68,8 +68,6 @@ module Reviewer
     # Determines if the raw command string has a SEED_SUBSTITUTION_VALUE that needs replacing
     #
     # @return [Boolean] true if the raw command string contains the SEED_SUBSTITUTION_VALUE
-    def seed_substitution?
-      raw_string.include?(SEED_SUBSTITUTION_VALUE)
-    end
+    def seed_substitution? = raw_string.include?(SEED_SUBSTITUTION_VALUE)
   end
 end

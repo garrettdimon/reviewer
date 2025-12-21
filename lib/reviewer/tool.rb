@@ -47,9 +47,7 @@ module Reviewer
     #
     # @return [Boolean] true if the tool has a configured `prepare` command that hasn't been run in
     #   the last 6 hours
-    def prepare?
-      preparable? && stale?
-    end
+    def prepare? = preparable? && stale?
 
     # Determines whether a tool has a specific command type configured
     # @param command_type [Symbol] one of the available command types defined in Command::TYPES
@@ -62,30 +60,22 @@ module Reviewer
     # Determines if the tool can run a `install` command
     #
     # @return [Boolean] true if there is a non-blank `install` command configured
-    def installable?
-      command?(:install)
-    end
+    def installable? = command?(:install)
 
     # Determines if the tool can run a `prepare` command
     #
     # @return [Boolean] true if there is a non-blank `prepare` command configured
-    def preparable?
-      command?(:prepare)
-    end
+    def preparable? = command?(:prepare)
 
     # Determines if the tool can run a `review` command
     #
     # @return [Boolean] true if there is a non-blank `review` command configured
-    def reviewable?
-      command?(:review)
-    end
+    def reviewable? = command?(:review)
 
     # Determines if the tool can run a `format` command
     #
     # @return [Boolean] true if there is a non-blank `format` command configured
-    def formattable?
-      command?(:format)
-    end
+    def formattable? = command?(:format)
 
     # Specifies when the tool last had it's `prepare` command run
     #
@@ -135,16 +125,12 @@ module Reviewer
     # Convenience method for determining if a tool has a configured install link
     #
     # @return [Boolean] true if there is an `install` key under links and the value isn't blank
-    def install_link?
-      links.key?(:install) && !links[:install].nil?
-    end
+    def install_link? = links.key?(:install) && !links[:install].nil?
 
     # Returns the text for the install link if available
     #
     # @return [String, nil] the link if it exists, nil otherwise
-    def install_link
-      install_link? ? links.fetch(:install) : nil
-    end
+    def install_link = install_link? ? links.fetch(:install) : nil
 
     # Determines if two tools are equal
     # @param other [Tool] the tool to compare to the current instance

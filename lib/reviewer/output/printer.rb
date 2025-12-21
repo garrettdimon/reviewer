@@ -25,9 +25,7 @@ module Reviewer
         stream.puts
       end
 
-      def tty?
-        stream.tty?
-      end
+      def tty? = stream.tty?
       alias style_enabled? tty?
 
       private

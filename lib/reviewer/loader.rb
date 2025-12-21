@@ -20,13 +20,9 @@ module Reviewer
       validate_configuration!
     end
 
-    def to_h
-      configuration
-    end
+    def to_h = configuration
 
-    def self.configuration
-      new.configuration
-    end
+    def self.configuration = new.configuration
 
     private
 

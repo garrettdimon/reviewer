@@ -44,13 +44,8 @@ module Reviewer
 
     private
 
-    def multiple_tools?
-      tools.size > 1
-    end
-
-    def strategy
-      multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
-    end
+    def multiple_tools? = tools.size > 1
+    def strategy = multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
 
     # Notes the exit status for the runner based on whether the runner was considered successful or
     #   not based on the configured `max_exit_status` for the tool. For example, some tools use exit

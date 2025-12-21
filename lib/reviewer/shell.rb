@@ -34,13 +34,8 @@ module Reviewer
       result.exit_status = system(command) ? 0 : 1
     end
 
-    def capture_prep(command)
-      timer.record_prep { capture_results(command) }
-    end
-
-    def capture_main(command)
-      timer.record_main { capture_results(command) }
-    end
+    def capture_prep(command) = timer.record_prep { capture_results(command) }
+    def capture_main(command) = timer.record_main { capture_results(command) }
 
     private
 

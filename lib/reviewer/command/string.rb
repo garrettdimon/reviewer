@@ -34,13 +34,9 @@ module Reviewer
       # The string of environment variables built from a tool's configuration settings
       #
       # @return [String] the environment variable names and values concatened for the command
-      def env_variables
-        Env.new(tool_settings.env).to_s
-      end
+      def env_variables = Env.new(tool_settings.env).to_s
 
-      def body
-        tool_settings.commands.fetch(command_type)
-      end
+      def body = tool_settings.commands.fetch(command_type)
 
       # Gets the flags to be used in conjunction with the review command for a tool
       #   1. The `review` commands are the only commands that use flags
@@ -58,9 +54,7 @@ module Reviewer
       # Determines whether the string needs flags added
       #
       # @return [Boolean] true if it's a review command and it has flags configured
-      def flags?
-        command_type == :review && tool_settings.flags.any?
-      end
+      def flags? = command_type == :review && tool_settings.flags.any?
     end
   end
 end

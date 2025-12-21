@@ -19,13 +19,8 @@ module Reviewer
       @printer = printer
     end
 
-    def clear
-      system('clear')
-    end
-
-    def newline
-      printer.puts(:default, '')
-    end
+    def clear = system('clear')
+    def newline = printer.puts(:default, '')
 
     def divider
       newline

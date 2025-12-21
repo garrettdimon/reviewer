@@ -28,9 +28,7 @@ module Reviewer
 
   class << self
     # Resets the loaded tools
-    def reset!
-      @tools = nil
-    end
+    def reset! = @tools = nil
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     #   commands that are not disabled to have an entry for the `review` command.
@@ -52,39 +50,29 @@ module Reviewer
     # The collection of arguments that were passed via the command line.
     #
     # @return [Reviewer::Arguments] exposes tags, files, and keywords from arguments
-    def arguments
-      @arguments ||= Arguments.new
-    end
+    def arguments = @arguments ||= Arguments.new
 
     # An interface for the collection of configured tools for accessing subsets of tools
     #   based on enabled/disabled, tags, keywords, etc.
     #
     # @return [Reviewer::Tools] exposes the set of tools to be run in a given context
-    def tools
-      @tools ||= Tools.new
-    end
+    def tools = @tools ||= Tools.new
 
     # The primary output method for Reviewer to consistently display success/failure details for a
     #   unique run of each tool and the collective summary when relevant.
     #
     # @return [Reviewer::Output] prints formatted output to the console.
-    def output
-      @output ||= Output.new
-    end
+    def output = @output ||= Output.new
 
     # A file store for sharing information across runs
     #
     # @return [Reviewer::History] a YAML::Store (or Pstore) containing data on tools
-    def history
-      @history ||= History.new
-    end
+    def history = @history ||= History.new
 
     # Exposes the configuration options for Reviewer.
     #
     # @return [Reviewer::Configuration] configuration settings instance
-    def configuration
-      @configuration ||= Configuration.new
-    end
+    def configuration = @configuration ||= Configuration.new
 
     # A block approach to configuring Reviewer.
     #
@@ -94,9 +82,7 @@ module Reviewer
     #   end
     #
     # @return [Reviewer::Configuration] Reviewer configuration settings
-    def configure
-      yield(configuration)
-    end
+    def configure = yield(configuration)
 
     private
 
