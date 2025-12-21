@@ -20,9 +20,7 @@ module Reviewer
         end
 
         def to_a
-          env = []
-          env_pairs.each { |key, value| env << env(key, value) }
-          env
+          env_pairs.map { |key, value| env(key, value) }
         end
 
         private
@@ -30,7 +28,7 @@ module Reviewer
         def env(key, value)
           return nil if key.to_s.strip.empty? || value.to_s.strip.empty?
 
-          value = needs_quotes?(value) ? "'#{value}'" : value
+          value = "'#{value}'" if needs_quotes?(value)
 
           "#{key.to_s.strip.upcase}=#{value.to_s.strip}"
         end

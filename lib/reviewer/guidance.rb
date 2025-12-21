@@ -36,14 +36,14 @@ module Reviewer
     #
     # @return [Boolean] true if the result indicates the command couldn't be found
     def executable_not_found?
-      ->(result) { result.executable_not_found? }
+      lambda(&:executable_not_found?)
     end
 
     # Conditional check for when the command result was that it was unable to be executed
     #
     # @return [Boolean] true if the result indicates the command couldn't be executed
     def cannot_execute?
-      ->(result) { result.cannot_execute? }
+      lambda(&:cannot_execute?)
     end
 
     # Shows the recovery guidance for when a command is missing

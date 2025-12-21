@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Shell
-    class TimerTest < MiniTest::Test
+    class TimerTest < Minitest::Test
       def test_records_prep_time
         timer = Timer.new
         assert timer.prep.nil?

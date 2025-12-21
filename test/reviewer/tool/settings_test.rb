@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class Tool
-    class SettingsTest < MiniTest::Test
+    class SettingsTest < Minitest::Test
       def setup
         @tool = :example
         @config = {

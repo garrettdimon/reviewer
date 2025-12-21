@@ -5,9 +5,9 @@ module Reviewer
   module Conversions
     def Tool(value) # rubocop:disable Naming/MethodName
       case value
-      when Tool   then value
-      when Symbol then Tool.new(value)
-      when String then Tool.new(value.to_sym)
+      in Tool then value
+      in Symbol then Tool.new(value)
+      in String then Tool.new(value.to_sym)
       else raise TypeError, "Cannot convert #{value} to Tool"
       end
     end

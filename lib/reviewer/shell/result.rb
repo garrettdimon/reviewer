@@ -39,24 +39,18 @@ module Reviewer
         @exit_status = status&.exitstatus
       end
 
-      def exists?
-        [stdout, stderr, exit_status].compact.any?
-      end
+      def exists? = [stdout, stderr, exit_status].compact.any?
 
       # Determines if re-running a command is entirely futile. Primarily to help when a command
       # fails within a batch and needs to be re-run to show the output
       #
       # @return [Boolean] true if the exit status code is greater than or equal to 126
-      def rerunnable?
-        exit_status < EXIT_STATUS_CODES[:cannot_execute]
-      end
+      def rerunnable? = exit_status < EXIT_STATUS_CODES[:cannot_execute]
 
       # Determines whether a command simply cannot be executed.
       #
       # @return [Boolean] true if the exit sttaus code equals 126
-      def cannot_execute?
-        exit_status == EXIT_STATUS_CODES[:cannot_execute]
-      end
+      def cannot_execute? = exit_status == EXIT_STATUS_CODES[:cannot_execute]
 
       # Determines whether the command failed because the executable cannot be found. Since this is
       # an error that can be corrected fairly predictably and easily, it provides the ability to

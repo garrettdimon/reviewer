@@ -13,9 +13,7 @@ module Reviewer
 
         attr_reader :stdout, :stderr, :status, :exit_status
 
-        def to_a
-          stdout.strip.empty? ? [] : stdout.split("\n")
-        end
+        def to_a = stdout.strip.empty? ? [] : stdout.split("\n")
 
         # Gets the list of staged files
         #
@@ -37,16 +35,12 @@ module Reviewer
         #   Reviewer::Keywords::Git::Staged.list #=> ['/Code/example.rb', '/Code/run.rb']
         #
         # @return [Array<String>] the array of staged filenames as strings
-        def self.list
-          new.list
-        end
+        def self.list = new.list
 
         # Assembles the pieces of the command that gets the list of staged files
         #
         # @return [String] the full command to run to retrieve the list of staged files
-        def command
-          command_parts.join(' ')
-        end
+        def command = command_parts.join(' ')
 
         private
 
@@ -55,9 +49,7 @@ module Reviewer
           raise SystemCallError.new(message, exit_status)
         end
 
-        def command_parts
-          BASE_COMMAND + OPTIONS
-        end
+        def command_parts = BASE_COMMAND + OPTIONS
       end
     end
   end

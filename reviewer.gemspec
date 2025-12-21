@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Provides a unified approach to managing automated code quality tools.'
   spec.homepage      = 'https://github.com/garrettdimon/reviewer'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.9')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.2')
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['bug_tracker_uri'] = 'https://github.com/garrettdimon/reviewer/issues'
@@ -31,21 +31,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'benchmark'
+  spec.add_dependency 'pstore'
   spec.add_dependency 'rainbow'
   spec.add_dependency 'slop'
 
-  spec.add_development_dependency 'bundler-audit'
-  spec.add_development_dependency 'codecov'
-  spec.add_development_dependency 'flay'
-  spec.add_development_dependency 'flog'
-  spec.add_development_dependency 'inch'
-  spec.add_development_dependency 'minitest'
+  spec.add_development_dependency 'minitest', '~> 5.0'
   spec.add_development_dependency 'minitest-heat'
-  spec.add_development_dependency 'psych'
-  spec.add_development_dependency 'reek'
-  spec.add_development_dependency 'rubocop'
-  spec.add_development_dependency 'rubocop-minitest'
-  spec.add_development_dependency 'rubocop-rake'
   spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'simplecov_json_formatter'
   spec.add_development_dependency 'yard'
 end

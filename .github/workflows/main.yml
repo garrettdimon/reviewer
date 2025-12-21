@@ -1,26 +1,41 @@
-name: Review
+name: CI
 
-on: [push,pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 env:
   CI: true
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        ruby: [2.5.9, 2.6.9, 2.7.5, 3.0.3]
+  audit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+        bundler-cache: true
+    - name: Update vulnerability database
+      run: bundle exec bundle-audit update
+    - name: Run security audit
+      run: bundle exec bundle-audit check
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.3', '3.4', '4.0.0-preview3']
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.ruby == '4.0.0-preview3' }}
+    steps:
+    - uses: actions/checkout@v4
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Bundle Audit
-      run: bundle exec ./exe/rvw bundle_audit
-    - name: Test Review
-      run: bundle exec ./exe/rvw tests
-    - name: Multiple Command Review
-      run: bundle exec ./exe/rvw bundle_audit tests
+    - name: Run Tests
+      run: bundle exec rake

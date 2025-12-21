@@ -62,8 +62,6 @@ module Reviewer
     # Convenience class method for removing the history file.
     #
     # @return [void]
-    def self.reset!
-      new.reset!
-    end
+    def self.reset! = new.reset!
   end
 end

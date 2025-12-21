@@ -67,22 +67,16 @@ module Reviewer
     # The tag arguments collected from the command line via the `-t` or `--tags` flag
     #
     # @return [Arguments::Tags] an colelction of the tag arguments collected from the command-line
-    def tags
-      @tags ||= Arguments::Tags.new(provided: options[:tags])
-    end
+    def tags = @tags ||= Arguments::Tags.new(provided: options[:tags])
 
     # The file arguments collected from the command line via the `-f` or `--files` flag
     #
     # @return [Arguments::Files] an collection of the file arguments collected from the command-line
-    def files
-      @files ||= Arguments::Files.new(provided: options[:files])
-    end
+    def files = @files ||= Arguments::Files.new(provided: options[:files])
 
     # The leftover arguments collected from the command line without being associated with a flag
     #
     # @return [Arguments::Keywords] an collection of the leftover arguments as keywords
-    def keywords
-      @keywords ||= Arguments::Keywords.new(options.arguments)
-    end
+    def keywords = @keywords ||= Arguments::Keywords.new(options.arguments)
   end
 end

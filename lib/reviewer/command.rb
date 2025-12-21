@@ -52,7 +52,7 @@ module Reviewer
     #
     # @return [type] [description]
     def raw_string
-      @raw_string ||= String.new(type, tool_settings: tool.settings).to_s
+      @raw_string ||= String.new(type, tool_settings: tool.settings).to_s # rubocop:disable Lint/RedundantTypeConversion
     end
 
     private
@@ -68,8 +68,6 @@ module Reviewer
     # Determines if the raw command string has a SEED_SUBSTITUTION_VALUE that needs replacing
     #
     # @return [Boolean] true if the raw command string contains the SEED_SUBSTITUTION_VALUE
-    def seed_substitution?
-      raw_string.include?(SEED_SUBSTITUTION_VALUE)
-    end
+    def seed_substitution? = raw_string.include?(SEED_SUBSTITUTION_VALUE)
   end
 end

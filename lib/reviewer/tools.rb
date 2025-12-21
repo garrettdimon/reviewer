@@ -19,9 +19,7 @@ module Reviewer
     # The current state of all available configured tools regardless of whether they are disabled
     #
     # @return [Hash] hash representing all of the configured tools
-    def to_h
-      configured
-    end
+    def to_h = configured
     alias inspect to_h
 
     # Provides a collection of all configured tools instantiated as Tool instances
@@ -35,9 +33,7 @@ module Reviewer
     # Provides a collection of all enabled tools instantiated as Tool instances
     #
     # @return [Array<Tool>] the full collection of all enabled Tool instances
-    def enabled
-      @enabled ||= all.keep_if(&:enabled?)
-    end
+    def enabled = @enabled ||= all.keep_if(&:enabled?)
 
     # Provides a collection of all explicitly-specified-via-command-line tools as Tool instances
     #
@@ -59,9 +55,7 @@ module Reviewer
     # of the current batch being executed.
     #
     # @return [Array<Tool>] the full collection of should-be-used-for-this-run tools
-    def current
-      subset? ? (specified + tagged).uniq : enabled
-    end
+    def current = subset? ? (specified + tagged).uniq : enabled
 
     private
 
@@ -70,28 +64,12 @@ module Reviewer
     # only a subset of relevant tools.
     #
     # @return [Boolean] true if any tool names or tags are provided via the command line
-    def subset?
-      tool_names.any? || tags.any?
-    end
+    def subset? = tool_names.any? || tags.any?
 
-    def configured
-      @configured ||= Loader.configuration
-    end
-
-    def tags
-      Array(@tags || Reviewer.arguments.tags)
-    end
-
-    def tool_names
-      Array(@tool_names || Reviewer.arguments.keywords.for_tool_names)
-    end
-
-    def tagged?(tool)
-      tool.enabled? && (tags & tool.tags).any?
-    end
-
-    def named?(tool)
-      tool_names.map(&:to_s).include?(tool.key.to_s)
-    end
+    def configured = @configured ||= Loader.configuration
+    def tags = Array(@tags || Reviewer.arguments.tags)
+    def tool_names = Array(@tool_names || Reviewer.arguments.keywords.for_tool_names)
+    def tagged?(tool) = tool.enabled? && tags.intersect?(tool.tags)
+    def named?(tool) = tool_names.map(&:to_s).include?(tool.key.to_s)
   end
 end

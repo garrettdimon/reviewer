@@ -18,9 +18,7 @@ module Reviewer
         @config = config || load_config
       end
 
-      def hash
-        state.hash
-      end
+      def hash = state.hash
 
       def eql?(other)
         self.class == other.class &&
@@ -28,61 +26,31 @@ module Reviewer
       end
       alias :== eql?
 
-      def disabled?
-        config.fetch(:disabled, false)
-      end
+      def disabled? = config.fetch(:disabled, false)
+      def enabled? = !disabled?
 
-      def enabled?
-        !disabled?
-      end
-
-      def name
-        config.fetch(:name) { tool_key.to_s.capitalize }
-      end
-
-      def description
-        config.fetch(:description) { "(No description provided for '#{name}')" }
-      end
-
-      def tags
-        config.fetch(:tags) { [] }
-      end
-
-      def links
-        config.fetch(:links) { {} }
-      end
-
-      def env
-        config.fetch(:env) { {} }
-      end
-
-      def flags
-        config.fetch(:flags) { {} }
-      end
+      def name = config.fetch(:name) { tool_key.to_s.capitalize }
+      def description = config.fetch(:description) { "(No description provided for '#{name}')" }
+      def tags = config.fetch(:tags) { [] }
+      def links = config.fetch(:links) { {} }
+      def env = config.fetch(:env) { {} }
+      def flags = config.fetch(:flags) { {} }
 
       # The collection of configured commands for the tool
       #
       # @return [Hash] all of the commands configured for the tool
-      def commands
-        config.fetch(:commands) { {} }
-      end
+      def commands = config.fetch(:commands) { {} }
 
       # The largest exit status that can still be considered a success for the command
       #
       # @return [Integer] the configured `max_exit_status` for the tool or 0 if one isn't configured
-      def max_exit_status
-        commands.fetch(:max_exit_status, 0)
-      end
+      def max_exit_status = commands.fetch(:max_exit_status, 0)
 
       protected
 
-      def state
-        config.to_hash
-      end
+      def state = config.to_hash
 
-      def load_config
-        Reviewer.tools.to_h.fetch(key) { {} }
-      end
+      def load_config = Reviewer.tools.to_h.fetch(key) { {} }
     end
   end
 end

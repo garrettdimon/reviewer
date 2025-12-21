@@ -24,29 +24,19 @@ module Reviewer
       # @param &block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the preparation
-      def record_prep(&block)
-        @prep = record(&block)
-      end
+      def record_prep(&) = @prep = record(&)
 
       # Records the execution time for the block and assigns it to the `main` time
       # @param &block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the main command
-      def record_main(&block)
-        @main = record(&block)
-      end
+      def record_main(&) = @main = record(&)
 
-      def prep_seconds
-        prep.round(2)
-      end
-
-      def main_seconds
-        main.round(2)
-      end
-
-      def total_seconds
-        total.round(2)
-      end
+      def prep_seconds = prep.round(2)
+      def main_seconds = main.round(2)
+      def total_seconds = total.round(2)
+      def total = [prep, main].compact.sum
+      def prepped? = !(prep.nil? || main.nil?)
 
       def prep_percent
         return nil unless prepped?
@@ -54,19 +44,9 @@ module Reviewer
         (prep / total.to_f * 100).round
       end
 
-      def total
-        [prep, main].compact.sum
-      end
-
-      def prepped?
-        !(prep.nil? || main.nil?)
-      end
-
       private
 
-      def record(&block)
-        Benchmark.realtime(&block)
-      end
+      def record(&) = Benchmark.realtime(&)
     end
   end
 end

@@ -26,21 +26,10 @@ module Reviewer
 
       private
 
-      def style_string
-        "#{ESC}#{weight};#{color}m"
-      end
-
-      def reset_string
-        "#{ESC}0m"
-      end
-
-      def weight_key
-        style_components[0]
-      end
-
-      def color_key
-        style_components[1]
-      end
+      def style_string = "#{ESC}#{weight};#{color}m"
+      def reset_string = "#{ESC}0m"
+      def weight_key = style_components[0]
+      def color_key = style_components[1]
 
       def weight
         {

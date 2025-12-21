@@ -20,15 +20,11 @@ module Reviewer
         @raw = raw || ''
       end
 
-      def clean
-        rake_aborted_text? ? preceding_text : raw
-      end
+      def clean = rake_aborted_text? ? preceding_text : raw
 
       private
 
-      def rake_aborted_text?
-        raw.include?(RAKE_ABORTED_TEXT)
-      end
+      def rake_aborted_text? = raw.include?(RAKE_ABORTED_TEXT)
 
       # Removes any unhelpful rake exit status details from $stderr. Reviewew uses `exit` when a
       #   command fails so that the resulting command-line exit status can be interpreted correctly
@@ -40,9 +36,7 @@ module Reviewer
       #   So this ensures that the unhelpful part is always removed so the output is cluttered with
       #   red herrings since the command is designed to fail with an exit status of 1 under normal
       #   operation with tool failures.
-      def preceding_text
-        raw.split(RAKE_ABORTED_TEXT).first
-      end
+      def preceding_text = raw.split(RAKE_ABORTED_TEXT).first
     end
   end
 end

@@ -31,16 +31,12 @@ module Reviewer
       # Provides the full list of tags values derived from the command-line arguments
       #
       # @return [Array<String>] full collection of the tag arguments as a string
-      def to_a
-        tag_list
-      end
+      def to_a = tag_list
 
       # Provides the full list of tag values derived from the command-line arguments
       #
       # @return [String] comma-separated string of the derived tag values
-      def to_s
-        to_a.join(',')
-      end
+      def to_s = to_a.join(',')
 
       # Summary of the state of the tag arguments
       #

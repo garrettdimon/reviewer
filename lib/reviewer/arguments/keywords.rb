@@ -25,17 +25,13 @@ module Reviewer
       # Proves the full list of raw keyword arguments explicitly passed via command-line as an array
       #
       # @return [Array] full collection of the provided keyword arguments as a string
-      def to_a
-        provided
-      end
+      def to_a = provided
 
       # Provides the full list of raw keyword arguments explicitly passed via command-line as a
       #   comma-separated string
       #
       # @return [String] comma-separated list of the file arguments as a string
-      def to_s
-        to_a.join(',')
-      end
+      def to_s = to_a.join(',')
 
       # Summary of the state of keyword arguments based on how Reviewer parsed them
       #
@@ -56,51 +52,37 @@ module Reviewer
       # Extracts reserved keywords from the provided arguments
       #
       # @return [Array<String>] intersection of provided arguments and reserved keywords
-      def reserved
-        intersection_with RESERVED
-      end
+      def reserved = intersection_with RESERVED
 
       # Extracts keywords that match configured tags for enabled tools
       #
       # @return [Array<String>] intersection of provided arguments and configured tags for tools
-      def for_tags
-        intersection_with configured_tags
-      end
+      def for_tags = intersection_with configured_tags
 
       # Extracts keywords that match configured tool keys
       #
       # @return [Array<String>] intersection of provided arguments and configured tool names
-      def for_tool_names
-        intersection_with configured_tool_names
-      end
+      def for_tool_names = intersection_with configured_tool_names
 
       # Extracts keywords that match any possible recognized keyword values
       #
       # @return [Array<String>] intersection of provided arguments and recognizable keywords
-      def recognized
-        intersection_with possible
-      end
+      def recognized = intersection_with possible
 
       # Extracts keywords that don't match any possible recognized keyword values
       #
       # @return [Array<String>] leftover keywords that weren't recognized
-      def unrecognized
-        (provided - recognized).uniq.sort
-      end
+      def unrecognized = (provided - recognized).uniq.sort
 
       # Provides the complete list of all recognized keywords based on configuration
       #
       # @return [Array<String>] all keywords that Reviewer can recognized
-      def possible
-        (RESERVED + configured_tags + configured_tool_names).uniq.sort
-      end
+      def possible = (RESERVED + configured_tags + configured_tool_names).uniq.sort
 
       # Provides the complete list of all configured tags for enabled tools
       #
       # @return [Array<String>] all unique configured tags
-      def configured_tags
-        tools.enabled.map(&:tags).flatten.uniq.sort
-      end
+      def configured_tags = tools.enabled.map(&:tags).flatten.uniq.sort
 
       # Provides the complete list of all configured tool names for enabled tools
       #
@@ -117,17 +99,13 @@ module Reviewer
       # Provides a collection of enabled Tools for convenient access
       #
       # @return [Array<Reviewer::Tool>] collection of all currently enabled tools
-      def tools
-        @tools ||= Reviewer.tools
-      end
+      def tools = @tools ||= Reviewer.tools
 
       # Syntactic sugar for finding intersections with valid keywords
       # @param values [Array<String>] the collection to use for finding intersecting values
       #
       # @return [Array<String>] the list of intersecting values
-      def intersection_with(values)
-        (values & provided).uniq.sort
-      end
+      def intersection_with(values) = (values & provided).uniq.sort
     end
   end
 end

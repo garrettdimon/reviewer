@@ -44,13 +44,8 @@ module Reviewer
 
     private
 
-    def multiple_tools?
-      tools.size > 1
-    end
-
-    def strategy
-      multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
-    end
+    def multiple_tools? = tools.size > 1
+    def strategy = multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
 
     # Notes the exit status for the runner based on whether the runner was considered successful or
     #   not based on the configured `max_exit_status` for the tool. For example, some tools use exit
@@ -71,8 +66,8 @@ module Reviewer
     # @param &block [type] section of code to be timed
     #
     # @return [void] prints the elapsed time
-    def benchmark_batch(&block)
-      elapsed_time = Benchmark.realtime(&block)
+    def benchmark_batch(&)
+      elapsed_time = Benchmark.realtime(&)
 
       # If there's failures, skip showing the total time to focus on the issues
       return if @results.values.sum.positive?
