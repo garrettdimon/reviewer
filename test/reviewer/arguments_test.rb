@@ -90,25 +90,42 @@ module Reviewer
       assert hash.key?(:tags)
       assert hash.key?(:keywords)
     end
+  end
 
+  class ArgumentsFlagsTest < Minitest::Test
     def test_raw_is_false_by_default
-      arguments = Arguments.new([])
-      refute arguments.raw?
+      refute Arguments.new([]).raw?
     end
 
     def test_parses_short_raw_flag
-      arguments = Arguments.new(%w[-r])
-      assert arguments.raw?
+      assert Arguments.new(%w[-r]).raw?
     end
 
     def test_parses_long_raw_flag
-      arguments = Arguments.new(%w[--raw])
-      assert arguments.raw?
+      assert Arguments.new(%w[--raw]).raw?
     end
 
     def test_raw_flag_works_with_other_options
       arguments = Arguments.new(%w[-r -t ruby staged])
       assert arguments.raw?
+      assert_equal %w[ruby], arguments.tags.raw
+    end
+
+    def test_json_is_false_by_default
+      refute Arguments.new([]).json?
+    end
+
+    def test_parses_short_json_flag
+      assert Arguments.new(%w[-j]).json?
+    end
+
+    def test_parses_long_json_flag
+      assert Arguments.new(%w[--json]).json?
+    end
+
+    def test_json_flag_works_with_other_options
+      arguments = Arguments.new(%w[-j -t ruby staged])
+      assert arguments.json?
       assert_equal %w[ruby], arguments.tags.raw
     end
   end

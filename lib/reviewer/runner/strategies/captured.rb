@@ -40,6 +40,9 @@ module Reviewer
 
           display_progress(command) { runner.shell.capture_main(command) }
 
+          # Skip output in JSON mode - results are serialized at the end
+          return if Reviewer.arguments.json?
+
           # If it's successful, show that it was a success and how long it took to run, otherwise,
           # it wasn't successful and we got some explaining to do...
           runner.success? ? show_timing_result : show_command_output
@@ -55,19 +58,21 @@ module Reviewer
         #   progress updated and printed
         #
         # @return [void]
-        def display_progress(command) # rubocop:disable Metrics/AbcSize
-          start_time = Time.now
+        def display_progress(command)
           average_time = runner.tool.average_time(command)
-
+          start_time = Time.now
           thread = Thread.new { yield }
 
+          # In JSON mode, just wait for the command to finish without progress output
+          return thread.join if Reviewer.arguments.json?
+
+          print_progress(thread, start_time, average_time)
+        end
+
+        def print_progress(thread, start_time, average_time)
           while thread.alive?
             elapsed = (Time.now - start_time).to_f.round(1)
-            progress = if average_time.zero?
-                         "#{elapsed}s"
-                       else
-                         "~#{((elapsed / average_time) * 100).round}%"
-                       end
+            progress = average_time.zero? ? "#{elapsed}s" : "~#{((elapsed / average_time) * 100).round}%"
 
             $stdout.print "> #{progress} \r"
             $stdout.flush

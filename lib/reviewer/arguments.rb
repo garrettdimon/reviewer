@@ -40,6 +40,7 @@ module Reviewer
         opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
         opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
         opts.on '-r', '--raw', 'force raw output (no capturing)'
+        opts.on '-j', '--json', 'output results as JSON'
 
         opts.on '-v', '--version', 'print the version' do
           @output.help VERSION
@@ -84,5 +85,10 @@ module Reviewer
     #
     # @return [Boolean] true if raw output mode is requested
     def raw? = options[:raw]
+
+    # Whether to output results as JSON
+    #
+    # @return [Boolean] true if JSON output mode is requested
+    def json? = options[:json]
   end
 end
