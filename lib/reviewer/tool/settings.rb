@@ -26,7 +26,7 @@ module Reviewer
       end
       alias :== eql?
 
-      def disabled? = config.fetch(:disabled, false)
+      def disabled? = config.fetch(:disabled) { false }
       def enabled? = !disabled?
 
       def name = config.fetch(:name) { tool_key.to_s.capitalize }
@@ -44,7 +44,7 @@ module Reviewer
       # The largest exit status that can still be considered a success for the command
       #
       # @return [Integer] the configured `max_exit_status` for the tool or 0 if one isn't configured
-      def max_exit_status = commands.fetch(:max_exit_status, 0)
+      def max_exit_status = commands.fetch(:max_exit_status) { 0 }
 
       protected
 

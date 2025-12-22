@@ -55,11 +55,11 @@ module Reviewer
         #   progress updated and printed
         #
         # @return [void]
-        def display_progress(command, &block) # rubocop:disable Metrics/AbcSize
+        def display_progress(command) # rubocop:disable Metrics/AbcSize
           start_time = Time.now
           average_time = runner.tool.average_time(command)
 
-          thread = Thread.new { block.call }
+          thread = Thread.new { yield }
 
           while thread.alive?
             elapsed = (Time.now - start_time).to_f.round(1)
