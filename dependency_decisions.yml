@@ -1,0 +1,61 @@
+---
+- - :permit
+  - MIT
+  - :who:
+    :why: Standard permissive license
+    :versions: []
+    :when: 2025-12-22 19:15:00.637887000 Z
+- - :permit
+  - Apache 2.0
+  - :who:
+    :why: Standard permissive license
+    :versions: []
+    :when: 2025-12-22 19:15:01.182813000 Z
+- - :permit
+  - Simplified BSD
+  - :who:
+    :why: Standard permissive license
+    :versions: []
+    :when: 2025-12-22 19:15:01.670547000 Z
+- - :permit
+  - Simplified BSD, ruby
+  - :who:
+    :why: Ruby standard library license
+    :versions: []
+    :when: 2025-12-22 19:15:02.138662000 Z
+- - :permit
+  - ruby
+  - :who:
+    :why: Ruby license
+    :versions: []
+    :when: 2025-12-22 19:15:02.611904000 Z
+- - :permit
+  - same as ruby's
+  - :who:
+    :why: Ruby license variant
+    :versions: []
+    :when: 2025-12-22 19:15:03.091953000 Z
+- - :permit
+  - ISC
+  - :who:
+    :why: Standard permissive license
+    :versions: []
+    :when: 2025-12-22 19:15:03.570618000 Z
+- - :permit
+  - BSD
+  - :who:
+    :why: Standard permissive license
+    :versions: []
+    :when: 2025-12-22 19:15:04.055284000 Z
+- - :permit
+  - GPL-3.0-or-later
+  - :who:
+    :why: Acceptable for development tools
+    :versions: []
+    :when: 2025-12-22 19:15:12.998894000 Z
+- - :approve
+  - brakeman
+  - :who:
+    :why: Development-only security scanner with custom license
+    :versions: []
+    :when: 2025-12-22 19:15:13.454537000 Z

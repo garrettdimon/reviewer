@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 3.1
+  TargetRubyVersion: 3.2
   NewCops: enable
   SuggestExtensions: false
   UseCache: true
@@ -23,3 +23,11 @@ Gemspec/DevelopmentDependencies:
 Metrics/MethodLength:
   CountAsOne: ['array', 'hash', 'heredoc']
   Max: 15
+
+# Fasterer prefers yield over block.call for performance
+Style/ExplicitBlockArgument:
+  Enabled: false
+
+# Fasterer prefers fetch with block over second argument for performance
+Style/RedundantFetchBlock:
+  Enabled: false

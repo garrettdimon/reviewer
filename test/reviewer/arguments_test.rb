@@ -90,5 +90,26 @@ module Reviewer
       assert hash.key?(:tags)
       assert hash.key?(:keywords)
     end
+
+    def test_raw_is_false_by_default
+      arguments = Arguments.new([])
+      refute arguments.raw?
+    end
+
+    def test_parses_short_raw_flag
+      arguments = Arguments.new(%w[-r])
+      assert arguments.raw?
+    end
+
+    def test_parses_long_raw_flag
+      arguments = Arguments.new(%w[--raw])
+      assert arguments.raw?
+    end
+
+    def test_raw_flag_works_with_other_options
+      arguments = Arguments.new(%w[-r -t ruby staged])
+      assert arguments.raw?
+      assert_equal %w[ruby], arguments.tags.raw
+    end
   end
 end
