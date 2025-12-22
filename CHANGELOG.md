@@ -1,5 +1,19 @@
 ## [Unreleased]
 
+### Added
+- Add `--raw` / `-r` flag to force passthrough output (useful for CI/agent contexts)
+- Add expanded code review tools: fasterer, license_finder, notes (enabled); debride, brakeman, rubycritic, metric_fu, yardstick, standard, rufo (disabled)
+- Add license_finder configuration with approved open source licenses
+
+### Fixed
+- Restore MIT license in LICENSE.txt to match gemspec declaration
+
+### Changed
+- Update RuboCop target to Ruby 3.2
+- Apply fasterer performance suggestions (yield over block.call, fetch with block)
+
+---
+
 - TODO: Improve and streamline installation
 - TODO: Add support for targeting specific files
 
