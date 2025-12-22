@@ -16,6 +16,7 @@ require_relative 'reviewer/history'
 require_relative 'reviewer/keywords'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/output'
+require_relative 'reviewer/report'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/shell'
 require_relative 'reviewer/tool'
@@ -94,14 +95,26 @@ module Reviewer
     # @example Run the `review` command for each relevant tool
     #   perform(:review)
     #
-    # @return [Hash] the exit status (in integer format) for each command run
+    # @return [void] exits with the maximum exit status from all tools
     def perform(command_type, clear_screen: false)
-      output.clear if clear_screen
+      output.clear if clear_screen && !arguments.json?
 
-      results = Batch.new(command_type, tools.current).run
+      report = Batch.new(command_type, tools.current).run
+      display_report(report)
 
-      # Return the largest exit status
-      exit results.values.max
+      exit report.max_exit_status
+    end
+
+    # Outputs the report in the appropriate format based on arguments
+    #
+    # @param report [Report] the report to display
+    # @return [void]
+    def display_report(report)
+      if arguments.json?
+        puts report.to_json
+      elsif report.success?
+        output.batch_summary(report.results.size, report.duration)
+      end
     end
   end
 end

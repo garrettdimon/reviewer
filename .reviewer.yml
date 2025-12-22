@@ -1,7 +1,7 @@
 bundle_audit:
   name: Bundle Audit
   description: Review Gem Dependencies for Security Issues
-  tags: [critical, dependencies, ruby, dev]
+  tags: [critical, security, dependencies, ruby, dev]
   links:
     home: https://github.com/rubysec/bundler-audit
     install: https://github.com/rubysec/bundler-audit#install
@@ -75,7 +75,7 @@ flay:
 rubocop:
   name: Rubocop
   description: Review Ruby Syntax & Formatting for Consistency
-  tags: [ruby, syntax]
+  tags: [ruby, syntax, dev]
   links:
     home: https://rubocop.org
     install: https://docs.rubocop.org/rubocop/1.13/installation.html
@@ -238,9 +238,10 @@ rufo:
 
 
 license_finder:
+  disabled: true  # Slow - run manually with: rvw license_finder
   name: License Finder
   description: Check dependency licenses for compliance
-  tags: [dependencies, compliance, dev]
+  tags: [dependencies, compliance, slow, dev]
   links:
     home: https://github.com/pivotal/LicenseFinder
   commands:
