@@ -29,5 +29,17 @@ module Reviewer
       expected_result = { list: 0, minimum_viable_tool: 0 }
       assert_equal expected_result, @result
     end
+
+    def test_uses_passthrough_strategy_when_raw_flag_set
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-r]))
+
+      tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
+      batch = Batch.new(:review, tools)
+
+      assert_equal Runner::Strategies::Passthrough, batch.send(:strategy)
+    ensure
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
   end
 end

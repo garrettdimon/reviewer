@@ -27,8 +27,8 @@ module Reviewer
   class Error < StandardError; end
 
   class << self
-    # Resets the loaded tools
-    def reset! = @tools = nil
+    # Resets the loaded tools and arguments
+    def reset! = @tools = @arguments = nil
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     #   commands that are not disabled to have an entry for the `review` command.

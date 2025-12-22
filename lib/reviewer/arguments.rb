@@ -39,6 +39,7 @@ module Reviewer
       @options = Slop.parse options do |opts|
         opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
         opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
+        opts.on '-r', '--raw', 'force raw output (no capturing)'
 
         opts.on '-v', '--version', 'print the version' do
           @output.help VERSION
@@ -78,5 +79,10 @@ module Reviewer
     #
     # @return [Arguments::Keywords] an collection of the leftover arguments as keywords
     def keywords = @keywords ||= Arguments::Keywords.new(options.arguments)
+
+    # Whether to force raw/passthrough output regardless of tool count
+    #
+    # @return [Boolean] true if raw output mode is requested
+    def raw? = options[:raw]
   end
 end
