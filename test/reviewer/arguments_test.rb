@@ -128,5 +128,33 @@ module Reviewer
       assert arguments.json?
       assert_equal %w[ruby], arguments.tags.raw
     end
+
+    # --format flag tests
+    def test_format_defaults_to_streaming
+      assert_equal :streaming, Arguments.new([]).format
+    end
+
+    def test_parses_format_summary
+      assert_equal :summary, Arguments.new(%w[--format summary]).format
+    end
+
+    def test_parses_format_json
+      assert_equal :json, Arguments.new(%w[--format json]).format
+    end
+
+    def test_format_requires_long_flag
+      # No short flag for --format; -m is not valid
+      assert_raises(Slop::UnknownOption) { Arguments.new(%w[-m summary]) }
+    end
+
+    def test_json_flag_sets_format_to_json
+      assert_equal :json, Arguments.new(%w[--json]).format
+    end
+
+    def test_format_flag_works_with_other_options
+      arguments = Arguments.new(%w[--format summary -t ruby staged])
+      assert_equal :summary, arguments.format
+      assert_equal %w[ruby], arguments.tags.raw
+    end
   end
 end
