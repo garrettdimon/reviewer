@@ -114,6 +114,24 @@ module Reviewer
         @settings = Settings.new(@tool, config: @config)
         assert_equal @config[:commands], @settings.commands
       end
+
+      def test_provides_file_targeting_config_with_defaults
+        assert_equal '', @settings.files_flag
+        assert_equal ' ', @settings.files_separator
+
+        @config[:files] = { flag: '--files', separator: ',' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal '--files', @settings.files_flag
+        assert_equal ',', @settings.files_separator
+      end
+
+      def test_indicates_whether_tool_supports_file_targeting
+        refute @settings.supports_files?
+
+        @config[:files] = { flag: '', separator: ' ' }
+        @settings = Settings.new(@tool, config: @config)
+        assert @settings.supports_files?
+      end
     end
   end
 end

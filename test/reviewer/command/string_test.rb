@@ -38,6 +38,37 @@ module Reviewer
 
         assert_equal "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true ls -d", cmd.to_s
       end
+
+      def test_appends_files_when_tool_supports_file_targeting
+        settings = ::Reviewer::Tool::Settings.new(:file_targeting_tool)
+        files = %w[lib/foo.rb lib/bar.rb]
+        cmd = Command::String.new(:review, tool_settings: settings, files: files)
+
+        assert_equal 'rubocop lib/foo.rb lib/bar.rb', cmd.to_s
+      end
+
+      def test_appends_files_with_flag_and_custom_separator
+        settings = ::Reviewer::Tool::Settings.new(:file_targeting_with_flag_tool)
+        files = %w[lib/foo.rb lib/bar.rb]
+        cmd = Command::String.new(:review, tool_settings: settings, files: files)
+
+        assert_equal 'custom-lint --files lib/foo.rb,lib/bar.rb', cmd.to_s
+      end
+
+      def test_does_not_append_files_when_tool_lacks_file_support
+        files = %w[lib/foo.rb lib/bar.rb]
+        cmd = Command::String.new(:review, tool_settings: @settings, files: files)
+
+        # Should not include files - enabled_tool has no files: config
+        refute_includes cmd.to_s, 'lib/foo.rb'
+      end
+
+      def test_does_not_append_files_when_no_files_provided
+        settings = ::Reviewer::Tool::Settings.new(:file_targeting_tool)
+        cmd = Command::String.new(:review, tool_settings: settings, files: [])
+
+        assert_equal 'rubocop', cmd.to_s
+      end
     end
   end
 end

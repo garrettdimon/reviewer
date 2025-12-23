@@ -3,8 +3,15 @@
 require 'test_helper'
 
 module Reviewer
+  # Minimal files stub that returns empty array
+  EmptyFiles = Struct.new(nil) do
+    def to_a = []
+  end
+
   # Stub for testing different argument configurations
-  StubArgs = Struct.new(:format, :json?, :raw?, :streaming?, keyword_init: true)
+  StubArgs = Struct.new(:format, :json?, :raw?, :streaming?, keyword_init: true) do
+    def files = EmptyFiles.new
+  end
 
   class ReviewerTest < Minitest::Test
     # def setup

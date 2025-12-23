@@ -9,11 +9,12 @@ module Reviewer
     class String
       include Conversions
 
-      attr_reader :command_type, :tool_settings
+      attr_reader :command_type, :tool_settings, :files
 
-      def initialize(command_type, tool_settings:)
+      def initialize(command_type, tool_settings:, files: [])
         @command_type = command_type
         @tool_settings = tool_settings
+        @files = Array(files)
       end
 
       def to_s
@@ -27,7 +28,8 @@ module Reviewer
         [
           env_variables,
           body,
-          flags
+          flags,
+          files_string
         ].compact
       end
 
@@ -49,12 +51,29 @@ module Reviewer
         Flags.new(tool_settings.flags).to_s
       end
 
+      # Builds the files portion of the command string
+      #
+      # @return [String, nil] the formatted files string or nil if not applicable
+      def files_string
+        return nil unless files_applicable?
+
+        file_list = files.join(tool_settings.files_separator)
+        flag = tool_settings.files_flag
+
+        flag.empty? ? file_list : "#{flag} #{file_list}"
+      end
+
       private
 
       # Determines whether the string needs flags added
       #
       # @return [Boolean] true if it's a review command and it has flags configured
       def flags? = command_type == :review && tool_settings.flags.any?
+
+      # Determines whether files should be appended to the command
+      #
+      # @return [Boolean] true if tool supports files and files were provided
+      def files_applicable? = tool_settings.supports_files? && files.any?
     end
   end
 end

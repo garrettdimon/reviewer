@@ -36,6 +36,9 @@ reek:
   commands:
     install: 'bundle exec gem install reek'
     review: 'bundle exec reek'
+  files:
+    flag: ''
+    separator: ' '
   flags:
     color:
     documentation:
@@ -161,6 +164,9 @@ fasterer:
   commands:
     install: 'bundle exec gem install fasterer'
     review: 'bundle exec fasterer'
+  files:
+    flag: ''
+    separator: ' '
 
 
 debride:
