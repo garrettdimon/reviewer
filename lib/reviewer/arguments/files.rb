@@ -77,11 +77,10 @@ module Reviewer
         end.flatten.compact.uniq
       end
 
-      # If `staged` is passed as a keyword via the command-line, this will get the list of staged
-      #   files via Git
-      #
-      # @return [Array] list of the currently staged files
       def staged = ::Reviewer::Keywords::Git::Staged.list
+      def unstaged = ::Reviewer::Keywords::Git::Unstaged.list
+      def modified = ::Reviewer::Keywords::Git::Modified.list
+      def untracked = ::Reviewer::Keywords::Git::Untracked.list
     end
   end
 end
