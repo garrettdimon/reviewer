@@ -93,7 +93,7 @@ module Reviewer
       def test_exposes_recognized_and_unrecognized_keywords
         unrecognized_keywords = ['unrecognized']
         keywords = Keywords.new(Keywords::RESERVED + unrecognized_keywords)
-        assert_equal Keywords::RESERVED, keywords.recognized
+        assert_equal Keywords::RESERVED.sort, keywords.recognized
         assert_equal unrecognized_keywords, keywords.unrecognized
       end
     end

@@ -8,7 +8,7 @@ module Reviewer
     # @!attribute provided
     #   @return [Array<String>] the keywords extracted from the command-line arguments
     class Keywords
-      RESERVED = %w[staged].freeze
+      RESERVED = %w[staged unstaged modified untracked].freeze
 
       attr_accessor :provided
 
