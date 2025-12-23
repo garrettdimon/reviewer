@@ -3,6 +3,9 @@
 require 'test_helper'
 
 module Reviewer
+  # Stub for testing different argument configurations
+  StubArgs = Struct.new(:format, :json?, :raw?, keyword_init: true)
+
   class ReviewerTest < Minitest::Test
     # def setup
     #   Reviewer.reset
@@ -59,6 +62,50 @@ module Reviewer
           Reviewer.review(clear_screen: true)
         rescue SystemExit => e
           assert_equal 0, e.status
+        end
+      end
+    end
+
+    def test_summary_format_outputs_checkmarks
+      tools = [Tool.new(:list)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :summary, json?: false, raw?: false)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          assert_match(/✓/, out)
+          assert_match(/All passed/i, out)
+        end
+      end
+    end
+
+    def test_json_format_outputs_json
+      tools = [Tool.new(:list)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :json, json?: true, raw?: false)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          assert_match(/"success":\s*true/, out)
+          assert_match(/"tools":/, out)
         end
       end
     end
