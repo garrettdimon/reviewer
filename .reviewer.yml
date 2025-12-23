@@ -260,5 +260,5 @@ notes:
   description: Find TODO, FIXME, HACK, and OPTIMIZE comments
   tags: [quality, dev]
   commands:
-    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' lib/ test/ || true"
+    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' app/ lib/ test/ || true"
   max_exit_status: 1
