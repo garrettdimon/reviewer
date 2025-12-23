@@ -10,7 +10,7 @@ module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
     DEFAULT_CONSOLE_WIDTH = 120
-    DIVIDER = '·'
+    DIVIDER = '─'
 
     attr_reader :printer
 
@@ -43,7 +43,8 @@ module Reviewer
     # @return [void]
     def batch_summary(tool_count, seconds)
       printer.print(:bold, "~#{seconds.round(1)} seconds")
-      printer.puts(:muted, " for #{tool_count} tools") if tool_count > 1
+      printer.print(:muted, " for #{tool_count} tools") if tool_count > 1
+      newline
     end
 
     # Print a tool summary using the name and description. Used before running a command to help
