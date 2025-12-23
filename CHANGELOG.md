@@ -4,9 +4,12 @@
 - Add `--raw` / `-r` flag to force passthrough output (useful for CI/agent contexts)
 - Add expanded code review tools: fasterer, license_finder, notes (enabled); debride, brakeman, rubycritic, metric_fu, yardstick, standard, rufo (disabled)
 - Add license_finder configuration with approved open source licenses
+- Add git keywords: `staged`, `unstaged`, `modified`, `untracked` for targeting files by git status
+- Add file targeting support for tools with `files:` config (rubocop, reek, fasterer)
 
 ### Fixed
 - Restore MIT license in LICENSE.txt to match gemspec declaration
+- Improve output dividers and newline consistency
 
 ### Changed
 - Update RuboCop target to Ruby 3.2
@@ -15,7 +18,6 @@
 ---
 
 - TODO: Improve and streamline installation
-- TODO: Add support for targeting specific files
 
 ## [0.1.4] - 2021-07-08
 
