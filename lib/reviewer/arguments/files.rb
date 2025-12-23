@@ -77,10 +77,10 @@ module Reviewer
         end.flatten.compact.uniq
       end
 
-      def staged = ::Reviewer::Keywords::Git::Staged.list
-      def unstaged = ::Reviewer::Keywords::Git::Unstaged.list
-      def modified = ::Reviewer::Keywords::Git::Modified.list
-      def untracked = ::Reviewer::Keywords::Git::Untracked.list
+      def staged = ::Reviewer::Keywords::Git.staged
+      def unstaged = ::Reviewer::Keywords::Git.unstaged
+      def modified = ::Reviewer::Keywords::Git.modified
+      def untracked = ::Reviewer::Keywords::Git.untracked
     end
   end
 end

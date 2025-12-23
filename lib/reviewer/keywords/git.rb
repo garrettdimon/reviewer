@@ -2,51 +2,31 @@
 
 module Reviewer
   module Keywords
+    # Git-based file list commands
     module Git
-      BASE_COMMAND = %w[git --no-pager].freeze
-
-      # Base class for git file list commands
-      class Base
-        attr_reader :stdout, :stderr, :status, :exit_status
-
-        def self.list = new.list
-
-        def list
-          @stdout, @stderr, @status = Open3.capture3(command)
-          @exit_status = @status.exitstatus.to_i
-
-          @status.success? ? to_a : raise_command_line_error
-        end
-
-        def command = (BASE_COMMAND + self.class::OPTIONS).join(' ')
-
-        private
-
-        def to_a = stdout.strip.empty? ? [] : stdout.split("\n")
-
-        def raise_command_line_error
-          raise SystemCallError.new("Git Error: #{stderr} (#{command})", exit_status)
-        end
+      def self.staged
+        run(%w[diff --staged --name-only])
       end
 
-      # Files staged for commit
-      class Staged < Base
-        OPTIONS = %w[diff --staged --name-only].freeze
+      def self.unstaged
+        run(%w[diff --name-only])
       end
 
-      # Files with unstaged changes
-      class Unstaged < Base
-        OPTIONS = %w[diff --name-only].freeze
+      def self.modified
+        run(%w[diff --name-only HEAD])
       end
 
-      # All files changed vs HEAD (staged + unstaged)
-      class Modified < Base
-        OPTIONS = %w[diff --name-only HEAD].freeze
+      def self.untracked
+        run(%w[ls-files --others --exclude-standard])
       end
 
-      # New files not yet tracked by git
-      class Untracked < Base
-        OPTIONS = %w[ls-files --others --exclude-standard].freeze
+      def self.run(options)
+        command = (%w[git --no-pager] + options).join(' ')
+        stdout, stderr, status = Open3.capture3(command)
+
+        return stdout.split("\n").reject(&:empty?) if status.success?
+
+        raise SystemCallError.new("Git Error: #{stderr} (#{command})", status.exitstatus.to_i)
       end
     end
   end

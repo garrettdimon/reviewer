@@ -54,7 +54,7 @@ module Reviewer
           keywords: keywords_array
         )
 
-        ::Reviewer::Keywords::Git::Staged.stub :list, staged_files do
+        ::Reviewer::Keywords::Git.stub :staged, staged_files do
           assert_equal staged_files, files.to_a
         end
       end
@@ -70,9 +70,7 @@ module Reviewer
           keywords: keywords_array
         )
 
-        # Stub the call to Git::Staged to avoid the need to run Git commands
-        # in tests to setup fake staged files
-        ::Reviewer::Keywords::Git::Staged.stub :list, staged_files do
+        ::Reviewer::Keywords::Git.stub :staged, staged_files do
           assert_equal full_files_array.sort, files.to_a
         end
       end
