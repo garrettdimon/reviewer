@@ -17,45 +17,21 @@ module Reviewer
         assert_match(/no tools/i, out)
       end
 
-      def test_formats_successful_report_with_checkmarks
+      def test_formats_successful_report_with_checkmarks_and_summary
         @report.add(build_result(tool_key: :bundle_audit, tool_name: 'Bundle Audit', success: true, duration: 0.15))
         @report.add(build_result(tool_key: :tests, tool_name: 'Minitest', success: true, duration: 0.46))
         @report.record_duration(0.61)
 
         formatter = Formatter.new(@report)
-
         out, _err = capture_subprocess_io { formatter.print }
 
         assert_match(/✓.*Bundle Audit/i, out)
         assert_match(/✓.*Minitest/i, out)
         assert_match(/0\.15s/, out)
-        assert_match(/0\.46s/, out)
-      end
-
-      def test_formats_all_pass_summary
-        @report.add(build_result(tool_key: :bundle_audit, success: true))
-        @report.record_duration(1.5)
-
-        formatter = Formatter.new(@report)
-
-        out, _err = capture_subprocess_io { formatter.print }
-
         assert_match(/all passed/i, out)
-        assert_match(/1\.5s/, out)
       end
 
-      def test_formats_failure_with_x_mark
-        @report.add(build_result(tool_key: :rubocop, tool_name: 'RuboCop', success: false, exit_status: 1))
-        @report.record_duration(0.8)
-
-        formatter = Formatter.new(@report)
-
-        out, _err = capture_subprocess_io { formatter.print }
-
-        assert_match(/✗.*RuboCop/i, out)
-      end
-
-      def test_formats_failure_details_section
+      def test_formats_failure_with_x_mark_and_details
         @report.add(build_result(
                       tool_key: :rubocop,
                       tool_name: 'RuboCop',
@@ -66,12 +42,10 @@ module Reviewer
         @report.record_duration(0.8)
 
         formatter = Formatter.new(@report)
-
         out, _err = capture_subprocess_io { formatter.print }
 
-        # Should show failure details, not "all passed"
+        assert_match(/✗.*RuboCop/i, out)
         refute_match(/all passed/i, out)
-        assert_match(/RuboCop/i, out)
         assert_match(%r{lib/foo\.rb}, out)
       end
 
@@ -106,6 +80,34 @@ module Reviewer
         out, _err = capture_subprocess_io { formatter.print }
 
         assert_match(/3 offenses/i, out)
+      end
+
+      def test_truncates_long_failure_output
+        long_output = (1..20).map { |i| "Line #{i}: Some error message" }.join("\n")
+
+        @report.add(build_result(
+                      tool_key: :rubocop,
+                      tool_name: 'RuboCop',
+                      success: false,
+                      exit_status: 1,
+                      stdout: long_output
+                    ))
+        @report.record_duration(0.8)
+
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        # Should show first 10 lines
+        assert_match(/Line 1:/, out)
+        assert_match(/Line 10:/, out)
+
+        # Should not show lines beyond 10
+        refute_match(/Line 11:/, out)
+        refute_match(/Line 20:/, out)
+
+        # Should show truncation notice
+        assert_match(/10 more lines/, out)
       end
 
       private

@@ -110,5 +110,10 @@ module Reviewer
 
       options[:format].to_sym
     end
+
+    # Whether output should be streamed directly (not captured for later formatting)
+    #
+    # @return [Boolean] true if in streaming mode
+    def streaming? = format == :streaming
   end
 end

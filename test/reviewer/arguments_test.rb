@@ -156,5 +156,22 @@ module Reviewer
       assert_equal :summary, arguments.format
       assert_equal %w[ruby], arguments.tags.raw
     end
+
+    # streaming? tests
+    def test_streaming_true_by_default
+      assert Arguments.new([]).streaming?
+    end
+
+    def test_streaming_false_for_summary_format
+      refute Arguments.new(%w[--format summary]).streaming?
+    end
+
+    def test_streaming_false_for_json_format
+      refute Arguments.new(%w[--format json]).streaming?
+    end
+
+    def test_streaming_false_for_json_flag
+      refute Arguments.new(%w[--json]).streaming?
+    end
   end
 end

@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   # Stub for testing different argument configurations
-  StubArgs = Struct.new(:format, :json?, :raw?, keyword_init: true)
+  StubArgs = Struct.new(:format, :json?, :raw?, :streaming?, keyword_init: true)
 
   class ReviewerTest < Minitest::Test
     # def setup
@@ -72,7 +72,7 @@ module Reviewer
       Reviewer.reset!
       ensure_test_configuration!
 
-      stub_args = StubArgs.new(format: :summary, json?: false, raw?: false)
+      stub_args = StubArgs.new(format: :summary, json?: false, raw?: false, streaming?: false)
 
       Reviewer.stub(:arguments, stub_args) do
         Reviewer.tools.stub(:current, tools) do
@@ -94,7 +94,7 @@ module Reviewer
       Reviewer.reset!
       ensure_test_configuration!
 
-      stub_args = StubArgs.new(format: :json, json?: true, raw?: false)
+      stub_args = StubArgs.new(format: :json, json?: true, raw?: false, streaming?: false)
 
       Reviewer.stub(:arguments, stub_args) do
         Reviewer.tools.stub(:current, tools) do

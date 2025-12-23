@@ -41,7 +41,7 @@ module Reviewer
           display_progress(command) { runner.shell.capture_main(command) }
 
           # Skip output for non-streaming modes - results are formatted at the end
-          return unless streaming_output?
+          return unless Reviewer.arguments.streaming?
 
           # If it's successful, show that it was a success and how long it took to run, otherwise,
           # it wasn't successful and we got some explaining to do...
@@ -49,10 +49,6 @@ module Reviewer
         end
 
         private
-
-        def streaming_output?
-          Reviewer.arguments.format == :streaming
-        end
 
         # Displays the progress of the current command since the output is captured/suppressed.
         #   Helps people know that the sub-command is running within expectations.
@@ -68,7 +64,7 @@ module Reviewer
           thread = Thread.new { yield }
 
           # Skip progress output for non-streaming modes
-          return thread.join unless streaming_output?
+          return thread.join unless Reviewer.arguments.streaming?
 
           print_progress(thread, start_time, average_time)
         end
