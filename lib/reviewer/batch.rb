@@ -47,7 +47,8 @@ module Reviewer
 
     def strategy
       return Runner::Strategies::Passthrough if Reviewer.arguments.raw?
-      return Runner::Strategies::Captured if Reviewer.arguments.json?
+      return Runner::Strategies::Captured if Reviewer.arguments.format == :json
+      return Runner::Strategies::Captured if Reviewer.arguments.format == :summary
 
       multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
     end
