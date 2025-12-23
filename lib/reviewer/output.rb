@@ -3,7 +3,6 @@
 require 'io/console/size' # For determining console width/height
 
 require_relative 'output/printer'
-require_relative 'output/scrubber'
 require_relative 'output/token'
 
 module Reviewer
@@ -11,6 +10,14 @@ module Reviewer
   class Output
     DEFAULT_CONSOLE_WIDTH = 120
     DIVIDER = '─'
+    RAKE_ABORTED_TEXT = "rake aborted!\n"
+
+    # Removes unhelpful rake exit status noise from stderr
+    def self.scrub(text)
+      return '' if text.nil?
+
+      text.include?(RAKE_ABORTED_TEXT) ? text.split(RAKE_ABORTED_TEXT).first : text
+    end
 
     attr_reader :printer
 

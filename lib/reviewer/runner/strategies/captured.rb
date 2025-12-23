@@ -137,7 +137,7 @@ module Reviewer
         def show_captured_stderr # rubocop:disable Metrics/AbcSize
           return if runner.stderr.nil? || runner.stderr.empty?
 
-          scrubbed_stderr = Reviewer::Output::Scrubber.new(runner.stderr).clean
+          scrubbed_stderr = Output.scrub(runner.stderr)
 
           runner.output.divider
           runner.output.newline
