@@ -40,8 +40,8 @@ module Reviewer
 
           display_progress(command) { runner.shell.capture_main(command) }
 
-          # Skip output in JSON mode - results are serialized at the end
-          return if Reviewer.arguments.json?
+          # Skip output for non-streaming modes - results are formatted at the end
+          return unless Reviewer.arguments.streaming?
 
           # If it's successful, show that it was a success and how long it took to run, otherwise,
           # it wasn't successful and we got some explaining to do...
@@ -63,8 +63,8 @@ module Reviewer
           start_time = Time.now
           thread = Thread.new { yield }
 
-          # In JSON mode, just wait for the command to finish without progress output
-          return thread.join if Reviewer.arguments.json?
+          # Skip progress output for non-streaming modes
+          return thread.join unless Reviewer.arguments.streaming?
 
           print_progress(thread, start_time, average_time)
         end

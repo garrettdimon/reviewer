@@ -36,23 +36,34 @@ module Reviewer
     # @return [self]
     def initialize(options = ARGV)
       @output = Output.new
-      @options = Slop.parse options do |opts|
-        opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
-        opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
-        opts.on '-r', '--raw', 'force raw output (no capturing)'
-        opts.on '-j', '--json', 'output results as JSON'
-
-        opts.on '-v', '--version', 'print the version' do
-          @output.help VERSION
-          exit
-        end
-
-        opts.on '-h', '--help', 'print the help' do
-          @output.help opts
-          exit
-        end
-      end
+      @options = Slop.parse(options) { |opts| configure_options(opts) }
     end
+
+    private
+
+    def configure_options(opts)
+      configure_input_options(opts)
+      configure_output_options(opts)
+      configure_info_options(opts)
+    end
+
+    def configure_input_options(opts)
+      opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
+      opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
+    end
+
+    def configure_output_options(opts)
+      opts.on '-r', '--raw', 'force raw output (no capturing)'
+      opts.on '-j', '--json', 'output results as JSON'
+      opts.string '--format', 'output format (streaming, summary, json)', default: 'streaming'
+    end
+
+    def configure_info_options(opts)
+      opts.on('-v', '--version', 'print the version') { @output.help(VERSION) && exit }
+      opts.on('-h', '--help', 'print the help') { @output.help(opts) && exit }
+    end
+
+    public
 
     # Converts the arguments to a hash for versatility
     #
@@ -90,5 +101,19 @@ module Reviewer
     #
     # @return [Boolean] true if JSON output mode is requested
     def json? = options[:json]
+
+    # The output format for results
+    #
+    # @return [Symbol] the output format (:streaming, :summary, or :json)
+    def format
+      return :json if json?
+
+      options[:format].to_sym
+    end
+
+    # Whether output should be streamed directly (not captured for later formatting)
+    #
+    # @return [Boolean] true if in streaming mode
+    def streaming? = format == :streaming
   end
 end

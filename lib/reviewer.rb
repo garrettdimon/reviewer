@@ -112,6 +112,8 @@ module Reviewer
     def display_report(report)
       if arguments.json?
         puts report.to_json
+      elsif arguments.format == :summary
+        Report::Formatter.new(report, output: output).print
       elsif report.success?
         output.batch_summary(report.results.size, report.duration)
       end

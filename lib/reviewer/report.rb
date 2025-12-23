@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require_relative 'report/formatter'
 
 module Reviewer
   # Collects results from multiple tool runs and provides serialization
