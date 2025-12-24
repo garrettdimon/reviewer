@@ -4,34 +4,21 @@ require 'test_helper'
 
 module Reviewer
   class Output
-    class ScrubberTest < Minitest::Test
-      def test_scrubs_rake_aborted_content
-        raw_stderr = <<~STDERR
-          some text before
+    class ScrubTest < Minitest::Test
+      def test_removes_rake_aborted_and_following_text
+        raw = "useful error\nrake aborted!\nunhelpful noise"
 
-          rake aborted!
-          some text after
-        STDERR
-
-        scrubber = Reviewer::Output::Scrubber.new(raw_stderr)
-
-        assert_match(/rake aborted/, scrubber.raw)
-        refute_match(/rake aborted/, scrubber.clean)
-        refute_match(/some text after rake aborted/, scrubber.clean)
+        assert_equal "useful error\n", Output.scrub(raw)
       end
 
-      def test_does_not_modify_untainted_text
-        clean_stderr = <<~STDERR
-          some text without 'Rake Aborted' text
-        STDERR
+      def test_preserves_clean_text
+        clean = "some text without rake aborted"
 
-        scrubber = Reviewer::Output::Scrubber.new(clean_stderr)
-        assert_equal clean_stderr, scrubber.clean
+        assert_equal clean, Output.scrub(clean)
       end
 
-      def test_safely_handles_nil_values
-        scrubber = Reviewer::Output::Scrubber.new(nil)
-        assert_equal '', scrubber.clean
+      def test_handles_nil
+        assert_equal '', Output.scrub(nil)
       end
     end
   end

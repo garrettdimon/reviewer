@@ -36,6 +36,10 @@ module Reviewer
       def env = config.fetch(:env) { {} }
       def flags = config.fetch(:flags) { {} }
 
+      def files_flag = config.dig(:files, :flag) || ''
+      def files_separator = config.dig(:files, :separator) || ' '
+      def supports_files? = config.key?(:files)
+
       # The collection of configured commands for the tool
       #
       # @return [Hash] all of the commands configured for the tool

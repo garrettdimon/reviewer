@@ -103,3 +103,21 @@ failing_dynamic_seed_tool:
   disabled: true
   commands:
     review: 'exit 1 --seed $SEED'
+
+# For Testing File Targeting
+file_targeting_tool:
+  disabled: true
+  commands:
+    review: 'rubocop'
+  files:
+    flag: ''
+    separator: ' '
+
+# For Testing File Targeting with Flag
+file_targeting_with_flag_tool:
+  disabled: true
+  commands:
+    review: 'custom-lint'
+  files:
+    flag: '--files'
+    separator: ','

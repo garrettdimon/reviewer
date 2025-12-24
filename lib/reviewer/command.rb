@@ -50,9 +50,16 @@ module Reviewer
     # The raw command string before any substitutions. For example, since seeds need to remain
     # consistent from one run to the next, they're
     #
-    # @return [type] [description]
+    # @return [String] the command string before seed substitution
     def raw_string
-      @raw_string ||= String.new(type, tool_settings: tool.settings).to_s # rubocop:disable Lint/RedundantTypeConversion
+      @raw_string ||= String.new(type, tool_settings: tool.settings, files: target_files).to_s # rubocop:disable Lint/RedundantTypeConversion
+    end
+
+    # Gets the list of files to target for this command
+    #
+    # @return [Array<String>] the list of files from arguments
+    def target_files
+      Reviewer.arguments.files.to_a
     end
 
     private
