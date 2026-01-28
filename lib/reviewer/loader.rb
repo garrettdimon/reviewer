@@ -13,6 +13,13 @@ module Reviewer
 
     attr_reader :configuration, :file
 
+    # Creates a loader instance for the configuration file
+    # @param file [Pathname] the path to the configuration YAML file
+    #
+    # @return [Loader] a loader with parsed configuration
+    # @raise [MissingConfigurationError] if the file doesn't exist
+    # @raise [InvalidConfigurationError] if the YAML is malformed
+    # @raise [MissingReviewCommandError] if a tool lacks a review command
     def initialize(file = Reviewer.configuration.file)
       @file = file
       @configuration = configuration_hash
@@ -20,8 +27,14 @@ module Reviewer
       validate_configuration!
     end
 
+    # Converts the loader to its configuration hash
+    #
+    # @return [Hash] the parsed configuration
     def to_h = configuration
 
+    # Loads and returns the tools configuration hash
+    #
+    # @return [Hash] the parsed configuration from the YAML file
     def self.configuration = new.configuration
 
     private

@@ -135,5 +135,73 @@ module Reviewer
     ensure
       ensure_test_configuration!
     end
+
+    def test_target_files_maps_source_to_test_when_configured
+      # Create temp directory with test file structure
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          FileUtils.mkdir_p('test/models')
+          FileUtils.touch('test/models/user_test.rb')
+
+          # Set up arguments with source file
+          Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f app/models/user.rb]))
+
+          # Tool with map_to_tests: minitest should map source to test
+          command = Reviewer::Command.new(:test_mapping_tool, :review)
+
+          assert_equal ['test/models/user_test.rb'], command.target_files
+        end
+      end
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_target_files_does_not_map_when_not_configured
+      # Set up arguments with source file
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f app/models/user.rb]))
+
+      # Tool without map_to_tests should pass files through (and filter by pattern)
+      command = Reviewer::Command.new(:test_pattern_tool, :review)
+
+      # Should be empty because app/models/user.rb doesn't match *_test.rb pattern
+      assert_empty command.target_files
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_target_files_passes_through_test_files_when_mapping_configured
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          FileUtils.mkdir_p('test/models')
+          FileUtils.touch('test/models/user_test.rb')
+
+          # Set up arguments with test file directly
+          Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f test/models/user_test.rb]))
+
+          # Tool with map_to_tests should pass through existing test files
+          command = Reviewer::Command.new(:test_mapping_tool, :review)
+
+          assert_equal ['test/models/user_test.rb'], command.target_files
+        end
+      end
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_skip_returns_true_when_mapped_test_does_not_exist
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          # No test file exists
+          Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f app/models/user.rb]))
+
+          command = Reviewer::Command.new(:test_mapping_tool, :review)
+
+          # Should skip because mapping found no existing test files
+          assert command.skip?
+        end
+      end
+    ensure
+      ensure_test_configuration!
+    end
   end
 end

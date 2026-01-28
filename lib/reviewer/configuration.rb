@@ -9,6 +9,8 @@ module Reviewer
   #   @return [Pathname] the pathname for the primary configuraton file
   # @!attribute history_file
   #   @return [Pathname] the pathname for the history file to store data across runs
+  # @!attribute printer
+  #   @return [Output::Printer] the printer instance for console output
   #
   # @author [garrettdimon]
   #

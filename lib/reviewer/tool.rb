@@ -2,7 +2,9 @@
 
 require 'date'
 
+require_relative 'tool/file_resolver'
 require_relative 'tool/settings'
+require_relative 'tool/test_file_mapper'
 
 module Reviewer
   # Provides an instance of a specific tool for accessing its settings and run history
@@ -31,7 +33,14 @@ module Reviewer
                    :disabled?,
                    :max_exit_status
 
+    # @!method to_sym
+    #   Returns the tool's key as a symbol
+    #   @return [Symbol] the tool's unique identifier
     alias to_sym key
+
+    # @!method to_s
+    #   Returns the tool's name as a string
+    #   @return [String] the tool's display name
     alias to_s name
 
     # Create an instance of a tool
@@ -94,16 +103,29 @@ module Reviewer
       Reviewer.history.set(key, :last_prepared_at, last_prepared_at.to_s)
     end
 
+    # Calculates the average execution time for a command
+    # @param command [Command] the command to get timing for
+    #
+    # @return [Float] the average time in seconds or 0 if no history
     def average_time(command)
       times = get_timing(command)
 
       times.any? ? times.sum / times.size : 0
     end
 
+    # Retrieves historical timing data for a command
+    # @param command [Command] the command to look up
+    #
+    # @return [Array<Float>] the last few recorded execution times
     def get_timing(command)
       Reviewer.history.get(key, command.raw_string) || []
     end
 
+    # Records the execution time for a command to calculate running averages
+    # @param command [Command] the command that was run
+    # @param time [Float, nil] the execution time in seconds
+    #
+    # @return [void]
     def record_timing(command, time)
       return if time.nil?
 
@@ -140,5 +162,27 @@ module Reviewer
       settings == other.settings
     end
     alias :== eql?
+
+    # Resolves which files this tool should process
+    # @param files [Array<String>] the input files to resolve
+    #
+    # @return [Array<String>] files after mapping and filtering
+    def resolve_files(files)
+      file_resolver.resolve(files)
+    end
+
+    # Determines if this tool should be skipped because files were requested but none match
+    # @param files [Array<String>] the requested files
+    #
+    # @return [Boolean] true if files were requested but none match after resolution
+    def skip_files?(files)
+      file_resolver.skip?(files)
+    end
+
+    private
+
+    def file_resolver
+      @file_resolver ||= FileResolver.new(settings)
+    end
   end
 end

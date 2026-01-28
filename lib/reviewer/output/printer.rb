@@ -16,10 +16,20 @@ module Reviewer
         end
       end
 
+      # Prints styled content without a newline
+      # @param style [Symbol] the style key for color and weight
+      # @param content [String] the text to print
+      #
+      # @return [void]
       def print(style, content)
         text(style, content)
       end
 
+      # Prints styled content followed by a newline
+      # @param style [Symbol] the style key for color and weight
+      # @param content [String] the text to print
+      #
+      # @return [void]
       def puts(style, content)
         text(style, content)
         stream.puts

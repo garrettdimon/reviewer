@@ -4,6 +4,10 @@ module Reviewer
   class Arguments
     # Handles the logic of translating tag arguments
     class Tags
+      # @!attribute provided
+      #   @return [Array<String>] tags explicitly provided via -t or --tags flag
+      # @!attribute keywords
+      #   @return [Array<String>] tags derived from keyword arguments
       attr_accessor :provided, :keywords
 
       alias raw provided

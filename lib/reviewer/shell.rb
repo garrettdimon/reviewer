@@ -34,7 +34,16 @@ module Reviewer
       result.exit_status = system(command) ? 0 : 1
     end
 
+    # Captures and times the preparation command execution
+    # @param command [String, Command] the command to run
+    #
+    # @return [Result] the captured result including stdout, stderr, and exit status
     def capture_prep(command) = timer.record_prep { capture_results(command) }
+
+    # Captures and times the main command execution
+    # @param command [String, Command] the command to run
+    #
+    # @return [Result] the captured result including stdout, stderr, and exit status
     def capture_main(command) = timer.record_main { capture_results(command) }
 
     private
