@@ -82,6 +82,12 @@ module Reviewer
       newline
     end
 
+    def skipped(reason = 'no matching files')
+      printer.print(:muted, 'Skipped')
+      printer.puts(:muted, " (#{reason})")
+      newline
+    end
+
     def failure(details, command: nil)
       printer.print(:failure, 'Failure')
       printer.puts(:muted, " #{details}")

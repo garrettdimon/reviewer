@@ -12,7 +12,7 @@ module Reviewer
       end
 
       def test_preserves_clean_text
-        clean = "some text without rake aborted"
+        clean = 'some text without rake aborted'
 
         assert_equal clean, Output.scrub(clean)
       end

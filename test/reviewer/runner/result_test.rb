@@ -15,7 +15,8 @@ module Reviewer
           exit_status: 0,
           duration: 5.2,
           stdout: 'Inspecting 42 files',
-          stderr: nil
+          stderr: nil,
+          skipped: nil
         )
       end
 
@@ -70,13 +71,15 @@ module Reviewer
           exit_status: 0,
           duration: 3.1,
           stdout: nil,
-          stderr: nil
+          stderr: nil,
+          skipped: nil
         )
 
         hash = result.to_h
 
         refute hash.key?(:stdout)
         refute hash.key?(:stderr)
+        refute hash.key?(:skipped)
       end
 
       def test_failed_result
@@ -89,7 +92,8 @@ module Reviewer
           exit_status: 1,
           duration: 2.5,
           stdout: '1 failure',
-          stderr: 'Error details'
+          stderr: 'Error details',
+          skipped: nil
         )
 
         refute result.success

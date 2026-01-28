@@ -110,7 +110,8 @@ module Reviewer
         exit_status: exit_status,
         duration: 1.0,
         stdout: nil,
-        stderr: nil
+        stderr: nil,
+        skipped: nil
       )
     end
   end

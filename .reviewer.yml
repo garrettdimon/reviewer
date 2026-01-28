@@ -39,6 +39,7 @@ reek:
   files:
     flag: ''
     separator: ' '
+    pattern: '*.rb'
   flags:
     color:
     documentation:
@@ -91,6 +92,7 @@ rubocop:
   files:
     flag: ''
     separator: ' '
+    pattern: '*.rb'
   flags:
     color:
 
@@ -167,6 +169,7 @@ fasterer:
   files:
     flag: ''
     separator: ' '
+    pattern: '*.rb'
 
 
 debride:

@@ -38,6 +38,7 @@ module Reviewer
 
       def files_flag = config.dig(:files, :flag) || ''
       def files_separator = config.dig(:files, :separator) || ' '
+      def files_pattern = config.dig(:files, :pattern)
       def supports_files? = config.key?(:files)
 
       # The collection of configured commands for the tool

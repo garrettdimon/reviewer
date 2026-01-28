@@ -55,14 +55,39 @@ module Reviewer
       @raw_string ||= String.new(type, tool_settings: tool.settings, files: target_files).to_s # rubocop:disable Lint/RedundantTypeConversion
     end
 
-    # Gets the list of files to target for this command
+    # Gets the list of files to target for this command, filtered by the tool's pattern if configured
     #
-    # @return [Array<String>] the list of files from arguments
+    # @return [Array<String>] the list of files from arguments, filtered by pattern
     def target_files
-      Reviewer.arguments.files.to_a
+      @target_files ||= filter_files(requested_files)
+    end
+
+    # Determines if this command should be skipped because files were requested but none match
+    #
+    # @return [Boolean] true if files were requested but filtering left none for this tool
+    def skip?
+      requested_files.any? && target_files.empty?
     end
 
     private
+
+    # The raw list of files from arguments before filtering
+    #
+    # @return [Array<String>] files from -f flag or keywords like 'staged'
+    def requested_files
+      @requested_files ||= Reviewer.arguments.files.to_a
+    end
+
+    # Filters files by the tool's pattern if one is configured
+    #
+    # @param files [Array<String>] the files to filter
+    # @return [Array<String>] files matching the pattern, or all files if no pattern
+    def filter_files(files)
+      pattern = tool.settings.files_pattern
+      return files unless pattern
+
+      files.select { |file| File.fnmatch(pattern, File.basename(file)) }
+    end
 
     # The version of the command with the SEED_SUBSTITUTION_VALUE replaced
     #

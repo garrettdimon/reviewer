@@ -35,6 +35,13 @@ module Reviewer
     end
 
     def run
+      # Skip if files were requested but none match this tool's pattern
+      if command.skip?
+        @skipped = true
+        show_skipped if Reviewer.arguments.streaming?
+        return 0
+      end
+
       # Show which tool is running (only in streaming mode)
       identify_tool if Reviewer.arguments.streaming?
 
@@ -48,13 +55,25 @@ module Reviewer
       exit_status
     end
 
+    # Whether this runner was skipped due to no matching files
+    #
+    # @return [Boolean] true if the tool was skipped
+    def skipped? = @skipped == true
+
     # Some review tools return a range of non-zero exit statuses and almost never return 0.
     # (`yarn audit` is a good example.) Those tools can be configured to accept a non-zero exit
     # status so they aren't constantly considered to be failing over minor issues.
     #
     # But when other command types (prepare, install, format) are run, they either succeed or they
     # fail. With no shades of gray in those cases, anything other than a 0 is a failure.
-    def success? = command.type == :review ? exit_status <= tool.max_exit_status : exit_status.zero?
+    #
+    # Skipped tools are always considered successful.
+    def success?
+      return true if skipped?
+
+      command.type == :review ? exit_status <= tool.max_exit_status : exit_status.zero?
+    end
+
     def failure? = !success?
 
     # Prints the tool name and description to the console as a frame of reference
@@ -66,6 +85,14 @@ module Reviewer
       return if result.exists?
 
       output.tool_summary(tool)
+    end
+
+    # Shows that a tool was skipped due to no matching files
+    #
+    # @return [void]
+    def show_skipped
+      output.tool_summary(tool)
+      output.skipped
     end
 
     # Runs the relevant strategy to either capture or pass through command output.
@@ -119,6 +146,33 @@ module Reviewer
     #
     # @return [Runner::Result] the result of running this tool
     def to_result
+      skipped? ? skipped_result : executed_result
+    end
+
+    private
+
+    # Result for a tool that was skipped due to no matching files
+    #
+    # @return [Runner::Result]
+    def skipped_result
+      Result.new(
+        tool_key: tool.key,
+        tool_name: tool.name,
+        command_type: command.type,
+        command_string: nil,
+        success: true,
+        exit_status: 0,
+        duration: 0,
+        stdout: nil,
+        stderr: nil,
+        skipped: true
+      )
+    end
+
+    # Result for a tool that was actually executed
+    #
+    # @return [Runner::Result]
+    def executed_result
       Result.new(
         tool_key: tool.key,
         tool_name: tool.name,
@@ -128,7 +182,8 @@ module Reviewer
         exit_status: exit_status,
         duration: timer.total_seconds,
         stdout: stdout,
-        stderr: stderr
+        stderr: stderr,
+        skipped: nil
       )
     end
   end

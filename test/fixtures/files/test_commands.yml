@@ -121,3 +121,23 @@ file_targeting_with_flag_tool:
   files:
     flag: '--files'
     separator: ','
+
+# For Testing File Pattern Filtering
+file_pattern_tool:
+  disabled: true
+  commands:
+    review: 'rubocop'
+  files:
+    flag: ''
+    separator: ' '
+    pattern: '*.rb'
+
+# For Testing Test File Pattern Filtering
+test_pattern_tool:
+  disabled: true
+  commands:
+    review: 'rake test'
+  files:
+    flag: ''
+    separator: ' '
+    pattern: '*_test.rb'

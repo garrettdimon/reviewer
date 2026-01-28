@@ -1,0 +1,5 @@
+inherit_from: ../.rubocop.yml
+
+# Test classes naturally grow with coverage
+Metrics/ClassLength:
+  Max: 150

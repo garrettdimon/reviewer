@@ -12,7 +12,8 @@ module Reviewer
       :exit_status,
       :duration,
       :stdout,
-      :stderr
+      :stderr,
+      :skipped
     ) do
       # Converts the result to a hash suitable for serialization
       #
@@ -27,7 +28,8 @@ module Reviewer
           exit_status: exit_status,
           duration: duration,
           stdout: stdout,
-          stderr: stderr
+          stderr: stderr,
+          skipped: skipped
         }.compact
       end
     end

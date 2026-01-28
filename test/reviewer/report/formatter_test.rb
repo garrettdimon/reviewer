@@ -122,7 +122,8 @@ module Reviewer
           exit_status: options[:exit_status] || 0,
           duration: options[:duration] || 1.0,
           stdout: options[:stdout],
-          stderr: options[:stderr]
+          stderr: options[:stderr],
+          skipped: nil
         )
       end
     end

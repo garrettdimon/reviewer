@@ -132,6 +132,14 @@ module Reviewer
         @settings = Settings.new(@tool, config: @config)
         assert @settings.supports_files?
       end
+
+      def test_provides_file_pattern_with_nil_as_default
+        assert_nil @settings.files_pattern
+
+        @config[:files] = { flag: '', separator: ' ', pattern: '*.rb' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal '*.rb', @settings.files_pattern
+      end
     end
   end
 end

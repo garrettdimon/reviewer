@@ -56,6 +56,36 @@ module Reviewer
       end
     end
 
+    def test_skips_when_files_requested_but_none_match_pattern
+      # Set up arguments with only JS files
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f lib/foo.js]))
+
+      # Tool with *.rb pattern should skip
+      runner = Runner.new(:file_pattern_tool, :review)
+      capture_subprocess_io do
+        exit_status = runner.run
+        assert_equal 0, exit_status
+      end
+      result = runner.to_result
+
+      assert result.success
+      assert result.skipped
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_does_not_skip_when_files_match_pattern
+      # Set up arguments with Ruby files
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f lib/foo.rb]))
+
+      # Tool with *.rb pattern should not skip
+      runner = Runner.new(:file_pattern_tool, :review)
+
+      refute runner.command.skip?
+    ensure
+      ensure_test_configuration!
+    end
+
     private
 
     def with_mock_shell_result
