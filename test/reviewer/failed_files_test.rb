@@ -31,6 +31,31 @@ module Reviewer
         "lib/reviewer/batch.rb:10 (mass = 32)\n"
     end
 
+    def test_matches_fasterer_format
+      assert_match_extracts 'lib/reviewer/shell.rb',
+        "lib/reviewer/shell.rb:55 Array#sort + Array#first are slower than Enumerable#min_by.\n"
+    end
+
+    def test_matches_rubycritic_console_format
+      assert_match_extracts 'lib/reviewer/batch.rb',
+        "lib/reviewer/batch.rb -- Rating: A -- Score: 10.5\n"
+    end
+
+    def test_matches_grep_notes_format
+      assert_match_extracts 'lib/reviewer/batch.rb',
+        "lib/reviewer/batch.rb:45:# TODO: refactor this\n"
+    end
+
+    def test_matches_minitest_heat_format
+      assert_match_extracts 'test/reviewer/batch_test.rb',
+        "test/reviewer/batch_test.rb:83 ➜ 83\n"
+    end
+
+    def test_matches_rspec_documentation_format
+      assert_match_extracts './spec/models/user_spec.rb',
+        "     ./spec/models/user_spec.rb:15\n"
+    end
+
     # --- Pattern matching: path variations ---
 
     def test_matches_deeply_nested_paths
@@ -146,6 +171,28 @@ module Reviewer
 
     def test_rejects_paths_without_line_or_separator
       assert_no_match_in "lib/reviewer/batch.rb is clean\n"
+    end
+
+    # --- Pattern rejection: tool-specific non-path output ---
+
+    def test_rejects_flog_scores_with_midline_paths
+      assert_no_match_in "     7.2: Reviewer::FailedFiles#combined_output lib/reviewer/failed_files.rb:54-56\n"
+    end
+
+    def test_rejects_bundle_audit_gem_names
+      assert_no_match_in "Name: actionpack\n"
+    end
+
+    def test_rejects_bundle_audit_versions
+      assert_no_match_in "Version: 5.0.0\n"
+    end
+
+    def test_rejects_brakeman_file_label_format
+      assert_no_match_in "File: app/controllers/users_controller.rb\n"
+    end
+
+    def test_rejects_inch_midline_paths
+      assert_no_match_in "┃  B  ↑  Reviewer::Batch#run    lib/reviewer/batch.rb:25\n"
     end
 
     # --- Filtering and deduplication ---
