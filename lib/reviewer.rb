@@ -100,6 +100,12 @@ module Reviewer
     def perform(command_type, clear_screen: false)
       output.clear if clear_screen && !arguments.json?
 
+      # When `failed` is the sole keyword and there's nothing to re-run, exit early with a message
+      if failed_with_nothing_to_run?
+        display_failed_empty_message
+        exit 0
+      end
+
       report = Batch.new(command_type, tools.current).run
       display_report(report)
 
@@ -110,6 +116,23 @@ module Reviewer
     #
     # @param report [Report] the report to display
     # @return [void]
+    # Whether the `failed` keyword was used as the sole keyword but there are no failed tools
+    def failed_with_nothing_to_run?
+      arguments.keywords.failed? &&
+        tools.failed_from_history.empty? &&
+        arguments.keywords.for_tool_names.empty? &&
+        arguments.tags.empty?
+    end
+
+    # Distinguishes "no previous run" from "no failures" and displays the appropriate message
+    def display_failed_empty_message
+      if tools.all.any? { |tool| Reviewer.history.get(tool.key, :last_status) }
+        output.no_failures_to_retry
+      else
+        output.no_previous_run
+      end
+    end
+
     def display_report(report)
       if arguments.json?
         puts report.to_json

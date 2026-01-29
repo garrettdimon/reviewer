@@ -88,5 +88,15 @@ module Reviewer
       out, _err = capture_subprocess_io { @output.guidance('Test', nil) }
       assert out.strip.empty?
     end
+
+    def test_no_failures_to_retry
+      out, _err = capture_subprocess_io { @output.no_failures_to_retry }
+      assert_match(/No failures to retry/i, out)
+    end
+
+    def test_no_previous_run
+      out, _err = capture_subprocess_io { @output.no_previous_run }
+      assert_match(/No previous run found/i, out)
+    end
   end
 end

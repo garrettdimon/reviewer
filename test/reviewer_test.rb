@@ -8,9 +8,17 @@ module Reviewer
     def to_a = []
   end
 
+  # Minimal keywords stub that reports no failed keyword
+  StubKeywords = Struct.new(nil) do
+    def failed? = false
+    def for_tool_names = []
+  end
+
   # Stub for testing different argument configurations
   StubArgs = Struct.new(:format, :json?, :raw?, :streaming?, keyword_init: true) do
     def files = EmptyFiles.new
+    def keywords = StubKeywords.new
+    def tags = []
   end
 
   class ReviewerTest < Minitest::Test
