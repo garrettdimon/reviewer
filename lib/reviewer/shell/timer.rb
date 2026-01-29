@@ -28,13 +28,13 @@ module Reviewer
       # @param &block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the preparation
-      def record_prep(&block) = @prep = record(&block)
+      def record_prep(&) = @prep = record(&)
 
       # Records the execution time for the block and assigns it to the `main` time
       # @param &block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the main command
-      def record_main(&block) = @main = record(&block)
+      def record_main(&) = @main = record(&)
 
       # The preparation time rounded to two decimal places
       #
@@ -69,7 +69,7 @@ module Reviewer
 
       private
 
-      def record(&block) = Benchmark.realtime(&block)
+      def record(&) = Benchmark.realtime(&)
     end
   end
 end
