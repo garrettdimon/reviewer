@@ -90,6 +90,21 @@ module Reviewer
         assert_equal keywords.configured_tool_names.size, (keywords.possible & keywords.configured_tool_names).size
       end
 
+      def test_failed_is_a_reserved_keyword
+        assert_includes Keywords::RESERVED, 'failed'
+
+        keywords = Keywords.new('failed')
+        assert_includes keywords.reserved, 'failed'
+        assert_includes keywords.recognized, 'failed'
+        assert_includes keywords.possible, 'failed'
+      end
+
+      def test_failed_predicate
+        assert Keywords.new('failed').failed?
+        refute Keywords.new('staged').failed?
+        refute Keywords.new.failed?
+      end
+
       def test_exposes_recognized_and_unrecognized_keywords
         unrecognized_keywords = ['unrecognized']
         keywords = Keywords.new(Keywords::RESERVED + unrecognized_keywords)
