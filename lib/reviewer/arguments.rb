@@ -63,6 +63,10 @@ module Reviewer
     def configure_info_options(opts)
       opts.on('-v', '--version', 'print the version') { @output.help(VERSION) && exit }
       opts.on('-h', '--help', 'print the help') { @output.help(opts) && exit }
+      opts.on('-c', '--capabilities', 'output capabilities as JSON') do
+        puts Capabilities.new.to_json
+        exit
+      end
     end
 
     public

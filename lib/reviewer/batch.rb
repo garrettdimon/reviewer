@@ -46,8 +46,9 @@ module Reviewer
     def multiple_tools? = tools.size > 1
 
     def strategy
-      return Runner::Strategies::Passthrough if Reviewer.arguments.raw?
-      return Runner::Strategies::Captured unless Reviewer.arguments.streaming?
+      args = Reviewer.arguments
+      return Runner::Strategies::Passthrough if args.raw?
+      return Runner::Strategies::Captured unless args.streaming?
 
       multiple_tools? ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
     end

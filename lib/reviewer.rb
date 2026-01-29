@@ -9,6 +9,7 @@ require_relative 'reviewer/conversions'
 
 require_relative 'reviewer/arguments'
 require_relative 'reviewer/batch'
+require_relative 'reviewer/capabilities'
 require_relative 'reviewer/command'
 require_relative 'reviewer/configuration'
 require_relative 'reviewer/guidance'

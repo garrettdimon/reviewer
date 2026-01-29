@@ -173,5 +173,21 @@ module Reviewer
     def test_streaming_false_for_json_flag
       refute Arguments.new(%w[--json]).streaming?
     end
+
+    def test_prints_capabilities_json_with_short_flag
+      out, _err = capture_subprocess_io do
+        assert_raises(SystemExit) { Arguments.new(%w[-c]) }
+      end
+      assert_match(/"version"/, out)
+      assert_match(/"tools"/, out)
+    end
+
+    def test_prints_capabilities_json_with_long_flag
+      out, _err = capture_subprocess_io do
+        assert_raises(SystemExit) { Arguments.new(%w[--capabilities]) }
+      end
+      assert_match(/"version"/, out)
+      assert_match(/"keywords"/, out)
+    end
   end
 end

@@ -24,7 +24,7 @@ module Reviewer
     #   @return [String, nil] the standard error from the command
     # @!attribute [r] skipped
     #   @return [Boolean] whether the tool was skipped
-    Result = Data.define(
+    Result = Struct.new(
       :tool_key,
       :tool_name,
       :command_type,
@@ -34,8 +34,15 @@ module Reviewer
       :duration,
       :stdout,
       :stderr,
-      :skipped
+      :skipped,
+      keyword_init: true
     ) do
+      # Freeze on initialization to maintain immutability like Data.define
+      def initialize(...)
+        super
+        freeze
+      end
+
       # Converts the result to a hash suitable for serialization
       #
       # @return [Hash] hash representation with nil values removed
