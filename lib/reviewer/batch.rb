@@ -58,6 +58,9 @@ module Reviewer
       store_failed_files(tool, runner) unless runner.success?
     end
 
+    # Passes stdout and stderr separately to FailedFiles, which merges them
+    # internally when scanning for file paths. Only called for tools that failed
+    # (exit status exceeded the tool's max_exit_status threshold).
     def store_failed_files(tool, runner)
       files = FailedFiles.new(runner.stdout, runner.stderr).to_a
       Reviewer.history.set(tool.key, :last_failed_files, files) if files.any?
