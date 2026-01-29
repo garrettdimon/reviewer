@@ -52,22 +52,22 @@ module Reviewer
       # Extracts reserved keywords from the provided arguments
       #
       # @return [Array<String>] intersection of provided arguments and reserved keywords
-      def reserved = intersection_with RESERVED
+      def reserved = intersection_with(RESERVED)
 
       # Extracts keywords that match configured tags for enabled tools
       #
       # @return [Array<String>] intersection of provided arguments and configured tags for tools
-      def for_tags = intersection_with configured_tags
+      def for_tags = intersection_with(configured_tags)
 
       # Extracts keywords that match configured tool keys
       #
       # @return [Array<String>] intersection of provided arguments and configured tool names
-      def for_tool_names = intersection_with configured_tool_names
+      def for_tool_names = intersection_with(configured_tool_names)
 
       # Extracts keywords that match any possible recognized keyword values
       #
       # @return [Array<String>] intersection of provided arguments and recognizable keywords
-      def recognized = intersection_with possible
+      def recognized = intersection_with(possible)
 
       # Extracts keywords that don't match any possible recognized keyword values
       #
