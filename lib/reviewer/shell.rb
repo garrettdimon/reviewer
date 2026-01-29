@@ -20,6 +20,7 @@ module Reviewer
     def initialize
       @timer = Timer.new
       @result = Result.new
+      @captured_results = nil
     end
 
     # Run a command without capturing the output. This ensures the results are displayed realtime

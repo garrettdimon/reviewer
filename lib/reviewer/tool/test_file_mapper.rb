@@ -24,7 +24,7 @@ module Reviewer
       def map(files)
         return files unless supported?
 
-        files.map { |f| map_file(f) }.compact.uniq
+        files.map { |file| map_file(file) }.compact.uniq
       end
 
       # Checks if the framework is supported for mapping
