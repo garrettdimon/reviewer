@@ -1,23 +1,22 @@
 ## [Unreleased]
 
 ### Added
+- Add `--capabilities` / `-c` flag for agent discovery (outputs JSON describing tools, keywords, scenarios)
 - Add `--raw` / `-r` flag to force passthrough output (useful for CI/agent contexts)
+- Add git keywords: `staged`, `unstaged`, `modified`, `untracked` for targeting files by git status
+- Add pattern-based file filtering via `files.pattern` config
+- Add source-to-test file mapping via `files.map_to_tests` config
 - Add expanded code review tools: fasterer, license_finder, notes (enabled); debride, brakeman, rubycritic, metric_fu, yardstick, standard, rufo (disabled)
 - Add license_finder configuration with approved open source licenses
-- Add git keywords: `staged`, `unstaged`, `modified`, `untracked` for targeting files by git status
-- Add file targeting support for tools with `files:` config (rubocop, reek, fasterer)
 
 ### Fixed
 - Restore MIT license in LICENSE.txt to match gemspec declaration
 - Improve output dividers and newline consistency
 
 ### Changed
-- Update RuboCop target to Ruby 3.2
+- Expand Ruby support to 3.0+ (previously 3.2+)
+- Rewrite README with installation, usage, and configuration documentation
 - Apply fasterer performance suggestions (yield over block.call, fetch with block)
-
----
-
-- TODO: Improve and streamline installation
 
 ## [0.1.4] - 2021-07-08
 
