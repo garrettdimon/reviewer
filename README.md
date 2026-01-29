@@ -1,37 +1,122 @@
 # [Reviewer](https://github.com/garrettdimon/reviewer)
-by [Garrett Dimon](https://garrettdimon.com)
 
----
-
-**Note:** As of December 2021, Reviewer is a work in progress. While it's working great reviewing its own code, it's not quite ready for wider usage. Once, it's ready, it will provide more helpful installation and usage details.
-
----
-
-*With Reviewer, you can seamlessly use multiple automated code review tools with orders of magnitude less friction so you can use them more frequently and consistently.*
-
-So instead of remembering and typing...
-```bash
-$ yarn audit --level moderate
-$ bundle exec bundle-audit check --no-update
-$ bundle exec rubocop --parallel
-$ bundle exec erblint --lint-all --enable-all-linters
-$ yarn stylelint .
-$ yarn eslint .
-```
-...you could just type...
-```
-$ rvw
-```
-
-That's just the tip of the iceberg, though. For the full story on Reviewer's capabilities and benefits, the [Overview](https://github.com/garrettdimon/reviewer/wiki/Overview) is the best place to start. Or if you'd like to see how it's configured under the hood, the [Configuration Instructions](https://github.com/garrettdimon/reviewer/wiki/Configuration) go even deeper.
+Run multiple code review tools with a single command.
 
 [![build](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/garrettdimon/reviewer/actions/workflows/main.yml)
 [![coverage](https://img.shields.io/codecov/c/github/garrettdimon/reviewer?token=UuXUlQAA2e)](https://codecov.io/gh/garrettdimon/reviewer)
-[![last commit](https://img.shields.io/github/last-commit/garrettdimon/reviewer/main)](https://github.com/garrettdimon/reviewer/commits/main)
 [![gem version](https://img.shields.io/gem/v/reviewer)](https://rubygems.org/gems/reviewer)
 
+## Installation
+
+```bash
+gem install reviewer
+```
+
+Or add to your Gemfile:
+
+```ruby
+gem 'reviewer'
+```
+
+**Requires Ruby 3.0+**
+
+## Quick Start
+
+1. Create a `.reviewer.yml` in your project root (see [Configuration](#configuration))
+2. Run `rvw` to review your code
+
+```bash
+rvw                    # Run all enabled tools
+rvw rubocop tests      # Run specific tools
+rvw -t ruby            # Run tools tagged with 'ruby'
+rvw staged             # Review only staged files
+```
+
+## Usage
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `rvw` | Run review commands for all enabled tools |
+| `fmt` | Run format commands for tools that support it |
+
+### Git Keywords
+
+Target files by git status:
+
+| Keyword | Description |
+|---------|-------------|
+| `staged` | Files staged for commit |
+| `unstaged` | Files with unstaged changes |
+| `modified` | All changed files (staged + unstaged) |
+| `untracked` | New files not yet tracked |
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `-t, --tags` | Filter tools by tag |
+| `-f, --files` | Specify files to review |
+| `-r, --raw` | Force passthrough output |
+| `-j, --json` | Output results as JSON |
+| `-c, --capabilities` | Output tool capabilities as JSON |
+
+## Configuration
+
+Create `.reviewer.yml` in your project root:
+
+```yaml
+rubocop:
+  name: RuboCop
+  description: Ruby style and lint checking
+  tags: [ruby, style]
+  commands:
+    review: bundle exec rubocop --parallel
+    format: bundle exec rubocop --autocorrect
+  files:
+    pattern: '*.rb'
+
+tests:
+  name: Minitest
+  description: Run test suite
+  tags: [ruby, tests]
+  commands:
+    review: bundle exec rake test
+  files:
+    pattern: '*_test.rb'
+    map_to_tests: minitest
+```
+
+### Tool Options
+
+| Option | Description |
+|--------|-------------|
+| `name` | Display name |
+| `description` | What the tool does |
+| `tags` | Categories for filtering |
+| `disabled` | Set `true` to skip |
+| `commands.review` | Command to run for `rvw` |
+| `commands.format` | Command to run for `fmt` |
+| `commands.install` | Command to install the tool |
+| `commands.prepare` | Command to run before review (cached 6 hours) |
+| `files.pattern` | Glob pattern to filter files (e.g., `*.rb`) |
+| `files.map_to_tests` | Map source files to test files (`minitest` or `rspec`) |
+
+## Agent Integration
+
+For AI agents and automation tools, use `--capabilities` to discover available tools:
+
+```bash
+rvw --capabilities
+```
+
+This outputs JSON describing all configured tools, keywords, and common scenarios.
+
 ## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+MIT License - see [LICENSE.txt](LICENSE.txt)
 
 ## Code of Conduct
-Everyone interacting in the Reviewer project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/reviewer/blob/master/CODE_OF_CONDUCT.md).
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
