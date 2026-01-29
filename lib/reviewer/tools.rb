@@ -50,12 +50,23 @@ module Reviewer
     end
 
     # Uses the full context of a run to provide the filtered subset of tools to use. It takes into
-    # consideration: tagged tools, explicitly-specified tools, configuration (enabled/disabled), and
-    # any other relevant details that should influence whether a specific tool should be run as part
-    # of the current batch being executed.
+    # consideration: tagged tools, explicitly-specified tools, failed tools, configuration
+    # (enabled/disabled), and any other relevant details that should influence whether a specific
+    # tool should be run as part of the current batch being executed.
     #
     # @return [Array<Tool>] the full collection of should-be-used-for-this-run tools
-    def current = subset? ? (specified + tagged).uniq : enabled
+    def current
+      return enabled unless subset? || failed_keyword?
+
+      (specified + tagged + failed).uniq
+    end
+
+    # Returns tools that failed in the previous run based on history
+    #
+    # @return [Array<Tool>] tools with :last_status of :failed in history
+    def failed_from_history
+      all.select { |tool| Reviewer.history.get(tool.key, :last_status) == :failed }
+    end
 
     private
 
@@ -65,6 +76,14 @@ module Reviewer
     #
     # @return [Boolean] true if any tool names or tags are provided via the command line
     def subset? = tool_names.any? || tags.any?
+
+    def failed
+      return [] unless failed_keyword?
+
+      failed_from_history
+    end
+
+    def failed_keyword? = Reviewer.arguments.keywords.failed?
 
     def configured = @configured ||= Loader.configuration
     def tags = Array(@tags || Reviewer.arguments.tags)

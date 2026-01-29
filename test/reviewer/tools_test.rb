@@ -51,5 +51,62 @@ module Reviewer
       assert_equal 1, @tools.current.size
       assert_equal 'Tagged', @tools.current.first.name
     end
+
+    def test_failed_from_history_returns_tools_with_failed_status
+      clear_all_last_statuses
+      Reviewer.history.set(:enabled_tool, :last_status, :failed)
+      Reviewer.history.set(:tagged, :last_status, :passed)
+
+      @tools = Tools.new
+      failed = @tools.failed_from_history
+      assert_equal 1, failed.size
+      assert_equal :enabled_tool, failed.first.key
+    ensure
+      Reviewer.history.set(:enabled_tool, :last_status, nil)
+      Reviewer.history.set(:tagged, :last_status, nil)
+    end
+
+    def test_failed_from_history_returns_empty_when_no_failures
+      clear_all_last_statuses
+      Reviewer.history.set(:enabled_tool, :last_status, :passed)
+
+      @tools = Tools.new
+      assert_empty @tools.failed_from_history
+    ensure
+      Reviewer.history.set(:enabled_tool, :last_status, nil)
+    end
+
+    def test_current_includes_failed_tools
+      Reviewer.history.set(:list, :last_status, :failed)
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
+
+      @tools = Tools.new
+      tool_keys = @tools.current.map(&:key)
+      assert_includes tool_keys, :list
+    ensure
+      Reviewer.history.set(:list, :last_status, nil)
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
+    def test_current_unions_failed_tools_with_named_tools
+      Reviewer.history.set(:list, :last_status, :failed)
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed enabled_tool]))
+
+      @tools = Tools.new
+      tool_keys = @tools.current.map(&:key)
+      assert_includes tool_keys, :list
+      assert_includes tool_keys, :enabled_tool
+    ensure
+      Reviewer.history.set(:list, :last_status, nil)
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
+    private
+
+    def clear_all_last_statuses
+      Reviewer.tools.all.each { |tool| Reviewer.history.set(tool.key, :last_status, nil) }
+    end
   end
 end
