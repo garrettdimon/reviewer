@@ -77,11 +77,27 @@ module Reviewer
 
     private
 
-    # The raw list of files from arguments before resolution
+    # The raw list of files from arguments before resolution.
+    # Falls through to stored failed files when the `failed` keyword is present
+    # and no explicit files were provided.
     #
-    # @return [Array<String>] files from -f flag or keywords like 'staged'
+    # @return [Array<String>] files from -f flag, keywords like 'staged', or stored failed files
     def requested_files
-      @requested_files ||= Reviewer.arguments.files.to_a
+      @requested_files ||= begin
+        explicit = Reviewer.arguments.files.to_a
+        if explicit.empty? && Reviewer.arguments.keywords.failed?
+          stored_failed_files
+        else
+          explicit
+        end
+      end
+    end
+
+    # Retrieves failed files stored from the previous run for this tool
+    #
+    # @return [Array<String>] stored failed file paths, or empty array
+    def stored_failed_files
+      Reviewer.history.get(tool.key, :last_failed_files) || []
     end
 
     # The version of the command with the SEED_SUBSTITUTION_VALUE replaced
