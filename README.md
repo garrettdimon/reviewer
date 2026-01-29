@@ -18,7 +18,7 @@ Or add to your Gemfile:
 gem 'reviewer'
 ```
 
-**Requires Ruby 3.0+**
+**Requires Ruby 3.2+**
 
 ## Quick Start
 
