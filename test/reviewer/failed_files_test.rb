@@ -61,7 +61,7 @@ module Reviewer
     end
 
     def test_handles_empty_string_inputs
-      assert_empty FailedFiles.new("", "").matched_paths
+      assert_empty FailedFiles.new('', '').matched_paths
     end
 
     def test_filters_nonexistent_paths
