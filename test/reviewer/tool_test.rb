@@ -84,5 +84,31 @@ module Reviewer
       assert @tool.formattable?
       refute @mvt.formattable?
     end
+
+    def test_resolve_files_delegates_to_file_resolver
+      tool = Tool.new(:file_pattern_tool)
+
+      result = tool.resolve_files(['app/models/user.rb', 'app.js'])
+
+      assert_equal ['app/models/user.rb'], result
+    end
+
+    def test_resolve_files_returns_files_unchanged_when_no_pattern
+      result = @tool.resolve_files(['app/models/user.rb', 'app.js'])
+
+      assert_equal ['app/models/user.rb', 'app.js'], result
+    end
+
+    def test_skip_files_returns_true_when_files_requested_but_none_match
+      tool = Tool.new(:file_pattern_tool)
+
+      assert tool.skip_files?(['app.js', 'style.css'])
+    end
+
+    def test_skip_files_returns_false_when_no_files_requested
+      tool = Tool.new(:file_pattern_tool)
+
+      refute tool.skip_files?([])
+    end
   end
 end

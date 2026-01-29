@@ -19,6 +19,8 @@ module Reviewer
   #   `rvw ruby staged`
   #
   class Arguments
+    # @!attribute options
+    #   @return [Slop::Result] the parsed command-line options
     attr_accessor :options
 
     attr_reader :output

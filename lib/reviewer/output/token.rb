@@ -9,13 +9,25 @@ module Reviewer
     class Token
       ESC = "\e["
 
+      # @!attribute style
+      #   @return [Symbol] the style key (e.g., :success, :failure, :muted)
+      # @!attribute content
+      #   @return [String] the text content to display
       attr_accessor :style, :content
 
+      # Creates a styled output token
+      # @param style [Symbol] the style key for color and weight
+      # @param content [String] the text content to display
+      #
+      # @return [Token] a styled token instance
       def initialize(style, content)
         @style = style
         @content = content
       end
 
+      # Converts the token to an ANSI-styled string
+      #
+      # @return [String] the content wrapped in ANSI escape codes
       def to_s
         [
           style_string,

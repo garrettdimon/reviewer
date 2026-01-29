@@ -9,11 +9,19 @@ module Reviewer
 
       attr_reader :report, :output
 
+      # Creates a formatter for displaying a report
+      # @param report [Report] the report to format
+      # @param output [Output] the output handler for console display
+      #
+      # @return [Formatter] a formatter instance
       def initialize(report, output: Output.new)
         @report = report
         @output = output
       end
 
+      # Prints the formatted report to the console
+      #
+      # @return [void]
       def print
         if report.results.empty?
           output.printer.puts(:muted, 'No tools to run')

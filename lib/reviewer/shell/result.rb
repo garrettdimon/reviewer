@@ -18,6 +18,14 @@ module Reviewer
         executable_not_found: "can't find executable"
       }.freeze
 
+      # @!attribute stdout
+      #   @return [String, nil] standard output from the command
+      # @!attribute stderr
+      #   @return [String, nil] standard error from the command
+      # @!attribute status
+      #   @return [Process::Status, nil] the process status object
+      # @!attribute exit_status
+      #   @return [Integer, nil] the exit status code from the command
       attr_accessor :stdout, :stderr, :status, :exit_status
 
       # An instance of a result from running a local command. Captures the values for `$stdout`,

@@ -141,3 +141,14 @@ test_pattern_tool:
     flag: ''
     separator: ' '
     pattern: '*_test.rb'
+
+# For Testing Test File Mapping (source to test)
+test_mapping_tool:
+  disabled: true
+  commands:
+    review: 'rake test'
+  files:
+    flag: ''
+    separator: ' '
+    pattern: '*_test.rb'
+    map_to_tests: minitest

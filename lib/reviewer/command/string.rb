@@ -11,12 +11,21 @@ module Reviewer
 
       attr_reader :command_type, :tool_settings, :files
 
+      # Creates a command string builder for a tool
+      # @param command_type [Symbol] the command type (:install, :prepare, :review, :format)
+      # @param tool_settings [Tool::Settings] the tool's configuration settings
+      # @param files [Array<String>] files to include in the command
+      #
+      # @return [String] a command string builder instance
       def initialize(command_type, tool_settings:, files: [])
         @command_type = command_type
         @tool_settings = tool_settings
         @files = Array(files)
       end
 
+      # Converts the command to a complete string ready for execution
+      #
+      # @return [String] the full command string
       def to_s
         to_a
           .map(&:strip) # Remove extra spaces on the components
@@ -24,6 +33,9 @@ module Reviewer
           .strip        # Strip extra spaces from the end result
       end
 
+      # Converts the command to an array of its components
+      #
+      # @return [Array<String, nil>] env vars, body, flags, and files
       def to_a
         [
           env_variables,
@@ -38,6 +50,9 @@ module Reviewer
       # @return [String] the environment variable names and values concatened for the command
       def env_variables = Env.new(tool_settings.env).to_s
 
+      # The base command string from the tool's configuration
+      #
+      # @return [String] the configured command for the command type
       def body = tool_settings.commands.fetch(command_type)
 
       # Gets the flags to be used in conjunction with the review command for a tool

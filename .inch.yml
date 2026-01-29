@@ -1,0 +1,6 @@
+files:
+  included:
+    - lib/**/*.rb
+  excluded:
+    # Data.define classes are not properly recognized by YARD/inch
+    - lib/reviewer/runner/result.rb

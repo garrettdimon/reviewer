@@ -140,6 +140,14 @@ module Reviewer
         @settings = Settings.new(@tool, config: @config)
         assert_equal '*.rb', @settings.files_pattern
       end
+
+      def test_provides_map_to_tests_with_nil_as_default
+        assert_nil @settings.map_to_tests
+
+        @config[:files] = { flag: '', separator: ' ', pattern: '*_test.rb', map_to_tests: 'minitest' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal 'minitest', @settings.map_to_tests
+      end
     end
   end
 end

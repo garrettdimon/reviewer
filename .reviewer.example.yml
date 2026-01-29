@@ -23,6 +23,8 @@
 #  files:
 #    flag:                      // Optional, defaults to '' (empty string). The name of the flag used to pass subsets of files to the command.
 #    separator:                 // Optional, defaults to ' ' (single space). The character used to separate lists of files and directories.
+#    pattern:                   // Optional. Glob pattern to filter files (e.g., '*.rb'). Only files matching this pattern are passed to the tool.
+#    map_to_tests:              // Optional. Maps source files to test files. Values: 'minitest' (test/*_test.rb) or 'rspec' (spec/*_spec.rb).
 #  env:                         // Optional. A way to specify necessary environment variables for the tools commands. The key is the variable name, and the value is, well, the value.
 #    example_one: value         //           - The names will automatically be capitalized, so you can freely use lower-case here.
 #    example_one: value         //           - Reviewer is smart enough to handle string values with spaces and automatically quote them.
@@ -54,6 +56,8 @@ tool-name-key:
   files:
     flag: 'files'
     separator: ','
+    pattern: '*.rb'
+    map_to_tests: minitest
   env:
     report: false
   flags:

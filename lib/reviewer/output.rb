@@ -26,9 +26,19 @@ module Reviewer
       @printer = printer
     end
 
+    # Clears the console screen
+    #
+    # @return [Boolean, nil] result of system call
     def clear = system('clear')
+
+    # Prints an empty line
+    #
+    # @return [void]
     def newline = printer.puts(:default, '')
 
+    # Prints a horizontal divider line
+    #
+    # @return [void]
     def divider
       newline
       printer.print(:muted, DIVIDER * console_width)
@@ -74,6 +84,10 @@ module Reviewer
       printer.puts(:default, String(command))
     end
 
+    # Prints a success message with timing information
+    # @param timer [Shell::Timer] the timer with execution times
+    #
+    # @return [void]
     def success(timer)
       printer.print(:success, 'Success')
       printer.print(:success_light, " #{timer.total_seconds}s")
@@ -82,12 +96,21 @@ module Reviewer
       newline
     end
 
+    # Prints a skipped message with the reason
+    # @param reason [String] why the tool was skipped
+    #
+    # @return [void]
     def skipped(reason = 'no matching files')
       printer.print(:muted, 'Skipped')
       printer.puts(:muted, " (#{reason})")
       newline
     end
 
+    # Prints a failure message with details and optionally the failed command
+    # @param details [String] the failure details
+    # @param command [String, Command, nil] the command that failed
+    #
+    # @return [void]
     def failure(details, command: nil)
       printer.print(:failure, 'Failure')
       printer.puts(:muted, " #{details}")
@@ -99,11 +122,20 @@ module Reviewer
       printer.puts(:muted, String(command))
     end
 
+    # Prints an unrecoverable error message
+    # @param details [String] the error details to display
+    #
+    # @return [void]
     def unrecoverable(details)
       printer.puts(:error, 'Unrecoverable Error:')
       printer.puts(:muted, details)
     end
 
+    # Prints guidance information to help users resolve issues
+    # @param summary [String] the bold summary line
+    # @param details [String, nil] the detailed guidance text
+    #
+    # @return [void]
     def guidance(summary, details)
       return if details.nil?
 
@@ -112,6 +144,10 @@ module Reviewer
       printer.puts(:muted, details)
     end
 
+    # Outputs raw content directly to the stream without styling
+    # @param value [String, nil] the content to output
+    #
+    # @return [void]
     def unfiltered(value)
       return if value.nil? || value.strip.empty?
 

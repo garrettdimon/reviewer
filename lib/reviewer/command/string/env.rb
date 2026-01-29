@@ -15,10 +15,16 @@ module Reviewer
           @env_pairs = env_pairs
         end
 
+        # Converts environment variables to a space-separated string
+        #
+        # @return [String] formatted environment variables (e.g., "KEY=value KEY2=value2")
         def to_s
           to_a.compact.join(' ')
         end
 
+        # Converts environment variables to an array of KEY=value strings
+        #
+        # @return [Array<String, nil>] array of formatted env vars, nil for empty values
         def to_a
           env_pairs.map { |key, value| env(key, value) }
         end

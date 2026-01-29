@@ -9,6 +9,8 @@ module Reviewer
   class Runner
     extend Forwardable
 
+    # @!attribute strategy
+    #   @return [Class] the strategy class for running the command (Captured or Passthrough)
     attr_accessor :strategy
 
     attr_reader :command, :shell, :output
@@ -34,6 +36,9 @@ module Reviewer
       @output = output
     end
 
+    # Executes the command and returns the exit status
+    #
+    # @return [Integer] the exit status from the command
     def run
       # Skip if files were requested but none match this tool's pattern
       if command.skip?
