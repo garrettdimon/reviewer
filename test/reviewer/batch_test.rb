@@ -45,6 +45,42 @@ module Reviewer
       assert @report.duration >= 0
     end
 
+    def test_records_passed_status_in_history
+      tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
+
+      capture_subprocess_io do
+        Batch.new(:review, tools).run
+      end
+
+      assert_equal :passed, Reviewer.history.get(:list, :last_status)
+      assert_equal :passed, Reviewer.history.get(:minimum_viable_tool, :last_status)
+    end
+
+    def test_records_failed_status_in_history
+      tools = [Tool.new(:failing_command)]
+
+      capture_subprocess_io do
+        Batch.new(:review, tools).run
+      end
+
+      assert_equal :failed, Reviewer.history.get(:failing_command, :last_status)
+    end
+
+    def test_clears_status_for_tools_that_did_not_run
+      # Pre-populate a stale failed status
+      Reviewer.history.set(:minimum_viable_tool, :last_status, :failed)
+
+      # Run a batch where the first tool fails, so minimum_viable_tool never runs
+      tools = [Tool.new(:failing_command), Tool.new(:minimum_viable_tool)]
+
+      capture_subprocess_io do
+        Batch.new(:review, tools).run
+      end
+
+      assert_equal :failed, Reviewer.history.get(:failing_command, :last_status)
+      assert_nil Reviewer.history.get(:minimum_viable_tool, :last_status)
+    end
+
     def test_uses_passthrough_strategy_when_raw_flag_set
       Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-r]))
 

@@ -24,6 +24,10 @@ module Reviewer
     # @return [Report] the report containing results for all commands run
     def run
       elapsed_time = Benchmark.realtime do
+        # Clear stale statuses so tools that don't run (due to early break) aren't left
+        # with a stale "failed" status from a prior run
+        clear_last_statuses
+
         matching_tools.each do |tool|
           # Create and execute a runner for the given tool, command type, and strategy
           runner = Runner.new(tool, command_type, strategy)
@@ -31,6 +35,9 @@ module Reviewer
 
           # Record the result for this tool
           @report.add(runner.to_result)
+
+          # Record pass/fail status for the `failed` keyword to use on subsequent runs
+          Reviewer.history.set(tool.key, :last_status, runner.success? ? :passed : :failed)
 
           # If the tool fails, stop running other tools
           break unless runner.success?
@@ -42,6 +49,10 @@ module Reviewer
     end
 
     private
+
+    def clear_last_statuses
+      matching_tools.each { |tool| Reviewer.history.set(tool.key, :last_status, nil) }
+    end
 
     def multiple_tools? = tools.size > 1
 
