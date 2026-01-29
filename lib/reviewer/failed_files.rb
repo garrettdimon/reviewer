@@ -9,16 +9,18 @@ module Reviewer
   # "passing files" on stdout and "failing files" on stderr, so merging is safe.
   # The regex pattern and File.exist? guard filter out any incidental matches.
   class FailedFiles
-    # Matches path-like tokens at or near the start of a line, allowing leading
-    # whitespace for tools that indent output (reek groupings, rspec nesting).
-    # Supports any file extension so non-Ruby tools (eslint, stylelint) also work.
-    # File.exist? in extract_paths guards against false positives.
+    # Matches relative path-like tokens at or near the start of a line, allowing
+    # leading whitespace for tools that indent output (reek groupings, rspec nesting).
+    # Rejects absolute paths (starting with /) to exclude Ruby runtime warnings and
+    # gem internals that would otherwise match. Tool findings always use relative
+    # paths from the project root. Supports any file extension so non-Ruby tools
+    # (eslint, stylelint) also work. File.exist? in to_a provides a final guard.
     #
     #   lib/foo.rb:45:3: C: Style/... (rubocop)
     #   test/foo_test.rb:45 (minitest)
     #   lib/foo.rb -- message (reek)
     #   src/app.js:10:5: error ... (eslint)
-    FILE_PATH_PATTERN = /^\s*(\S+\.\w+)(?::\d| -- )/
+    FILE_PATH_PATTERN = /^\s*([^\/\s]\S*\.\w+)(?::\d| -- )/
 
     attr_reader :stdout, :stderr
 
@@ -44,13 +46,16 @@ module Reviewer
 
     private
 
-    # Merges both streams for scanning. Linters write diagnostic output (file paths
-    # with line numbers) to stdout, while stderr typically only contains crash or
-    # startup errors. Scanning both catches paths regardless of which stream the
-    # tool uses, and the regex + File.exist? filtering prevents false positives.
-    # @return [String] merged stdout and stderr with nils removed
+    # Merges both streams and strips ANSI escape codes before scanning. Linters
+    # write diagnostic output (file paths with line numbers) to stdout, while
+    # stderr typically only contains crash or startup errors. Scanning both catches
+    # paths regardless of which stream the tool uses. ANSI codes are stripped via
+    # Rainbow::StringUtils.uncolor because tools run with --color embed escape
+    # sequences around file paths, which would otherwise become part of the
+    # captured path string.
+    # @return [String] merged stdout and stderr, stripped of ANSI codes
     def combined_output
-      [stdout, stderr].compact.join("\n")
+      Rainbow::StringUtils.uncolor([stdout, stderr].compact.join("\n"))
     end
   end
 end
