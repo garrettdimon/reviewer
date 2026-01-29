@@ -23,17 +23,18 @@ module Reviewer
     end
 
     def to_a
-      extract_paths.uniq
+      matched_paths.select { |path| File.exist?(path) }.uniq
+    end
+
+    # All regex-matched paths before filesystem filtering
+    def matched_paths
+      combined_output.scan(FILE_PATH_PATTERN).flatten
     end
 
     private
 
     def combined_output
       [stdout, stderr].compact.join("\n")
-    end
-
-    def extract_paths
-      combined_output.scan(FILE_PATH_PATTERN).flatten.select { |path| File.exist?(path) }
     end
   end
 end
