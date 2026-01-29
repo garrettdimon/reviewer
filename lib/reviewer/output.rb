@@ -131,6 +131,20 @@ module Reviewer
       printer.puts(:muted, details)
     end
 
+    # Prints a message when `rvw failed` is used but no tools failed in the last run
+    #
+    # @return [void]
+    def no_failures_to_retry
+      printer.puts(:muted, 'No failures to retry')
+    end
+
+    # Prints a message when `rvw failed` is used but no previous run exists
+    #
+    # @return [void]
+    def no_previous_run
+      printer.puts(:muted, 'No previous run found')
+    end
+
     # Prints guidance information to help users resolve issues
     # @param summary [String] the bold summary line
     # @param details [String, nil] the detailed guidance text

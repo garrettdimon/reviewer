@@ -24,6 +24,38 @@ module Reviewer
       assert_match(/#{command.seed}/, command.string)
     end
 
+    def test_uses_stored_seed_when_failed_keyword_present
+      # Store a known seed
+      Reviewer.history.set(:dynamic_seed_tool, :last_seed, 42_424)
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
+
+      command = Reviewer::Command.new(:dynamic_seed_tool, :review)
+      assert_equal 42_424, command.seed
+    ensure
+      Reviewer.history.set(:dynamic_seed_tool, :last_seed, nil)
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
+    def test_generates_new_seed_when_failed_keyword_absent
+      Reviewer.history.set(:dynamic_seed_tool, :last_seed, 42_424)
+
+      command = Reviewer::Command.new(:dynamic_seed_tool, :review)
+      refute_equal 42_424, command.seed
+    ensure
+      Reviewer.history.set(:dynamic_seed_tool, :last_seed, nil)
+    end
+
+    def test_generates_new_seed_when_failed_keyword_present_but_no_stored_seed
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
+
+      command = Reviewer::Command.new(:dynamic_seed_tool, :review)
+      assert_kind_of Integer, command.seed
+    ensure
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
     def test_can_be_cast_to_string
       command_string = "WITH_SPACES='with spaces' WORD=second INTEGER=1 BOOLEAN=true ls -c --third 'third flag' --fourth 'fourth flag'"
 

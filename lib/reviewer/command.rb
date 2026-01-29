@@ -41,7 +41,11 @@ module Reviewer
     #
     # @return [Integer] a random integer to pass to tools that use seeds
     def seed
-      @seed ||= Random.rand(100_000)
+      @seed ||= if Reviewer.arguments.keywords.failed?
+                  Reviewer.history.get(tool.key, :last_seed) || Random.rand(100_000)
+                else
+                  Random.rand(100_000)
+                end
 
       # Store the seed for reference
       Reviewer.history.set(tool.key, :last_seed, @seed)

@@ -8,7 +8,7 @@ module Reviewer
     # @!attribute provided
     #   @return [Array<String>] the keywords extracted from the command-line arguments
     class Keywords
-      RESERVED = %w[staged unstaged modified untracked].freeze
+      RESERVED = %w[staged unstaged modified untracked failed].freeze
 
       attr_accessor :provided
 
@@ -48,6 +48,11 @@ module Reviewer
         }
       end
       alias inspect to_h
+
+      # Whether the `failed` keyword was provided
+      #
+      # @return [Boolean] true if the `failed` keyword is present
+      def failed? = provided.include?('failed')
 
       # Extracts reserved keywords from the provided arguments
       #
