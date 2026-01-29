@@ -14,7 +14,7 @@
 - Improve output dividers and newline consistency
 
 ### Changed
-- Expand Ruby support to 3.0+ (previously 3.2+)
+- Confirm Ruby support for 3.2, 3.3, and 3.4
 - Rewrite README with installation, usage, and configuration documentation
 - Apply fasterer performance suggestions (yield over block.call, fetch with block)
 
