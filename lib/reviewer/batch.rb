@@ -29,17 +29,12 @@ module Reviewer
         clear_last_statuses
 
         matching_tools.each do |tool|
-          # Create and execute a runner for the given tool, command type, and strategy
           runner = Runner.new(tool, command_type, strategy)
           runner.run
 
-          # Record the result for this tool
           @report.add(runner.to_result)
+          record_run(tool, runner)
 
-          # Record pass/fail status for the `failed` keyword to use on subsequent runs
-          Reviewer.history.set(tool.key, :last_status, runner.success? ? :passed : :failed)
-
-          # If the tool fails, stop running other tools
           break unless runner.success?
         end
       end
@@ -51,7 +46,24 @@ module Reviewer
     private
 
     def clear_last_statuses
-      matching_tools.each { |tool| Reviewer.history.set(tool.key, :last_status, nil) }
+      matching_tools.each do |tool|
+        Reviewer.history.set(tool.key, :last_status, nil)
+        Reviewer.history.set(tool.key, :last_failed_files, nil)
+      end
+    end
+
+    # Records pass/fail status and failed files for the `failed` keyword to use on subsequent runs
+    def record_run(tool, runner)
+      Reviewer.history.set(tool.key, :last_status, runner.success? ? :passed : :failed)
+      store_failed_files(tool, runner) unless runner.success?
+    end
+
+    # Passes stdout and stderr separately to FailedFiles, which merges them
+    # internally when scanning for file paths. Only called for tools that failed
+    # (exit status exceeded the tool's max_exit_status threshold).
+    def store_failed_files(tool, runner)
+      files = FailedFiles.new(runner.stdout, runner.stderr).to_a
+      Reviewer.history.set(tool.key, :last_failed_files, files) if files.any?
     end
 
     def multiple_tools? = tools.size > 1

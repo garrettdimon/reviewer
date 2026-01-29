@@ -49,6 +49,9 @@ module Reviewer
 
     private
 
+    # Open3.capture3 returns stdout, stderr, and status separately. Keeping them
+    # separate matters for FailedFiles, which merges the streams intentionally
+    # when scanning for file paths after a failure.
     def capture_results(command)
       command = String(command)
 

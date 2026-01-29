@@ -220,6 +220,62 @@ module Reviewer
       ensure_test_configuration!
     end
 
+    def test_uses_stored_failed_files_when_failed_keyword_and_no_explicit_files
+      # Store failed files for this tool
+      Reviewer.history.set(:file_pattern_tool, :last_failed_files, %w[lib/reviewer/batch.rb lib/reviewer/command.rb])
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
+
+      command = Reviewer::Command.new(:file_pattern_tool, :review)
+
+      assert_includes command.target_files, 'lib/reviewer/batch.rb'
+      assert_includes command.target_files, 'lib/reviewer/command.rb'
+    ensure
+      Reviewer.history.set(:file_pattern_tool, :last_failed_files, nil)
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
+    def test_ignores_stored_files_when_explicit_files_provided
+      # Store failed files
+      Reviewer.history.set(:file_pattern_tool, :last_failed_files, %w[lib/reviewer/batch.rb])
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed -f lib/reviewer/command.rb]))
+
+      command = Reviewer::Command.new(:file_pattern_tool, :review)
+
+      assert_includes command.target_files, 'lib/reviewer/command.rb'
+      refute_includes command.target_files, 'lib/reviewer/batch.rb'
+    ensure
+      Reviewer.history.set(:file_pattern_tool, :last_failed_files, nil)
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
+    def test_returns_no_files_when_failed_keyword_and_no_stored_files
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
+
+      command = Reviewer::Command.new(:file_pattern_tool, :review)
+
+      assert_empty command.target_files
+    ensure
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
+    def test_ignores_stored_files_without_failed_keyword
+      # Store failed files but don't use the failed keyword
+      Reviewer.history.set(:file_pattern_tool, :last_failed_files, %w[lib/reviewer/batch.rb])
+      Reviewer.instance_variable_set(:@arguments, Arguments.new([]))
+
+      command = Reviewer::Command.new(:file_pattern_tool, :review)
+
+      # Without failed keyword, should run on everything (no file scoping)
+      refute_includes command.send(:requested_files), 'lib/reviewer/batch.rb'
+    ensure
+      Reviewer.history.set(:file_pattern_tool, :last_failed_files, nil)
+      Reviewer.reset!
+      ensure_test_configuration!
+    end
+
     def test_skip_returns_true_when_mapped_test_does_not_exist
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
