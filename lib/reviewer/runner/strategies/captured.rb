@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'ruby-progressbar'
+
 module Reviewer
   class Runner
     module Strategies
@@ -70,12 +72,50 @@ module Reviewer
         end
 
         def print_progress(thread, start_time, average_time)
-          while thread.alive?
-            elapsed = (Time.now - start_time).to_f.round(1)
-            progress = average_time.zero? ? "#{elapsed}s" : "~#{((elapsed / average_time) * 100).round}%"
+          bar = create_progress_bar(average_time)
 
-            $stdout.print "> #{progress} \r"
-            $stdout.flush
+          while thread.alive?
+            update_progress(bar, start_time, average_time)
+            sleep 0.1
+          end
+
+          thread.join
+
+          if average_time.zero?
+            bar.stop
+          else
+            bar.format = "\e[38;5;245m%b\e[38;5;240m%i %p%%\e[0m"
+            bar.finish
+          end
+        end
+
+        def create_progress_bar(average_time)
+          shared = {
+            output: $stdout,
+            title: '',
+            progress_mark: "\u2501",
+            remainder_mark: "\u2500"
+          }
+
+          if average_time.zero?
+            ProgressBar.create(**shared, total: nil, format: "\e[38;5;245m%B\e[0m")
+          else
+            eta = average_time >= 3 ? ' %e' : ''
+            ProgressBar.create(
+              **shared,
+              total: 100,
+              format: "\e[38;5;245m%b\e[38;5;240m%i %p%%#{eta}\e[0m"
+            )
+          end
+        end
+
+        def update_progress(bar, start_time, average_time)
+          if average_time.zero?
+            bar.increment
+          else
+            elapsed = Time.now - start_time
+            percent = [(elapsed / average_time * 100).round, 99].min
+            bar.progress = percent if percent > bar.progress
           end
         end
 
