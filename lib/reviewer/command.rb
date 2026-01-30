@@ -24,6 +24,7 @@ module Reviewer
     def initialize(tool, type)
       @tool = Tool(tool)
       @type = type.to_sym
+      @seed = nil
     end
 
     # The final command string with all of the conditions appled

@@ -43,3 +43,9 @@ detectors:
   # formatters) even without direct instance access.
   UtilityFunction:
     enabled: false
+
+  # RuboCop enforces `e` for rescue variables (Naming/RescuedExceptionsVariableName).
+  # Allow `e` to avoid conflicts between the two tools.
+  UncommunicativeVariableName:
+    accept:
+      - e
