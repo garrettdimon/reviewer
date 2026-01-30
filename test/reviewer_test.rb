@@ -194,11 +194,11 @@ module Reviewer
             # Expected
           end
 
-          # Without keywords, tool names still appear in tool_summary output but
-          # run_summary's muted block should not appear before tool execution.
-          # We verify by checking the output doesn't start with muted tool listing.
-          # (The tools still run and produce output, but no pre-run summary.)
-          refute_nil out
+          # run_summary prints bare tool names ("List\n") before execution.
+          # Without keywords, the first line should be tool_summary which
+          # always includes the description alongside the name.
+          first_line = out.lines.first.to_s.strip
+          refute_equal 'List', first_line
         end
       end
     end

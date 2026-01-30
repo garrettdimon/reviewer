@@ -116,11 +116,9 @@ module Reviewer
       exit report.max_exit_status
     end
 
-    # Outputs the report in the appropriate format based on arguments
-    #
-    # @param report [Report] the report to display
-    # @return [void]
     # Whether the `failed` keyword was used as the sole keyword but there are no failed tools
+    #
+    # @return [Boolean] true if failed keyword is present with nothing to re-run
     def failed_with_nothing_to_run?
       arguments.keywords.failed? &&
         tools.failed_from_history.empty? &&
@@ -129,6 +127,8 @@ module Reviewer
     end
 
     # Distinguishes "no previous run" from "no failures" and displays the appropriate message
+    #
+    # @return [void]
     def display_failed_empty_message
       if tools.all.any? { |tool| Reviewer.history.get(tool.key, :last_status) }
         output.no_failures_to_retry
@@ -137,6 +137,10 @@ module Reviewer
       end
     end
 
+    # Outputs the report in the appropriate format based on arguments
+    #
+    # @param report [Report] the report to display
+    # @return [void]
     def display_report(report)
       if arguments.json?
         puts report.to_json
