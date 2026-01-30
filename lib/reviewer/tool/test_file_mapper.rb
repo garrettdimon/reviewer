@@ -61,7 +61,8 @@ module Reviewer
       end
 
       def prepend_test_dir(path)
-        path.start_with?(config[:dir]) ? path : "#{config[:dir]}/#{path}"
+        dir = config[:dir]
+        path.start_with?(dir) ? path : "#{dir}/#{path}"
       end
 
       def config

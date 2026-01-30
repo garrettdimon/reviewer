@@ -1,0 +1,45 @@
+# Reek configuration for Reviewer gem
+# https://github.com/troessner/reek/blob/master/docs/defaults.reek.yml
+
+detectors:
+  # --- Disabled: conflicts with standard Ruby patterns ---
+
+  # Flags attr_accessor as a writable attribute. Standard Ruby; no value suppressing.
+  Attribute:
+    enabled: false
+
+  # Flags keyword arguments like `clear_screen: false`. Idiomatic Ruby.
+  BooleanParameter:
+    enabled: false
+
+  # Flags branching on method arguments. Appropriate for configuration and options.
+  ControlParameter:
+    enabled: false
+
+  # --- Threshold adjustments: defaults are too aggressive ---
+
+  # Default max_calls (1) flags every repeated method call. Raise to 3 so only
+  # genuine duplication is flagged, not incidental reuse.
+  DuplicateMethodCall:
+    max_calls: 3
+
+  # Default max_statements (5) flags nearly every non-trivial method. 8 keeps
+  # the check useful without flagging clear, linear methods.
+  TooManyStatements:
+    max_statements: 8
+
+  # Default max_methods (15) flags cohesive classes like Tool and Settings.
+  # 25 still catches genuinely bloated classes.
+  TooManyMethods:
+    max_methods: 25
+
+  # Flags nil checks (`nil?`, `!x`). Legitimate for YAML store data, optional
+  # settings, and history lookups where nil is a normal value.
+  NilCheck:
+    enabled: false
+
+  # Flags private methods that don't reference instance state. These methods
+  # logically belong to their class (git keyword delegates, Slop config blocks,
+  # formatters) even without direct instance access.
+  UtilityFunction:
+    enabled: false

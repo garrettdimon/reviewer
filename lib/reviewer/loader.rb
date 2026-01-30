@@ -5,10 +5,13 @@ require 'yaml'
 module Reviewer
   # Provides a collection of the configured tools
   class Loader
+    # Raised when the .reviewer.yml configuration file cannot be found
     class MissingConfigurationError < StandardError; end
 
+    # Raised when the .reviewer.yml file contains invalid YAML syntax
     class InvalidConfigurationError < StandardError; end
 
+    # Raised when a configured tool is missing a required review command
     class MissingReviewCommandError < StandardError; end
 
     attr_reader :configuration, :file

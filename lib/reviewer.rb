@@ -27,6 +27,7 @@ require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
 module Reviewer
+  # Base error class for all Reviewer errors
   class Error < StandardError; end
 
   class << self
@@ -120,9 +121,10 @@ module Reviewer
     #
     # @return [Boolean] true if failed keyword is present with nothing to re-run
     def failed_with_nothing_to_run?
-      arguments.keywords.failed? &&
+      keywords = arguments.keywords
+      keywords.failed? &&
         tools.failed_from_history.empty? &&
-        arguments.keywords.for_tool_names.empty? &&
+        keywords.for_tool_names.empty? &&
         arguments.tags.to_a.empty?
     end
 
@@ -156,7 +158,7 @@ module Reviewer
       return if arguments.json?
 
       entries = build_run_summary(current_tools, command_type)
-      return if entries.size <= 1 && entries.none? { |e| e[:files].any? }
+      return if entries.size <= 1 && entries.none? { |entry| entry[:files].any? }
 
       output.run_summary(entries)
     end
