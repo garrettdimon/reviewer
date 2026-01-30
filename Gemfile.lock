@@ -5,6 +5,7 @@ PATH
       benchmark
       pstore
       rainbow
+      ruby-progressbar
       slop
 
 GEM

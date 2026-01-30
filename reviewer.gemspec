@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'benchmark'
   spec.add_dependency 'pstore'
   spec.add_dependency 'rainbow'
+  spec.add_dependency 'ruby-progressbar'
   spec.add_dependency 'slop'
 
   spec.add_development_dependency 'minitest', '~> 5.0'
