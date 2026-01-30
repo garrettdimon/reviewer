@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'open3'
+require 'pty'
 
 require_relative 'shell/result'
 require_relative 'shell/timer'
@@ -23,16 +24,31 @@ module Reviewer
       @captured_results = nil
     end
 
-    # Run a command without capturing the output. This ensures the results are displayed realtime
-    # if the command was run directly in the shell. So it keeps any color or other formatting that
-    # would be stripped out by capturing $stdout as a basic string.
+    # Run a command via PTY, streaming output in real-time while capturing it for later use
+    # (e.g. failed file extraction). PTY allocates a pseudo-terminal so the child process
+    # preserves ANSI colors and interactive behavior.
     # @param command [String] the command to run
     #
-    # @return [Integer] exit status vaue of 0 when successful or 1 when unsuccessful
+    # @return [Result] the captured result including stdout and exit status
     def direct(command)
       command = String(command)
+      buffer = +''
 
-      result.exit_status = system(command) ? 0 : 1
+      reader, _writer, pid = PTY.spawn(command)
+      begin
+        reader.each_line do |line|
+          $stdout.print line
+          buffer << line
+        end
+      rescue Errno::EIO
+        # Expected when child process exits before all output is read
+      end
+
+      _, status = Process.waitpid2(pid)
+      @result = Result.new(buffer, nil, status)
+    rescue Errno::ENOENT
+      @result = Result.new(buffer, nil, nil)
+      @result.exit_status = Result::EXIT_STATUS_CODES[:executable_not_found]
     end
 
     # Captures and times the preparation command execution

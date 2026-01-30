@@ -36,7 +36,7 @@ reek:
     install: https://github.com/troessner/reek#quickstart
   commands:
     install: "bundle exec gem install reek"
-    review: "bundle exec reek app/ lib/"
+    review: "bundle exec reek --config .reek.yml lib/"
   files:
     flag: ""
     separator: " "
@@ -250,5 +250,5 @@ notes:
   description: Find TODO, FIXME, HACK, and OPTIMIZE comments
   tags: [quality, dev]
   commands:
-    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' app/ lib/ test/ spec/ || true"
+    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' lib/ test/ || true"
   max_exit_status: 1

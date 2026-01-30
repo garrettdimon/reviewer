@@ -71,9 +71,10 @@ module Reviewer
         return [] unless keywords.any?
 
         keywords.map do |keyword|
-          next unless respond_to?(keyword.to_sym, true)
+          method_name = keyword.to_sym
+          next unless respond_to?(method_name, true)
 
-          send(keyword.to_sym)
+          send(method_name)
         end.flatten.compact.uniq
       end
 

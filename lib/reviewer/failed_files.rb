@@ -20,7 +20,7 @@ module Reviewer
     #   test/foo_test.rb:45 (minitest)
     #   lib/foo.rb -- message (reek)
     #   src/app.js:10:5: error ... (eslint)
-    FILE_PATH_PATTERN = /^\s*([^\/\s]\S*\.\w+)(?::\d| -- )/
+    FILE_PATH_PATTERN = %r{^\s*([^/\s]\S*\.\w+)(?::\d| -- )}
 
     attr_reader :stdout, :stderr
 

@@ -59,7 +59,9 @@ module Reviewer
     #
     # @return [void]
     def batch_summary(tool_count, seconds)
-      printer.print(:bold, "~#{seconds.round(1)} seconds")
+      newline
+      printer.print(:success, '✓')
+      printer.print(:muted, " ~#{seconds.round(1)} seconds")
       printer.print(:muted, " for #{tool_count} tools") if tool_count > 1
       newline
     end
@@ -80,8 +82,8 @@ module Reviewer
     #
     # @return [void] [description]
     def current_command(command)
-      printer.puts(:bold, 'Now Running:')
-      printer.puts(:default, String(command))
+      printer.print(:default, ' ↳ ')
+      printer.puts(:muted, String(command))
     end
 
     # Prints a success message with timing information
@@ -138,6 +140,21 @@ module Reviewer
       printer.puts(:muted, 'No failures to retry')
     end
 
+    # Prints a summary of resolved tools and their file scoping before execution.
+    # Shown when keywords are used so users can see what resolved.
+    # @param entries [Array<Hash>] each with :name and :files keys
+    #
+    # @return [void]
+    def run_summary(entries)
+      return if entries.empty?
+
+      entries.each do |entry|
+        printer.puts(:muted, entry[:name])
+        entry[:files].each { |file| printer.puts(:muted, "  #{file}") }
+      end
+      newline
+    end
+
     # Prints a message when `rvw failed` is used but no previous run exists
     #
     # @return [void]
@@ -175,7 +192,7 @@ module Reviewer
 
       _height, width = IO.console.winsize
 
-      width
+      width.positive? ? width : DEFAULT_CONSOLE_WIDTH
     end
   end
 end

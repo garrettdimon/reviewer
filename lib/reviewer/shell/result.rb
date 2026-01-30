@@ -75,11 +75,7 @@ module Reviewer
       #
       # @return [String] stdout if present, otherwise stderr
       def to_s
-        result_string = ''
-        result_string += stderr
-        result_string += stdout
-
-        result_string.strip
+        [stderr, stdout].compact.join("\n").strip
       end
     end
   end

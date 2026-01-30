@@ -52,7 +52,7 @@ module Reviewer
         summary: {
           total: results.size,
           passed: results.count(&:success),
-          failed: results.count { |r| !r.success },
+          failed: results.count { |result| !result.success },
           duration: duration
         },
         tools: results.map(&:to_h)

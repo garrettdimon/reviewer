@@ -34,6 +34,7 @@ module Reviewer
       @strategy = strategy
       @shell = Shell.new
       @output = output
+      @skipped = false
     end
 
     # Executes the command and returns the exit status

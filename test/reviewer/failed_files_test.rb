@@ -8,103 +8,103 @@ module Reviewer
 
     def test_matches_rubocop_format
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "lib/reviewer/batch.rb:45:3: C: Style/StringLiterals: Prefer double-quoted strings\n"
+                            "lib/reviewer/batch.rb:45:3: C: Style/StringLiterals: Prefer double-quoted strings\n"
     end
 
     def test_matches_minitest_format
       assert_match_extracts 'test/reviewer/batch_test.rb',
-        "test/reviewer/batch_test.rb:45\n"
+                            "test/reviewer/batch_test.rb:45\n"
     end
 
     def test_matches_reek_format
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "lib/reviewer/batch.rb -- SomeSmell: message\n"
+                            "lib/reviewer/batch.rb -- SomeSmell: message\n"
     end
 
     def test_matches_eslint_format
       assert_match_extracts 'src/app.js',
-        "src/app.js:10:5: error Missing semicolon\n"
+                            "src/app.js:10:5: error Missing semicolon\n"
     end
 
     def test_matches_flay_format
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "lib/reviewer/batch.rb:10 (mass = 32)\n"
+                            "lib/reviewer/batch.rb:10 (mass = 32)\n"
     end
 
     def test_matches_fasterer_format
       assert_match_extracts 'lib/reviewer/shell.rb',
-        "lib/reviewer/shell.rb:55 Array#sort + Array#first are slower than Enumerable#min_by.\n"
+                            "lib/reviewer/shell.rb:55 Array#sort + Array#first are slower than Enumerable#min_by.\n"
     end
 
     def test_matches_rubycritic_console_format
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "lib/reviewer/batch.rb -- Rating: A -- Score: 10.5\n"
+                            "lib/reviewer/batch.rb -- Rating: A -- Score: 10.5\n"
     end
 
     def test_matches_grep_notes_format
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "lib/reviewer/batch.rb:45:# TODO: refactor this\n"
+                            "lib/reviewer/batch.rb:45:# TODO: refactor this\n"
     end
 
     def test_matches_minitest_heat_format
       assert_match_extracts 'test/reviewer/batch_test.rb',
-        "test/reviewer/batch_test.rb:83 ➜ 83\n"
+                            "test/reviewer/batch_test.rb:83 ➜ 83\n"
     end
 
     def test_matches_rspec_documentation_format
       assert_match_extracts './spec/models/user_spec.rb',
-        "     ./spec/models/user_spec.rb:15\n"
+                            "     ./spec/models/user_spec.rb:15\n"
     end
 
     # --- Pattern matching: path variations ---
 
     def test_matches_deeply_nested_paths
       assert_match_extracts 'app/models/concerns/trackable.rb',
-        "app/models/concerns/trackable.rb:10:3: C: Style/Something\n"
+                            "app/models/concerns/trackable.rb:10:3: C: Style/Something\n"
     end
 
     def test_matches_single_digit_line_number
       assert_match_extracts 'lib/foo.rb',
-        "lib/foo.rb:1: C: Style/Something\n"
+                            "lib/foo.rb:1: C: Style/Something\n"
     end
 
     def test_matches_hyphenated_filename
       assert_match_extracts 'lib/some-file.rb',
-        "lib/some-file.rb:10:3: C: Style/Something\n"
+                            "lib/some-file.rb:10:3: C: Style/Something\n"
     end
 
     def test_matches_underscored_filename
       assert_match_extracts 'lib/some_file.rb',
-        "lib/some_file.rb:10:3: C: Style/Something\n"
+                            "lib/some_file.rb:10:3: C: Style/Something\n"
     end
 
     def test_matches_css_files
       assert_match_extracts 'app/assets/stylesheets/main.css',
-        "app/assets/stylesheets/main.css:5:1: warning some issue\n"
+                            "app/assets/stylesheets/main.css:5:1: warning some issue\n"
     end
 
     def test_matches_typescript_files
       assert_match_extracts 'src/components/App.tsx',
-        "src/components/App.tsx:10:5: error something\n"
+                            "src/components/App.tsx:10:5: error something\n"
     end
 
     # --- Pattern matching: whitespace handling ---
 
     def test_matches_indented_with_spaces
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "  lib/reviewer/batch.rb:10:3: C: Style/StringLiterals\n"
+                            "  lib/reviewer/batch.rb:10:3: C: Style/StringLiterals\n"
     end
 
     def test_matches_indented_with_tab
       assert_match_extracts 'lib/reviewer/batch.rb',
-        "\tlib/reviewer/batch.rb:10:3: C: Style/StringLiterals\n"
+                            "\tlib/reviewer/batch.rb:10:3: C: Style/StringLiterals\n"
     end
 
     # --- Pattern matching: stream handling ---
 
     def test_matches_from_stderr
       assert_includes FailedFiles.new(nil, "lib/reviewer/batch.rb:45:3: C: Style/Something\n").matched_paths,
-        'lib/reviewer/batch.rb'
+                      'lib/reviewer/batch.rb'
     end
 
     def test_matches_from_both_streams

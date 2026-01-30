@@ -36,9 +36,10 @@ module Reviewer
       attr_reader :settings
 
       def map(files)
-        return files unless settings.map_to_tests
+        mapper = settings.map_to_tests
+        return files unless mapper
 
-        TestFileMapper.new(settings.map_to_tests).map(files)
+        TestFileMapper.new(mapper).map(files)
       end
 
       def filter(files)

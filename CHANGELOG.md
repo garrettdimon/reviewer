@@ -4,6 +4,9 @@
 - Add `--capabilities` / `-c` flag for agent discovery (outputs JSON describing tools, keywords, scenarios)
 - Add `--raw` / `-r` flag to force passthrough output (useful for CI/agent contexts)
 - Add git keywords: `staged`, `unstaged`, `modified`, `untracked` for targeting files by git status
+- Add `failed` keyword to re-run only tools that failed in the previous run, scoped to their failed files
+- Add keyword resolution summary showing which tools and files will run before execution
+- Add PTY-based streaming capture for passthrough runs, enabling failed file extraction from single-tool runs
 - Add pattern-based file filtering via `files.pattern` config
 - Add source-to-test file mapping via `files.map_to_tests` config
 - Add expanded code review tools: fasterer, license_finder, notes (enabled); debride, brakeman, rubycritic, metric_fu, yardstick, standard, rufo (disabled)
@@ -11,10 +14,14 @@
 
 ### Fixed
 - Restore MIT license in LICENSE.txt to match gemspec declaration
-- Improve output dividers and newline consistency
+- Fix `rvw failed` crash when `Arguments::Tags` object received `.empty?` instead of `.to_a.empty?`
+- Fix `console_width` returning 0 in piped/CI contexts, falling back to default width
 
 ### Changed
-- Confirm Ruby support for 3.2, 3.3, and 3.4
+- Confirm Ruby support for 3.2, 3.3, 3.4, and 4.0
+- Upgrade CI Bundler from 2.6 to 2.7 to eliminate constant redefinition warnings on Ruby 3.4+
+- Redesign passthrough output: replace "Now Running:" header and dividers with compact `↳ command` format
+- Replace bold timing summary with `✓ ~Xs` checkmark format
 - Rewrite README with installation, usage, and configuration documentation
 - Apply fasterer performance suggestions (yield over block.call, fetch with block)
 

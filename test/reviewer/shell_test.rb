@@ -57,16 +57,28 @@ module Reviewer
       refute_nil @shell.result.stdout
     end
 
-    def test_running_direct_command_returns_zero_on_success
-      result = nil
-      capture_subprocess_io { result = @shell.direct('ls') }
-      assert_equal 0, result
+    def test_direct_captures_stdout
+      capture_subprocess_io do
+        @shell.direct('echo hello')
+      end
+      assert_includes @shell.result.stdout, 'hello'
     end
 
-    def test_running_direct_command_returns_one_on_failure
-      result = nil
-      capture_subprocess_io { result = @shell.direct('very_unlikely_to_exist_command') }
-      assert_equal 1, result
+    def test_direct_preserves_real_exit_status
+      capture_subprocess_io do
+        @shell.direct('exit 2')
+      end
+      assert_equal 2, @shell.exit_status
+    end
+
+    def test_running_direct_command_returns_zero_on_success
+      capture_subprocess_io { @shell.direct('ls') }
+      assert_equal 0, @shell.exit_status
+    end
+
+    def test_running_direct_command_returns_127_for_missing_command
+      capture_subprocess_io { @shell.direct('very_unlikely_to_exist_command') }
+      assert_equal 127, @shell.exit_status
     end
   end
 end

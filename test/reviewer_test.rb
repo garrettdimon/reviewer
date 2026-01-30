@@ -11,6 +11,20 @@ module Reviewer
   # Minimal keywords stub that reports no failed keyword
   StubKeywords = Struct.new(nil) do
     def failed? = false
+    def provided = []
+    def for_tool_names = []
+  end
+
+  # Keywords stub that reports keywords were provided
+  StubKeywordsWithProvided = Struct.new(:provided) do
+    def failed? = false
+    def for_tool_names = []
+  end
+
+  # Keywords stub that reports failed keyword
+  StubKeywordsFailed = Struct.new(nil) do
+    def failed? = true
+    def provided = ['failed']
     def for_tool_names = []
   end
 
@@ -19,6 +33,20 @@ module Reviewer
     def files = EmptyFiles.new
     def keywords = StubKeywords.new
     def tags = []
+  end
+
+  # Stub that reports keywords were provided
+  StubArgsWithKeywords = Struct.new(:format, :json?, :raw?, :streaming?, :keyword_values, keyword_init: true) do
+    def files = EmptyFiles.new
+    def keywords = StubKeywordsWithProvided.new(keyword_values || [])
+    def tags = []
+  end
+
+  # Stub with failed keyword and real Tags object
+  StubArgsWithFailed = Struct.new(:format, :json?, :raw?, :streaming?, keyword_init: true) do
+    def files = EmptyFiles.new
+    def keywords = StubKeywordsFailed.new
+    def tags = Arguments::Tags.new(provided: [], keywords: [])
   end
 
   class ReviewerTest < Minitest::Test
@@ -121,6 +149,104 @@ module Reviewer
 
           assert_match(/"success":\s*true/, out)
           assert_match(/"tools":/, out)
+        end
+      end
+    end
+
+    def test_run_summary_shown_with_keywords_and_multiple_tools
+      tools = [Tool.new(:list), Tool.new(:enabled_tool)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgsWithKeywords.new(
+        format: :streaming, json?: false, raw?: false, streaming?: true,
+        keyword_values: ['list']
+      )
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          assert_match(/List/, out)
+          assert_match(/Enabled Test Tool/, out)
+        end
+      end
+    end
+
+    def test_no_run_summary_without_keywords
+      tools = [Tool.new(:list), Tool.new(:enabled_tool)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :streaming, json?: false, raw?: false, streaming?: true)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          # run_summary prints bare tool names ("List\n") before execution.
+          # Without keywords, the first line should be tool_summary which
+          # always includes the description alongside the name.
+          first_line = out.lines.first.to_s.strip
+          refute_equal 'List', first_line
+        end
+      end
+    end
+
+    def test_no_run_summary_in_json_mode
+      tools = [Tool.new(:list), Tool.new(:enabled_tool)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgsWithKeywords.new(
+        format: :json, json?: true, raw?: false, streaming?: false,
+        keyword_values: ['list']
+      )
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          # JSON mode should produce JSON output, not a pre-run summary
+          assert_match(/"tools":/, out)
+        end
+      end
+    end
+
+    def test_failed_with_nothing_to_run_handles_tags_object
+      # Exercises the tags.to_a.empty? fix — previously called .empty? on
+      # Arguments::Tags which doesn't respond to it
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgsWithFailed.new(
+        format: :streaming, json?: false, raw?: false, streaming?: true
+      )
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:failed_from_history, []) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected — exits with 0 when nothing to re-run
+          end
+
+          assert_match(/No/, out)
         end
       end
     end

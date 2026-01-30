@@ -3,6 +3,7 @@
 module Reviewer
   # Provides a structure for running commands for a given set of tools
   class Batch
+    # Raised when a tool specifies an unrecognized command type
     class UnrecognizedCommandError < ArgumentError; end
 
     attr_reader :command_type, :tools, :report
@@ -46,16 +47,19 @@ module Reviewer
     private
 
     def clear_last_statuses
+      history = Reviewer.history
       matching_tools.each do |tool|
-        Reviewer.history.set(tool.key, :last_status, nil)
-        Reviewer.history.set(tool.key, :last_failed_files, nil)
+        key = tool.key
+        history.set(key, :last_status, nil)
+        history.set(key, :last_failed_files, nil)
       end
     end
 
     # Records pass/fail status and failed files for the `failed` keyword to use on subsequent runs
     def record_run(tool, runner)
-      Reviewer.history.set(tool.key, :last_status, runner.success? ? :passed : :failed)
-      store_failed_files(tool, runner) unless runner.success?
+      success = runner.success?
+      Reviewer.history.set(tool.key, :last_status, success ? :passed : :failed)
+      store_failed_files(tool, runner) unless success
     end
 
     # Passes stdout and stderr separately to FailedFiles, which merges them

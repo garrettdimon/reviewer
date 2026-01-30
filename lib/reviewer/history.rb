@@ -33,9 +33,9 @@ module Reviewer
     #
     # @return [Primitive] the value being stored
     def set(group, attribute, value)
-      store.transaction do |s|
-        s[group] = {} if s[group].nil?
-        s[group][attribute] = value
+      store.transaction do |transaction|
+        transaction[group] = {} if transaction[group].nil?
+        transaction[group][attribute] = value
       end
     end
 
@@ -45,8 +45,8 @@ module Reviewer
     #
     # @return [Primitive] the value being stored
     def get(group, attribute)
-      store.transaction do |s|
-        s[group].nil? ? nil : s[group][attribute]
+      store.transaction do |transaction|
+        transaction[group].nil? ? nil : transaction[group][attribute]
       end
     end
 
