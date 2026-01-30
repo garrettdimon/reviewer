@@ -107,7 +107,10 @@ module Reviewer
         exit 0
       end
 
-      report = Batch.new(command_type, tools.current).run
+      current_tools = tools.current
+      show_run_summary(current_tools, command_type)
+
+      report = Batch.new(command_type, current_tools).run
       display_report(report)
 
       exit report.max_exit_status
@@ -122,7 +125,7 @@ module Reviewer
       arguments.keywords.failed? &&
         tools.failed_from_history.empty? &&
         arguments.keywords.for_tool_names.empty? &&
-        arguments.tags.empty?
+        arguments.tags.to_a.empty?
     end
 
     # Distinguishes "no previous run" from "no failures" and displays the appropriate message
@@ -141,6 +144,25 @@ module Reviewer
         Report::Formatter.new(report, output: output).print
       elsif report.success?
         output.batch_summary(report.results.size, report.duration)
+      end
+    end
+
+    def show_run_summary(current_tools, command_type)
+      return unless arguments.keywords.provided.any?
+      return if arguments.json?
+
+      entries = build_run_summary(current_tools, command_type)
+      return if entries.size <= 1 && entries.none? { |e| e[:files].any? }
+
+      output.run_summary(entries)
+    end
+
+    def build_run_summary(current_tools, command_type)
+      current_tools.filter_map do |tool|
+        cmd = Command.new(tool, command_type)
+        next if cmd.skip?
+
+        { name: tool.name, files: cmd.target_files }
       end
     end
   end

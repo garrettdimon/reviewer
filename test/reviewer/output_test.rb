@@ -28,8 +28,8 @@ module Reviewer
     def test_current_command
       command_string = 'ls -la'
       out, _err = capture_subprocess_io { @output.current_command(command_string) }
-      assert_match(/Running:/i, out)
-      assert_match(/#{command_string}/i, out)
+      assert_match(/#{command_string}/, out)
+      refute_match(/Running:/i, out)
     end
 
     def test_success_without_prep
@@ -97,6 +97,47 @@ module Reviewer
     def test_no_previous_run
       out, _err = capture_subprocess_io { @output.no_previous_run }
       assert_match(/No previous run found/i, out)
+    end
+
+    def test_run_summary_shows_tool_names
+      entries = [
+        { name: 'Rubocop', files: [] },
+        { name: 'Reek', files: [] }
+      ]
+      out, _err = capture_subprocess_io { @output.run_summary(entries) }
+      assert_match(/Rubocop/, out)
+      assert_match(/Reek/, out)
+    end
+
+    def test_run_summary_shows_files_under_tool
+      entries = [
+        { name: 'Rubocop', files: ['lib/reviewer/batch.rb', 'lib/reviewer/command.rb'] }
+      ]
+      out, _err = capture_subprocess_io { @output.run_summary(entries) }
+      assert_match(/Rubocop/, out)
+      assert_match(%r{lib/reviewer/batch.rb}, out)
+      assert_match(%r{lib/reviewer/command.rb}, out)
+    end
+
+    def test_run_summary_omits_files_when_empty
+      entries = [
+        { name: 'Rubocop', files: [] }
+      ]
+      out, _err = capture_subprocess_io { @output.run_summary(entries) }
+      assert_match(/Rubocop/, out)
+      refute_match(%r{lib/}, out)
+    end
+
+    def test_run_summary_skips_output_when_empty
+      out, _err = capture_subprocess_io { @output.run_summary([]) }
+      assert_empty out
+    end
+
+    def test_batch_summary_shows_checkmark_and_timing
+      out, _err = capture_subprocess_io { @output.batch_summary(3, 1.5) }
+      assert_match(/✓/, out)
+      assert_match(/~1.5 seconds/, out)
+      assert_match(/3 tools/, out)
     end
   end
 end

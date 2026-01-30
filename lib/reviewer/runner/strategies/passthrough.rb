@@ -32,9 +32,6 @@ module Reviewer
           # incorrect syntax or options that need to be corrected.
           runner.output.current_command(runner.prepare_command)
 
-          # Add a divider to visually delineate the results
-          runner.output.divider
-
           # Run the command through the shell directly so no output is suppressed
           runner.shell.direct(runner.prepare_command)
         end
@@ -48,14 +45,8 @@ module Reviewer
           # incorrect syntax or options that need to be corrected.
           runner.output.current_command(runner.command)
 
-          # Add a divider to visually delineate the results
-          runner.output.divider
-
           # Run the command through the shell directly so no output is suppressed
           runner.shell.direct(runner.command)
-
-          # Add a final divider to visually delineate the results
-          runner.output.divider
         end
       end
     end

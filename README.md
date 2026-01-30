@@ -51,6 +51,7 @@ Target files by git status:
 | `unstaged` | Files with unstaged changes |
 | `modified` | All changed files (staged + unstaged) |
 | `untracked` | New files not yet tracked |
+| `failed` | Re-run tools that failed in the previous run |
 
 ### Flags
 

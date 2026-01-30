@@ -82,8 +82,21 @@ module Reviewer
     end
 
     def test_stores_failed_files_on_failure
-      # Two tools so Captured strategy is used (Passthrough doesn't capture output)
+      # Two tools so Captured strategy is used
       tools = [Tool.new(:failing_with_output), Tool.new(:list)]
+
+      capture_subprocess_io do
+        Batch.new(:review, tools).run
+      end
+
+      failed_files = Reviewer.history.get(:failing_with_output, :last_failed_files)
+      assert_includes failed_files, 'lib/reviewer/batch.rb'
+      assert_includes failed_files, 'lib/reviewer/command.rb'
+    end
+
+    def test_stores_failed_files_on_single_tool_failure
+      # Single tool uses Passthrough strategy — PTY capture enables file extraction
+      tools = [Tool.new(:failing_with_output)]
 
       capture_subprocess_io do
         Batch.new(:review, tools).run
