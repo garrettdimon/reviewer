@@ -98,6 +98,62 @@ module Reviewer
       assert_equal 'rubocop', parsed['tools'].first['tool']
     end
 
+    def test_missing_results_returns_missing
+      @report.add(build_result(tool_key: :rubocop, success: true))
+      @report.add(build_missing_result(tool_key: :reek))
+
+      assert_equal 1, @report.missing_results.size
+      assert_equal :reek, @report.missing_results.first.tool_key
+    end
+
+    def test_missing_returns_true_when_missing_results_exist
+      @report.add(build_missing_result(tool_key: :reek))
+
+      assert @report.missing?
+    end
+
+    def test_missing_returns_false_when_no_missing_results
+      @report.add(build_result(tool_key: :rubocop, success: true))
+
+      refute @report.missing?
+    end
+
+    def test_success_excludes_missing_tools
+      @report.add(build_result(tool_key: :rubocop, success: true))
+      @report.add(build_missing_result(tool_key: :reek))
+
+      assert @report.success?
+    end
+
+    def test_max_exit_status_excludes_missing_tools
+      @report.add(build_result(tool_key: :rubocop, success: true, exit_status: 0))
+      @report.add(build_missing_result(tool_key: :reek))
+
+      assert_equal 0, @report.max_exit_status
+    end
+
+    def test_max_exit_status_returns_zero_when_only_missing
+      @report.add(build_missing_result(tool_key: :reek))
+
+      assert_equal 0, @report.max_exit_status
+    end
+
+    def test_to_h_summary_includes_missing_count
+      @report.add(build_result(tool_key: :rubocop, success: true))
+      @report.add(build_missing_result(tool_key: :reek))
+
+      summary = @report.to_h[:summary]
+      assert_equal 1, summary[:missing]
+    end
+
+    def test_to_h_failed_count_excludes_missing
+      @report.add(build_result(tool_key: :rubocop, success: true))
+      @report.add(build_missing_result(tool_key: :reek))
+
+      summary = @report.to_h[:summary]
+      assert_equal 0, summary[:failed]
+    end
+
     private
 
     def build_result(tool_key:, success:, exit_status: 0)
@@ -111,7 +167,24 @@ module Reviewer
         duration: 1.0,
         stdout: nil,
         stderr: nil,
-        skipped: nil
+        skipped: nil,
+        missing: nil
+      )
+    end
+
+    def build_missing_result(tool_key:)
+      Runner::Result.new(
+        tool_key: tool_key,
+        tool_name: tool_key.to_s.capitalize,
+        command_type: :review,
+        command_string: nil,
+        success: false,
+        exit_status: 127,
+        duration: 0,
+        stdout: nil,
+        stderr: nil,
+        skipped: nil,
+        missing: true
       )
     end
   end

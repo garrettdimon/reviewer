@@ -102,6 +102,50 @@ module Reviewer
         assert_equal 'Error details', result.stderr
       end
 
+      def test_missing_field_defaults_to_nil
+        assert_nil @result.missing
+      end
+
+      def test_missing_result_exposes_missing_field
+        result = Result.new(
+          tool_key: :rubocop,
+          tool_name: 'RuboCop',
+          command_type: :review,
+          command_string: nil,
+          success: false,
+          exit_status: 127,
+          duration: 0,
+          stdout: nil,
+          stderr: nil,
+          skipped: nil,
+          missing: true
+        )
+
+        assert result.missing
+      end
+
+      def test_to_h_includes_missing_when_true
+        result = Result.new(
+          tool_key: :rubocop,
+          tool_name: 'RuboCop',
+          command_type: :review,
+          command_string: nil,
+          success: false,
+          exit_status: 127,
+          duration: 0,
+          stdout: nil,
+          stderr: nil,
+          skipped: nil,
+          missing: true
+        )
+
+        assert result.to_h[:missing]
+      end
+
+      def test_to_h_excludes_missing_when_nil
+        refute @result.to_h.key?(:missing)
+      end
+
       def test_result_is_immutable
         assert_raises(FrozenError) do
           @result.instance_variable_set(:@tool_key, :other)

@@ -92,6 +92,16 @@ missing_command_without_guidance:
   commands:
     review: 'exit 127'
 
+# Missing command with install command configured
+# For testing missing tool summary with install hints
+missing_with_install:
+  disabled: true
+  name: 'Missing With Install'
+  description: 'A tool that is not installed but has install instructions.'
+  commands:
+    install: 'gem install missing-tool'
+    review: 'exit 127'
+
 # Intentionally Failing Command with File-Path Output
 # Echoes lines that look like rubocop output referencing real project files, then exits 1
 failing_with_output:
@@ -110,6 +120,15 @@ failing_dynamic_seed_tool:
   disabled: true
   commands:
     review: 'exit 1 --seed $SEED'
+
+# For Testing File Targeting with a Passing Command
+file_targeting_list:
+  disabled: true
+  commands:
+    review: 'echo'
+  files:
+    flag: ''
+    separator: ' '
 
 # For Testing File Targeting
 file_targeting_tool:

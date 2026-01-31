@@ -34,9 +34,9 @@ module Reviewer
           runner.run
 
           @report.add(runner.to_result)
-          record_run(tool, runner)
+          record_run(tool, runner) unless runner.missing?
 
-          break unless runner.success?
+          break unless runner.success? || runner.missing?
         end
       end
 
@@ -49,9 +49,7 @@ module Reviewer
     def clear_last_statuses
       history = Reviewer.history
       matching_tools.each do |tool|
-        key = tool.key
-        history.set(key, :last_status, nil)
-        history.set(key, :last_failed_files, nil)
+        history.set(tool.key, :last_status, nil)
       end
     end
 
@@ -59,7 +57,12 @@ module Reviewer
     def record_run(tool, runner)
       success = runner.success?
       Reviewer.history.set(tool.key, :last_status, success ? :passed : :failed)
-      store_failed_files(tool, runner) unless success
+
+      if success
+        Reviewer.history.set(tool.key, :last_failed_files, nil)
+      else
+        store_failed_files(tool, runner)
+      end
     end
 
     # Passes stdout and stderr separately to FailedFiles, which merges them

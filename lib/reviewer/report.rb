@@ -29,18 +29,32 @@ module Reviewer
       @duration = seconds
     end
 
-    # Whether all tools in the report succeeded
+    # Whether all executed tools in the report succeeded (excludes missing and skipped)
     #
-    # @return [Boolean] true if all results are successful
+    # @return [Boolean] true if all executed results are successful
     def success?
-      results.all?(&:success)
+      executed_results.all?(&:success)
     end
 
-    # Returns the highest exit status from all results
+    # Returns the highest exit status from executed results (excludes missing and skipped)
     #
     # @return [Integer] the maximum exit status, or 0 if empty
     def max_exit_status
-      results.map(&:exit_status).max || 0
+      executed_results.map(&:exit_status).max || 0
+    end
+
+    # Returns results for tools whose executables were not found
+    #
+    # @return [Array<Runner::Result>] missing tool results
+    def missing_results
+      results.select(&:missing)
+    end
+
+    # Whether any tools were missing
+    #
+    # @return [Boolean] true if any results are missing
+    def missing?
+      missing_results.any?
     end
 
     # Converts the report to a hash suitable for serialization
@@ -52,7 +66,8 @@ module Reviewer
         summary: {
           total: results.size,
           passed: results.count(&:success),
-          failed: results.count { |result| !result.success },
+          failed: results.count { |r| !r.success && !r.missing },
+          missing: missing_results.size,
           duration: duration
         },
         tools: results.map(&:to_h)
@@ -64,6 +79,15 @@ module Reviewer
     # @return [String] JSON representation of the report
     def to_json(*_args)
       JSON.pretty_generate(to_h)
+    end
+
+    private
+
+    # Results for tools that actually executed (excludes skipped and missing)
+    #
+    # @return [Array<Runner::Result>] executed results only
+    def executed_results
+      results.reject { |r| r.skipped || r.missing }
     end
   end
 end

@@ -61,14 +61,15 @@ module Reviewer
       refute_nil VERSION
     end
 
-    def test_returns_largest_exit_status
-      tools = [Tool.new(:list), Tool.new(:enabled_tool), Tool.new(:missing_command), Tool.new(:failing_command)]
+    def test_returns_largest_exit_status_excluding_missing
+      tools = [Tool.new(:list), Tool.new(:missing_command)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
           Reviewer.review
         rescue SystemExit => e
-          assert_equal 127, e.status
+          # Missing tools (exit 127) should not affect exit status
+          assert_equal 0, e.status
         end
       end
     end
@@ -224,6 +225,85 @@ module Reviewer
 
           # JSON mode should produce JSON output, not a pre-run summary
           assert_match(/"tools":/, out)
+        end
+      end
+    end
+
+    def test_exits_with_guidance_when_config_missing
+      Reviewer.reset!
+      Reviewer.configure do |config|
+        config.file = Pathname('test/fixtures/files/nonexistent.yml')
+      end
+
+      out, _err = capture_subprocess_io do
+        Reviewer.review
+      rescue SystemExit => e
+        assert_equal 0, e.status
+      end
+
+      assert_match(/no configuration found/i, out)
+      assert_match(/rvw init/, out)
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_missing_tools_summary_shown_in_streaming_mode
+      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+
+      Reviewer.tools.stub(:current, tools) do
+        out, _err = capture_subprocess_io do
+          Reviewer.review
+        rescue SystemExit
+          # Expected
+        end
+
+        assert_match(/not installed:/i, out)
+        assert_match(/Missing With Install/i, out)
+        assert_match(/gem install missing-tool/, out)
+      end
+    end
+
+    def test_missing_tools_summary_not_shown_in_json_mode
+      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :json, json?: true, raw?: false, streaming?: false)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          # JSON output should contain missing in the data, not a separate summary
+          parsed = JSON.parse(out)
+          assert_equal 1, parsed['summary']['missing']
+        end
+      end
+    end
+
+    def test_summary_format_shows_missing_tools
+      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :summary, json?: false, raw?: false, streaming?: false)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          assert_match(/not installed/i, out)
+          assert_match(/Missing With Install/i, out)
         end
       end
     end

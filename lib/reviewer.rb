@@ -23,6 +23,7 @@ require_relative 'reviewer/runner'
 require_relative 'reviewer/shell'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
+require_relative 'reviewer/setup'
 require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
@@ -40,6 +41,8 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def review(clear_screen: false)
+      return perform(:init) if subcommand?(:init)
+
       perform(:review, clear_screen: clear_screen)
     end
 
@@ -48,6 +51,8 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def format(clear_screen: false)
+      return perform(:init) if subcommand?(:init)
+
       perform(:format, clear_screen: clear_screen)
     end
 
@@ -90,31 +95,46 @@ module Reviewer
 
     private
 
-    # Provides a consistent approach to running and benchmarking commmands and preventing further
-    #   execution of later tools if a command fails.
-    # @param command_type [Symbol] the specific command to run for each tool
-    # @param clear_screen [Boolean] if true, clears the screen before a run
-    #
-    # @example Run the `review` command for each relevant tool
-    #   perform(:review)
-    #
-    # @return [void] exits with the maximum exit status from all tools
+    def subcommand?(name) = ARGV.first == name.to_s
+
+    # Central dispatcher for all command types (:review, :format, :init, and eventually :install)
     def perform(command_type, clear_screen: false)
+      return Setup.run if command_type == :init
+
+      prepare_run(clear_screen)
+      exit run_and_report(command_type)
+    end
+
+    def prepare_run(clear_screen)
       output.clear if clear_screen && !arguments.json?
+      guard_missing_configuration!
+      guard_failed_with_nothing_to_run!
+    end
 
-      # When `failed` is the sole keyword and there's nothing to re-run, exit early with a message
-      if failed_with_nothing_to_run?
-        display_failed_empty_message
-        exit 0
-      end
-
+    def run_and_report(command_type)
       current_tools = tools.current
       show_run_summary(current_tools, command_type)
 
       report = Batch.new(command_type, current_tools).run
       display_report(report)
 
-      exit report.max_exit_status
+      report.max_exit_status
+    end
+
+    # Exits with guidance when .reviewer.yml is missing
+    def guard_missing_configuration!
+      return if configuration.file.exist?
+
+      output.missing_configuration(configuration.file)
+      exit 0
+    end
+
+    # Exits early when `failed` keyword is used but there's nothing to re-run
+    def guard_failed_with_nothing_to_run!
+      return unless failed_with_nothing_to_run?
+
+      display_failed_empty_message
+      exit 0
     end
 
     # Whether the `failed` keyword was used as the sole keyword but there are no failed tools
@@ -146,11 +166,28 @@ module Reviewer
     def display_report(report)
       if arguments.json?
         puts report.to_json
-      elsif arguments.format == :summary
+        return
+      end
+
+      if arguments.format == :summary
         Report::Formatter.new(report, output: output).print
       elsif report.success?
-        output.batch_summary(report.results.size, report.duration)
+        ran_count = report.results.count { |r| !r.missing && !r.skipped }
+        output.batch_summary(ran_count, report.duration)
       end
+
+      show_missing_tools(report)
+    end
+
+    # Shows a consolidated summary of missing tools with install hints
+    #
+    # @param report [Report] the report to check for missing tools
+    # @return [void]
+    def show_missing_tools(report)
+      return unless report.missing?
+
+      missing = report.missing_results.map { |r| Tool.new(r.tool_key) }
+      output.missing_tools(missing)
     end
 
     def show_run_summary(current_tools, command_type)

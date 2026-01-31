@@ -45,6 +45,9 @@ module Reviewer
           # Skip output for non-streaming modes - results are formatted at the end
           return unless Reviewer.arguments.streaming?
 
+          # Missing tools are handled by the Runner (shows "Skipped (not installed)")
+          return if runner.shell.result.executable_not_found?
+
           # If it's successful, show that it was a success and how long it took to run, otherwise,
           # it wasn't successful and we got some explaining to do...
           runner.success? ? show_timing_result : show_command_output
@@ -81,6 +84,16 @@ module Reviewer
 
           thread.join
 
+          # Erase the progress bar line if the executable wasn't found
+          if runner.shell.result.executable_not_found?
+            $stdout.print "\r\e[2K"
+            return
+          end
+
+          finish_progress_bar(bar, average_time)
+        end
+
+        def finish_progress_bar(bar, average_time)
           if average_time.zero?
             bar.stop
           else

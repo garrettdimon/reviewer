@@ -110,6 +110,49 @@ module Reviewer
         assert_match(/10 more lines/, out)
       end
 
+      def test_formats_missing_tool_with_dash_and_not_installed
+        @report.add(build_result(tool_key: :bundle_audit, tool_name: 'Bundle Audit', success: true, duration: 0.15))
+        @report.add(build_missing_result(tool_key: :rubocop, tool_name: 'RuboCop'))
+        @report.add(build_result(tool_key: :tests, tool_name: 'Minitest', success: true, duration: 0.46))
+        @report.record_duration(0.61)
+
+        formatter = Formatter.new(@report)
+        out, _err = capture_subprocess_io { formatter.print }
+
+        assert_match(/- RuboCop/i, out)
+        assert_match(/not installed/i, out)
+      end
+
+      def test_missing_tool_excluded_from_failure_details
+        @report.add(build_missing_result(tool_key: :rubocop, tool_name: 'RuboCop'))
+        @report.record_duration(0.5)
+
+        formatter = Formatter.new(@report)
+        out, _err = capture_subprocess_io { formatter.print }
+
+        # Should show "All passed" since the only non-missing tools all passed
+        assert_match(/all passed/i, out)
+      end
+
+      def test_mixed_missing_and_failed_shows_only_real_failures
+        @report.add(build_result(
+                      tool_key: :tests,
+                      tool_name: 'Minitest',
+                      success: false,
+                      exit_status: 1,
+                      stdout: 'test failure output'
+                    ))
+        @report.add(build_missing_result(tool_key: :rubocop, tool_name: 'RuboCop'))
+        @report.record_duration(0.8)
+
+        formatter = Formatter.new(@report)
+        out, _err = capture_subprocess_io { formatter.print }
+
+        # Should show failure details for Minitest but not RuboCop
+        assert_match(/Minitest:/i, out)
+        refute_match(/RuboCop:/i, out)
+      end
+
       private
 
       def build_result(tool_key:, success:, **options)
@@ -123,7 +166,24 @@ module Reviewer
           duration: options[:duration] || 1.0,
           stdout: options[:stdout],
           stderr: options[:stderr],
-          skipped: nil
+          skipped: nil,
+          missing: nil
+        )
+      end
+
+      def build_missing_result(tool_key:, tool_name: nil)
+        Runner::Result.new(
+          tool_key: tool_key,
+          tool_name: tool_name || tool_key.to_s.capitalize,
+          command_type: :review,
+          command_string: nil,
+          success: false,
+          exit_status: 127,
+          duration: 0,
+          stdout: nil,
+          stderr: nil,
+          skipped: nil,
+          missing: true
         )
       end
     end

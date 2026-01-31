@@ -120,7 +120,7 @@ module Reviewer
       assert_nil Reviewer.history.get(:list, :last_failed_files)
     end
 
-    def test_clears_failed_files_for_tools_that_did_not_run
+    def test_preserves_failed_files_for_tools_that_did_not_run
       # Pre-populate stale failed files
       Reviewer.history.set(:minimum_viable_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
 
@@ -131,7 +131,32 @@ module Reviewer
         Batch.new(:review, tools).run
       end
 
-      assert_nil Reviewer.history.get(:minimum_viable_tool, :last_failed_files)
+      # Failed files persist until the tool actually runs and passes
+      assert_equal ['lib/reviewer/batch.rb'],
+                   Reviewer.history.get(:minimum_viable_tool, :last_failed_files)
+    end
+
+    def test_command_includes_stored_failed_files
+      # Pre-populate failed files for a file-targeting tool
+      Reviewer.history.set(:file_targeting_list, :last_failed_files, ['lib/reviewer/batch.rb'])
+      Reviewer.history.set(:file_targeting_list, :last_status, :failed)
+
+      # Stub arguments to simulate `rvw failed`
+      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
+
+      tools = [Tool.new(:file_targeting_list)]
+      report = nil
+
+      capture_subprocess_io do
+        report = Batch.new(:review, tools).run
+      end
+
+      # The command string should include the stored file
+      command_string = report.results.first.command_string
+      assert_includes command_string, 'lib/reviewer/batch.rb'
+    ensure
+      Reviewer.reset!
+      ensure_test_configuration!
     end
 
     def test_uses_passthrough_strategy_when_raw_flag_set
@@ -144,6 +169,42 @@ module Reviewer
     ensure
       Reviewer.reset!
       ensure_test_configuration!
+    end
+
+    def test_continues_past_missing_tools
+      # missing_command exits 127, list should still run
+      tools = [Tool.new(:missing_command), Tool.new(:list)]
+
+      capture_subprocess_io do
+        @report = Batch.new(:review, tools).run
+      end
+
+      assert_equal 2, @report.results.size
+      assert_equal %i[missing_command list], @report.results.map(&:tool_key)
+    end
+
+    def test_does_not_record_run_for_missing_tools
+      tools = [Tool.new(:missing_command)]
+
+      capture_subprocess_io do
+        Batch.new(:review, tools).run
+      end
+
+      assert_nil Reviewer.history.get(:missing_command, :last_status)
+    end
+
+    def test_missing_tool_followed_by_passing_tool
+      tools = [Tool.new(:missing_command), Tool.new(:list)]
+
+      capture_subprocess_io do
+        @report = Batch.new(:review, tools).run
+      end
+
+      # The missing tool result should be marked missing
+      assert @report.results.first.missing
+
+      # The passing tool should succeed
+      assert @report.results.last.success
     end
   end
 end

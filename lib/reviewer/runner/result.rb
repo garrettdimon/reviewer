@@ -24,6 +24,8 @@ module Reviewer
     #   @return [String, nil] the standard error from the command
     # @!attribute [r] skipped
     #   @return [Boolean] whether the tool was skipped
+    # @!attribute [r] missing
+    #   @return [Boolean] whether the tool's executable was not found
     Result = Struct.new(
       :tool_key,
       :tool_name,
@@ -35,6 +37,7 @@ module Reviewer
       :stdout,
       :stderr,
       :skipped,
+      :missing,
       keyword_init: true
     ) do
       # Freeze on initialization to maintain immutability like Data.define
@@ -57,7 +60,8 @@ module Reviewer
           duration: duration,
           stdout: stdout,
           stderr: stderr,
-          skipped: skipped
+          skipped: skipped,
+          missing: missing
         }.compact
       end
     end

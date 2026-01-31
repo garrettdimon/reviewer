@@ -139,5 +139,76 @@ module Reviewer
       assert_match(/~1.5 seconds/, out)
       assert_match(/3 tools/, out)
     end
+
+    def test_missing_configuration_shows_heading
+      file = Pathname('/tmp/project/.reviewer.yml')
+      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
+      assert_match(/no configuration found/i, out)
+    end
+
+    def test_missing_configuration_shows_expected_path
+      file = Pathname('/tmp/project/.reviewer.yml')
+      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
+      assert_match(%r{\./\.reviewer\.yml}, out)
+    end
+
+    def test_missing_configuration_shows_init_guidance
+      file = Pathname('/tmp/project/.reviewer.yml')
+      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
+      assert_match(/rvw init/, out)
+    end
+
+    def test_missing_configuration_shows_manual_link
+      file = Pathname('/tmp/project/.reviewer.yml')
+      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
+      assert_match(%r{github\.com/garrettdimon/reviewer}, out)
+    end
+
+    def test_setup_already_exists
+      file = Pathname('/tmp/project/.reviewer.yml')
+      out, _err = capture_subprocess_io { @output.setup_already_exists(file) }
+      assert_match(/already exists/i, out)
+      assert_match(/rvw init/, out)
+    end
+
+    def test_setup_no_tools_detected
+      out, _err = capture_subprocess_io { @output.setup_no_tools_detected }
+      assert_match(/no supported tools detected/i, out)
+      assert_match(%r{github\.com/garrettdimon/reviewer}, out)
+    end
+
+    def test_setup_success
+      results = [
+        Reviewer::Setup::Detector::Result.new(key: :rubocop, reasons: ['rubocop in Gemfile.lock'])
+      ]
+      out, _err = capture_subprocess_io { @output.setup_success(results) }
+      assert_match(/created \.reviewer\.yml/i, out)
+      assert_match(/RuboCop/, out)
+      assert_match(/Gemfile\.lock/, out)
+    end
+
+    def test_missing_tools_shows_count
+      tools = [Tool.new(:missing_with_install)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/1 not installed/i, out)
+    end
+
+    def test_missing_tools_shows_tool_name
+      tools = [Tool.new(:missing_with_install)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/Missing With Install/i, out)
+    end
+
+    def test_missing_tools_shows_install_hint
+      tools = [Tool.new(:missing_with_install)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/gem install missing-tool/, out)
+    end
+
+    def test_missing_tools_pluralizes_for_multiple
+      tools = [Tool.new(:missing_with_install), Tool.new(:missing_command)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/2 not installed/i, out)
+    end
   end
 end

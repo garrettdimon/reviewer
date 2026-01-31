@@ -3,11 +3,14 @@
 require 'io/console/size' # For determining console width/height
 
 require_relative 'output/printer'
+require_relative 'output/setup'
 require_relative 'output/token'
 
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
+    include Output::Setup
+
     DEFAULT_CONSOLE_WIDTH = 120
     DIVIDER = '─'
     RAKE_ABORTED_TEXT = "rake aborted!\n"
@@ -173,6 +176,20 @@ module Reviewer
       newline
       printer.puts(:bold, summary)
       printer.puts(:muted, details)
+    end
+
+    # Prints a summary of tools whose executables were not found
+    # @param tools [Array<Tool>] the missing tools
+    # @return [void]
+    def missing_tools(tools)
+      label = tools.size == 1 ? '1 not installed:' : "#{tools.size} not installed:"
+      newline
+      printer.puts(:warning, label)
+      tools.each do |tool|
+        hint = tool.installable? ? tool.settings.commands[:install] : ''
+        printer.puts(:muted, "  #{tool.name.ljust(22)}#{hint}")
+      end
+      newline
     end
 
     # Outputs raw content directly to the stream without styling

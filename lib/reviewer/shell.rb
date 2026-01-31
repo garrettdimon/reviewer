@@ -73,6 +73,9 @@ module Reviewer
 
       @captured_results = Open3.capture3(command)
       @result = Result.new(*@captured_results)
+    rescue Errno::ENOENT
+      @result = Result.new(nil, nil, nil)
+      @result.exit_status = Result::EXIT_STATUS_CODES[:executable_not_found]
     end
   end
 end
