@@ -178,3 +178,14 @@ test_mapping_tool:
     separator: ' '
     pattern: '*_test.rb'
     map_to_tests: minitest
+
+# For Testing File-Scoped Command Override
+file_scoped_command_tool:
+  disabled: true
+  commands:
+    review: 'bundle exec rake test'
+  files:
+    review: 'bundle exec ruby -Itest'
+    flag: ''
+    separator: ' '
+    pattern: '*_test.rb'

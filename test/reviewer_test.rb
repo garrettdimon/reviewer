@@ -13,12 +13,14 @@ module Reviewer
     def failed? = false
     def provided = []
     def for_tool_names = []
+    def unrecognized = []
   end
 
   # Keywords stub that reports keywords were provided
   StubKeywordsWithProvided = Struct.new(:provided) do
     def failed? = false
     def for_tool_names = []
+    def unrecognized = []
   end
 
   # Keywords stub that reports failed keyword
@@ -26,6 +28,7 @@ module Reviewer
     def failed? = true
     def provided = ['failed']
     def for_tool_names = []
+    def unrecognized = []
   end
 
   # Stub for testing different argument configurations
@@ -306,6 +309,56 @@ module Reviewer
           assert_match(/Missing With Install/i, out)
         end
       end
+    end
+
+    def test_review_dispatches_to_init_when_subcommand
+      setup_ran = false
+      Setup.stub(:run, -> { setup_ran = true }) do
+        ARGV.replace(['init'])
+        Reviewer.review
+      ensure
+        ARGV.replace([])
+      end
+      assert setup_ran, 'Expected Setup.run to be called for rvw init'
+    end
+
+    def test_review_dispatches_to_doctor_when_subcommand
+      doctor_ran = false
+      Doctor.stub(:run, lambda {
+        doctor_ran = true
+        Doctor::Report.new
+      }) do
+        ARGV.replace(['doctor'])
+        capture_subprocess_io { Reviewer.review }
+      ensure
+        ARGV.replace([])
+      end
+      assert doctor_ran, 'Expected Doctor.run to be called for rvw doctor'
+    end
+
+    def test_format_dispatches_to_init_when_subcommand
+      setup_ran = false
+      Setup.stub(:run, -> { setup_ran = true }) do
+        ARGV.replace(['init'])
+        Reviewer.format
+      ensure
+        ARGV.replace([])
+      end
+      assert setup_ran, 'Expected Setup.run to be called for fmt init'
+    end
+
+    def test_format_dispatches_to_doctor_when_subcommand
+      doctor_ran = false
+      Doctor.stub(:run, lambda {
+        doctor_ran = true
+        Doctor::Report.new
+      }) do
+        ARGV.replace(['doctor'])
+        capture_subprocess_io { Reviewer.format }
+      ensure
+        ARGV.replace([])
+      end
+      assert doctor_ran, 'Expected Doctor.run to be called for fmt doctor'
     end
 
     def test_failed_with_nothing_to_run_handles_tags_object

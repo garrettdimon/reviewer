@@ -148,6 +148,29 @@ module Reviewer
         @settings = Settings.new(@tool, config: @config)
         assert_equal 'minitest', @settings.map_to_tests
       end
+
+      def test_provides_files_command_with_nil_as_default
+        assert_nil @settings.files_command(:review)
+        assert_nil @settings.files_command(:format)
+      end
+
+      def test_provides_files_command_for_review
+        @config[:files] = { review: 'bundle exec ruby -Itest', pattern: '*_test.rb' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal 'bundle exec ruby -Itest', @settings.files_command(:review)
+      end
+
+      def test_provides_files_command_for_format
+        @config[:files] = { format: 'bundle exec ruby -Itest --fix' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal 'bundle exec ruby -Itest --fix', @settings.files_command(:format)
+      end
+
+      def test_files_command_returns_nil_for_unconfigured_type
+        @config[:files] = { review: 'bundle exec ruby -Itest' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_nil @settings.files_command(:format)
+      end
     end
   end
 end

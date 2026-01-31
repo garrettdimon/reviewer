@@ -74,6 +74,36 @@ module Reviewer
           assert_equal full_files_array.sort, files.to_a
         end
       end
+
+      def test_git_error_returns_empty_and_warns
+        keywords_array = %w[staged]
+        files = Files.new(
+          provided: [],
+          keywords: keywords_array
+        )
+
+        error = SystemCallError.new('fatal: not a git repository', 128)
+        ::Reviewer::Keywords::Git.stub :staged, -> { raise error } do
+          out, _err = capture_subprocess_io { files.to_a }
+          assert_empty files.to_a
+          assert_match(/not a git repository/i, out)
+        end
+      end
+
+      def test_git_error_continues_with_provided_files
+        keywords_array = %w[staged]
+        files = Files.new(
+          provided: ['app/models/user.rb'],
+          keywords: keywords_array
+        )
+
+        error = SystemCallError.new('git error', 1)
+        ::Reviewer::Keywords::Git.stub :staged, -> { raise error } do
+          _out, _err = capture_subprocess_io do
+            assert_equal ['app/models/user.rb'], files.to_a
+          end
+        end
+      end
     end
   end
 end

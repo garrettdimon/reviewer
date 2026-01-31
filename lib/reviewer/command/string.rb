@@ -50,10 +50,13 @@ module Reviewer
       # @return [String] the environment variable names and values concatened for the command
       def env_variables = Env.new(tool_settings.env).to_s
 
-      # The base command string from the tool's configuration
+      # The base command string from the tool's configuration.
+      # Uses the file-scoped command when files are present and one is configured.
       #
       # @return [String] the configured command for the command type
-      def body = tool_settings.commands.fetch(command_type)
+      def body
+        file_scoped_command || tool_settings.commands.fetch(command_type)
+      end
 
       # Gets the flags to be used in conjunction with the review command for a tool
       #   1. The `review` commands are the only commands that use flags
@@ -79,6 +82,12 @@ module Reviewer
       end
 
       private
+
+      def file_scoped_command
+        return nil unless files.any?
+
+        tool_settings.files_command(command_type)
+      end
 
       # Determines whether the string needs flags added
       #

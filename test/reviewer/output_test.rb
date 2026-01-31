@@ -210,5 +210,54 @@ module Reviewer
       out, _err = capture_subprocess_io { @output.missing_tools(tools) }
       assert_match(/2 not installed/i, out)
     end
+
+    def test_unrecognized_keywords_shows_warning
+      out, _err = capture_subprocess_io do
+        @output.unrecognized_keywords(['rubocp'], { 'rubocp' => 'rubocop' })
+      end
+      assert_match(/Unrecognized: rubocp/, out)
+      assert_match(/did you mean 'rubocop'/, out)
+    end
+
+    def test_unrecognized_keywords_without_suggestion
+      out, _err = capture_subprocess_io do
+        @output.unrecognized_keywords(['zzzzz'], {})
+      end
+      assert_match(/Unrecognized: zzzzz/, out)
+      refute_match(/did you mean/, out)
+    end
+
+    def test_no_matching_tools
+      out, _err = capture_subprocess_io do
+        @output.no_matching_tools(requested: ['rubocp'], available: %w[rubocop tests reek])
+      end
+      assert_match(/No matching tools found/, out)
+      assert_match(/Requested: rubocp/, out)
+      assert_match(/Available: rubocop, tests, reek/, out)
+    end
+
+    def test_invalid_format
+      out, _err = capture_subprocess_io do
+        @output.invalid_format('verbose', %i[streaming summary json])
+      end
+      assert_match(/Unknown format 'verbose'/, out)
+      assert_match(/Valid formats:/, out)
+    end
+
+    def test_git_error_for_not_a_repo
+      out, _err = capture_subprocess_io do
+        @output.git_error('fatal: not a git repository')
+      end
+      assert_match(/Not a git repository/, out)
+      assert_match(/Git keywords/, out)
+    end
+
+    def test_git_error_for_other_errors
+      out, _err = capture_subprocess_io do
+        @output.git_error('some other git failure')
+      end
+      assert_match(/Git command failed/, out)
+      assert_match(/Continuing without file filtering/, out)
+    end
   end
 end

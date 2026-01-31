@@ -31,7 +31,8 @@ module Reviewer
                    :links,
                    :enabled?,
                    :disabled?,
-                   :max_exit_status
+                   :max_exit_status,
+                   :supports_files?
 
     # @!method to_sym
     #   Returns the tool's key as a symbol

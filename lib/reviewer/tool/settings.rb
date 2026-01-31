@@ -84,6 +84,13 @@ module Reviewer
 
       def supports_files? = config.key?(:files)
 
+      # Returns the file-scoped command override for a given command type.
+      # When configured, this command replaces the standard command when files are passed.
+      #
+      # @param command_type [Symbol] the command type (:review, :format)
+      # @return [String, nil] the file-scoped command or nil if not configured
+      def files_command(command_type) = config.dig(:files, command_type)
+
       # The collection of configured commands for the tool
       #
       # @return [Hash] all of the commands configured for the tool

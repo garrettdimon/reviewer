@@ -24,6 +24,7 @@ require_relative 'reviewer/shell'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
 require_relative 'reviewer/setup'
+require_relative 'reviewer/doctor'
 require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
@@ -41,9 +42,10 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def review(clear_screen: false)
-      return perform(:init) if subcommand?(:init)
+      return Setup.run if subcommand?(:init)
+      return run_doctor if subcommand?(:doctor)
 
-      perform(:review, clear_screen: clear_screen)
+      run_tools(:review, clear_screen: clear_screen)
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
@@ -51,9 +53,10 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def format(clear_screen: false)
-      return perform(:init) if subcommand?(:init)
+      return Setup.run if subcommand?(:init)
+      return run_doctor if subcommand?(:doctor)
 
-      perform(:format, clear_screen: clear_screen)
+      run_tools(:format, clear_screen: clear_screen)
     end
 
     # The collection of arguments that were passed via the command line.
@@ -97,10 +100,12 @@ module Reviewer
 
     def subcommand?(name) = ARGV.first == name.to_s
 
-    # Central dispatcher for all command types (:review, :format, :init, and eventually :install)
-    def perform(command_type, clear_screen: false)
-      return Setup.run if command_type == :init
+    def run_doctor
+      report = Doctor.run
+      output.doctor_report(report)
+    end
 
+    def run_tools(command_type, clear_screen: false)
       prepare_run(clear_screen)
       exit run_and_report(command_type)
     end
@@ -108,17 +113,49 @@ module Reviewer
     def prepare_run(clear_screen)
       output.clear if clear_screen && !arguments.json?
       guard_missing_configuration!
+      warn_unrecognized_keywords!
       guard_failed_with_nothing_to_run!
     end
 
     def run_and_report(command_type)
       current_tools = tools.current
+      return warn_no_matching_tools if current_tools.empty?
+
       show_run_summary(current_tools, command_type)
 
       report = Batch.new(command_type, current_tools).run
       display_report(report)
 
       report.max_exit_status
+    end
+
+    def warn_no_matching_tools
+      output.no_matching_tools(
+        requested: arguments.keywords.provided + arguments.tags.to_a,
+        available: tools.all.map { |t| t.key.to_s }
+      )
+      0
+    end
+
+    # Warns when keywords don't match any known tool, tag, or reserved word
+    def warn_unrecognized_keywords!
+      return if arguments.json?
+
+      unrecognized = arguments.keywords.unrecognized
+      return if unrecognized.empty?
+
+      suggestions = build_suggestions(unrecognized)
+      output.unrecognized_keywords(unrecognized, suggestions)
+    end
+
+    def build_suggestions(unrecognized)
+      possible = arguments.keywords.possible
+      checker = DidYouMean::SpellChecker.new(dictionary: possible)
+
+      unrecognized.each_with_object({}) do |keyword, map|
+        corrections = checker.correct(keyword)
+        map[keyword] = corrections.first if corrections.any?
+      end
     end
 
     # Exits with guidance when .reviewer.yml is missing
@@ -169,14 +206,17 @@ module Reviewer
         return
       end
 
+      display_text_report(report)
+      show_missing_tools(report)
+    end
+
+    def display_text_report(report)
       if arguments.format == :summary
         Report::Formatter.new(report, output: output).print
       elsif report.success?
         ran_count = report.results.count { |r| !r.missing && !r.skipped }
         output.batch_summary(ran_count, report.duration)
       end
-
-      show_missing_tools(report)
     end
 
     # Shows a consolidated summary of missing tools with install hints
