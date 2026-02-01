@@ -3,6 +3,7 @@
 require_relative 'runner/failed_files'
 require_relative 'runner/guidance'
 require_relative 'runner/result'
+require_relative 'runner/result_builder'
 require_relative 'runner/strategies/captured'
 require_relative 'runner/strategies/passthrough'
 
@@ -163,13 +164,14 @@ module Reviewer
     #
     # @return [Runner::Result] the result of running this tool
     def to_result
-      if skipped?
-        skipped_result
-      elsif missing?
-        missing_result
-      else
-        executed_result
-      end
+      ResultBuilder.new(
+        tool: tool,
+        command: command,
+        shell: shell,
+        skipped: skipped?,
+        missing: missing?,
+        success: success?
+      ).build
     end
 
     private
@@ -189,61 +191,6 @@ module Reviewer
     def handle_result
       guidance.show if failure? && streaming?
       exit_status
-    end
-
-    # Result for a tool that was skipped due to no matching files
-    #
-    # @return [Runner::Result]
-    def skipped_result
-      Result.new(
-        tool_key: tool.key,
-        tool_name: tool.name,
-        command_type: command.type,
-        command_string: nil,
-        success: true,
-        exit_status: 0,
-        duration: 0,
-        stdout: nil,
-        stderr: nil,
-        skipped: true
-      )
-    end
-
-    # Result for a tool whose executable was not found
-    #
-    # @return [Runner::Result]
-    def missing_result
-      Result.new(
-        tool_key: tool.key,
-        tool_name: tool.name,
-        command_type: command.type,
-        command_string: command.string,
-        success: false,
-        exit_status: exit_status,
-        duration: 0,
-        stdout: nil,
-        stderr: nil,
-        skipped: nil,
-        missing: true
-      )
-    end
-
-    # Result for a tool that was actually executed
-    #
-    # @return [Runner::Result]
-    def executed_result
-      Result.new(
-        tool_key: tool.key,
-        tool_name: tool.name,
-        command_type: command.type,
-        command_string: command.string,
-        success: success?,
-        exit_status: exit_status,
-        duration: timer.total_seconds,
-        stdout: stdout,
-        stderr: stderr,
-        skipped: nil
-      )
     end
   end
 end
