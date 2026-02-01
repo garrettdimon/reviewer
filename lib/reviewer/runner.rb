@@ -29,14 +29,14 @@ module Reviewer
     # @param output: Reviewer.output [Review::Output] the output formatter for the results
     #
     # @return [self]
-    def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output)
-      @command = Command.new(tool, command_type)
+    def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output, arguments: Reviewer.arguments)
+      @command = Command.new(tool, command_type, arguments: arguments)
       @strategy = strategy
       @shell = Shell.new
       @output = output
       @skipped = false
       @missing = false
-      @streaming = Reviewer.arguments.streaming?
+      @streaming = arguments.streaming?
     end
 
     # Whether this runner is operating in streaming mode
