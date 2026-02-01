@@ -3,6 +3,7 @@
 require 'io/console/size' # For determining console width/height
 
 require_relative 'output/doctor'
+require_relative 'output/formatting'
 require_relative 'output/printer'
 require_relative 'output/setup'
 require_relative 'output/token'
