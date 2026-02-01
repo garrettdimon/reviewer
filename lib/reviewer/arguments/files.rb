@@ -25,9 +25,10 @@ module Reviewer
       #   reviewer.to_a # => ['./file.rb','./directory/file.rb']
       #
       # @return [self]
-      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords)
+      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords, on_git_error: nil)
         @provided = Array(provided)
         @keywords = Array(keywords)
+        @on_git_error = on_git_error || ->(message) { Reviewer.output.git_error(message) }
       end
 
       # Provides the full list of file/path values derived from the command-line arguments
@@ -108,7 +109,7 @@ module Reviewer
 
         raise SystemCallError.new("Git Error: #{stderr} (#{command})", status.exitstatus.to_i)
       rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
+        @on_git_error.call(e.message)
         []
       end
     end
