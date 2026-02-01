@@ -2,6 +2,7 @@
 
 require_relative 'setup/catalog'
 require_relative 'setup/detector'
+require_relative 'setup/formatter'
 require_relative 'setup/gemfile_lock'
 require_relative 'setup/generator'
 

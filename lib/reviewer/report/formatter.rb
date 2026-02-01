@@ -4,8 +4,7 @@ module Reviewer
   class Report
     # Formats a Report for summary output to the console
     class Formatter
-      CHECKMARK = '✓'
-      XMARK = '✗'
+      include Output::Formatting
 
       attr_reader :report, :output
 
@@ -55,8 +54,8 @@ module Reviewer
       end
 
       def print_executed_tool(result)
-        style = result.success? ? :success : :failure
-        mark = result.success? ? CHECKMARK : XMARK
+        style = status_style(result.success?)
+        mark = status_mark(result.success?)
         output.printer.print(style, "#{mark} #{result.tool_name}")
         print_timing(result)
         print_details(result)
@@ -136,11 +135,6 @@ module Reviewer
         output.printer.puts(:muted, "[#{remaining} more lines]")
       end
 
-      def format_duration(seconds)
-        return '0.0s' if seconds.nil?
-
-        "#{seconds.round(2)}s"
-      end
     end
   end
 end

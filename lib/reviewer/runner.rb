@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'runner/failed_files'
+require_relative 'runner/formatter'
 require_relative 'runner/guidance'
 require_relative 'runner/result'
 require_relative 'runner/result_builder'

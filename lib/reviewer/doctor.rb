@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'doctor/formatter'
 require_relative 'doctor/report'
 require_relative 'doctor/config_check'
 require_relative 'doctor/tool_inventory'

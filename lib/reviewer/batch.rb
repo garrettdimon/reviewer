@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'batch/formatter'
+
 module Reviewer
   # Provides a structure for running commands for a given set of tools
   class Batch

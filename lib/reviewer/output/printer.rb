@@ -4,8 +4,41 @@ require 'io/console' # For determining console width/height
 
 module Reviewer
   class Output
-    # Wrapper to encapsulate some lower-level details of printing to $stdout
+    # Wrapper to encapsulate some lower-level details of printing to $stdout.
+    # Handles ANSI styling directly via a pre-computed STYLES constant.
     class Printer
+      ESC = "\e["
+      RESET = "#{ESC}0m"
+
+      # Weight codes
+      WEIGHTS = { default: 0, bold: 1, light: 2, italic: 3 }.freeze
+
+      # Color codes
+      COLORS = {
+        black: 30, red: 31, green: 32, yellow: 33,
+        blue: 34, magenta: 35, cyan: 36, gray: 37, default: 39
+      }.freeze
+
+      # Style definitions: [weight, color]
+      STYLE_DEFS = {
+        success_bold: %i[bold green],
+        success: %i[default green],
+        success_light: %i[light green],
+        error: %i[bold red],
+        failure: %i[default red],
+        warning: %i[bold yellow],
+        warning_light: %i[light yellow],
+        source: %i[italic default],
+        bold: %i[default default],
+        default: %i[default default],
+        muted: %i[light gray]
+      }.freeze
+
+      # Pre-computed ANSI escape strings for each style
+      STYLES = STYLE_DEFS.transform_values do |weight_key, color_key|
+        "#{ESC}#{WEIGHTS.fetch(weight_key)};#{COLORS.fetch(color_key)}m"
+      end.freeze
+
       attr_reader :stream
 
       # Creates an instance of Output to print Reviewer activity and results to the console
@@ -42,7 +75,7 @@ module Reviewer
 
       def text(style, content)
         if style_enabled?
-          stream.print Token.new(style, content).to_s
+          stream.print "#{STYLES.fetch(style)}#{content}#{RESET}"
         else
           stream.print content
         end
