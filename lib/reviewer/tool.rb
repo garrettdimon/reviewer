@@ -19,7 +19,7 @@ module Reviewer
     # infrequent enough that it's not cumbersome.
     SIX_HOURS_IN_SECONDS = 60 * 60 * 6
 
-    attr_reader :settings, :history
+    attr_reader :settings
 
     def_delegators :@settings,
                    :key,
@@ -47,10 +47,12 @@ module Reviewer
 
     # Create an instance of a tool
     # @param tool_key [Symbol] the key to the tool from the configuration file
+    # @param history [History] the history store for timing and state persistence
     #
     # @return [Tool] an instance of tool for accessing settings information and facts about the tool
-    def initialize(tool_key)
+    def initialize(tool_key, history: Reviewer.history)
       @settings = Settings.new(tool_key)
+      @history = history
     end
 
     # For determining if the tool should run it's prepration command. It will only be run both if
@@ -99,7 +101,7 @@ module Reviewer
     #
     # @return [Time] timestamp of when the `prepare` command was last run
     def last_prepared_at
-      date_string = Reviewer.history.get(key, :last_prepared_at)
+      date_string = @history.get(key, :last_prepared_at)
 
       date_string == '' || date_string.nil? ? nil : DateTime.parse(date_string).to_time
     end
@@ -109,7 +111,7 @@ module Reviewer
     #
     # @return [DateTime] timestamp of when the `prepare` command was last run
     def last_prepared_at=(last_prepared_at)
-      Reviewer.history.set(key, :last_prepared_at, last_prepared_at.to_s)
+      @history.set(key, :last_prepared_at, last_prepared_at.to_s)
     end
 
     # Calculates the average execution time for a command
@@ -127,7 +129,7 @@ module Reviewer
     #
     # @return [Array<Float>] the last few recorded execution times
     def get_timing(command)
-      Reviewer.history.get(key, command.raw_string) || []
+      @history.get(key, command.raw_string) || []
     end
 
     # Records the execution time for a command to calculate running averages
@@ -140,7 +142,7 @@ module Reviewer
 
       timing = get_timing(command).take(4) << time.round(2)
 
-      Reviewer.history.set(key, command.raw_string, timing)
+      @history.set(key, command.raw_string, timing)
     end
 
     # Determines whether the `prepare` command was run recently enough
