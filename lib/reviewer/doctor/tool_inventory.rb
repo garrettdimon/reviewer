@@ -7,15 +7,19 @@ module Reviewer
       attr_reader :report
 
       # @param report [Doctor::Report] the report to add findings to
-      def initialize(report)
+      # @param configuration [Configuration] the configuration to check
+      # @param tools [Tools] the tools collection to report on
+      def initialize(report, configuration: Reviewer.configuration, tools: Reviewer.tools)
         @report = report
+        @configuration = configuration
+        @tools = tools
       end
 
       # Reports batch/skip status and available commands for each configured tool
       def check
-        return unless Reviewer.configuration.file.exist?
+        return unless @configuration.file.exist?
 
-        Reviewer.tools.all.each do |tool|
+        @tools.all.each do |tool|
           skipped = tool.skip_in_batch?
 
           report.add(:tools,

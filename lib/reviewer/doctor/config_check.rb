@@ -7,13 +7,15 @@ module Reviewer
       attr_reader :report
 
       # @param report [Doctor::Report] the report to add findings to
-      def initialize(report)
+      # @param configuration [Configuration] the configuration to validate
+      def initialize(report, configuration: Reviewer.configuration)
         @report = report
+        @configuration = configuration
       end
 
       # Checks for .reviewer.yml existence and validity
       def check
-        config_file = Reviewer.configuration.file
+        config_file = @configuration.file
 
         unless config_file.exist?
           report.add(:configuration, status: :error,
