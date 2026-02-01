@@ -9,21 +9,15 @@ module Reviewer
     end
 
     def test_config_file_can_be_customized
-      overridden_file = '../commands.yml'
-      Reviewer.configure do |config|
-        config.file = overridden_file
-      end
-      assert_equal overridden_file, Reviewer.configuration.file
-      ensure_test_configuration!
+      config = Configuration.new
+      config.file = '../commands.yml'
+      assert_equal '../commands.yml', config.file
     end
 
     def test_history_file_can_be_customized
-      overridden_file = '../commands_history.yml'
-      Reviewer.configure do |config|
-        config.history_file = overridden_file
-      end
-      assert_equal overridden_file, Reviewer.configuration.history_file
-      ensure_test_configuration!
+      config = Configuration.new
+      config.history_file = '../commands_history.yml'
+      assert_equal '../commands_history.yml', config.history_file
     end
   end
 end

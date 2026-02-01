@@ -54,15 +54,17 @@ module Reviewer
       end
 
       def with_temp_config(content: nil)
+        original_file = Reviewer.configuration.file
+
         Dir.mktmpdir do |dir|
           config_file = Pathname(dir).join('.reviewer.yml')
           config_file.write(content) if content
 
-          Reviewer.configure { |c| c.file = config_file }
+          Reviewer.configuration.file = config_file
           yield config_file
         end
       ensure
-        ensure_test_configuration!
+        Reviewer.configuration.file = original_file
       end
     end
   end

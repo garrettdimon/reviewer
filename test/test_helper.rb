@@ -28,17 +28,9 @@ MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true) do
   def success? = exitstatus.zero?
 end
 
-# Ensure it's using the test configuration file since some tests intentionally
-# change it to test how it recovers when misconfigured
-def ensure_test_configuration!
-  Reviewer.reset!
-  Reviewer.configure do |config|
-    # Use the test configuration file that has predictable example coverage
-    config.file = Pathname('test/fixtures/files/test_commands.yml')
-
-    # Use a test location for the history file so it doesn't overwrite the primary history file
-    config.history_file = Pathname(Reviewer::Configuration::DEFAULT_HISTORY_LOCATION.sub('.yml', '_test.yml'))
-  end
+# Configure Reviewer to use test fixtures so tests don't depend on a real .reviewer.yml
+Reviewer.reset!
+Reviewer.configure do |config|
+  config.file = Pathname('test/fixtures/files/test_commands.yml')
+  config.history_file = Pathname(Reviewer::Configuration::DEFAULT_HISTORY_LOCATION.sub('.yml', '_test.yml'))
 end
-
-ensure_test_configuration!

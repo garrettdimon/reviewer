@@ -29,20 +29,12 @@ module Reviewer
 
       def test_fails_gracefully_when_configuration_yaml_missing
         file = 'test/fixtures/files/missing.yml'
-        Reviewer.configure do |config|
-          config.file = file
-        end
         assert_raises(Loader::MissingConfigurationError) { Loader.new(file) }
-        ensure_test_configuration!
       end
 
       def test_fails_gracefully_with_malformed_configuration_yaml
         file = 'test/fixtures/files/test_commands_broken.yml'
-        Reviewer.configure do |config|
-          config.file = file
-        end
         assert_raises(Loader::InvalidConfigurationError) { Loader.new(file) }
-        ensure_test_configuration!
       end
 
       def test_review_commands_present_returns_true_for_valid_config
@@ -52,11 +44,7 @@ module Reviewer
 
       def test_raises_error_without_command_for_review
         file = 'test/fixtures/files/test_commands_no_review_command.yaml'
-        Reviewer.configure do |config|
-          config.file = file
-        end
         assert_raises(Loader::MissingReviewCommandError) { Loader.new(file) }
-        ensure_test_configuration!
       end
     end
   end
