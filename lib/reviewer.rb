@@ -42,6 +42,7 @@ module Reviewer
     def review(clear_screen: false)
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
+      return run_capabilities if capabilities_flag?
 
       exit build_session.review(clear_screen: clear_screen)
     end
@@ -53,6 +54,7 @@ module Reviewer
     def format(clear_screen: false)
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
+      return run_capabilities if capabilities_flag?
 
       exit build_session.format(clear_screen: clear_screen)
     end
@@ -102,6 +104,11 @@ module Reviewer
     private
 
     def subcommand?(name) = ARGV.first == name.to_s
+    def capabilities_flag? = ARGV.include?('--capabilities') || ARGV.include?('-c')
+
+    def run_capabilities
+      puts Capabilities.new.to_json
+    end
 
     def run_doctor
       report = Doctor.run

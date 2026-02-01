@@ -191,20 +191,10 @@ module Reviewer
       refute_match(/Unknown format/, out)
     end
 
-    def test_prints_capabilities_json_with_short_flag
-      out, _err = capture_subprocess_io do
-        assert_raises(SystemExit) { Arguments.new(%w[-c]) }
-      end
-      assert_match(/"version"/, out)
-      assert_match(/"tools"/, out)
-    end
-
-    def test_prints_capabilities_json_with_long_flag
-      out, _err = capture_subprocess_io do
-        assert_raises(SystemExit) { Arguments.new(%w[--capabilities]) }
-      end
-      assert_match(/"version"/, out)
-      assert_match(/"keywords"/, out)
+    def test_capabilities_flag_accepted_without_error
+      # --capabilities is handled by Reviewer before Arguments, so it's a no-op here
+      arguments = Arguments.new(%w[-c])
+      refute_nil arguments
     end
   end
 end

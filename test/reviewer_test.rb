@@ -177,5 +177,23 @@ module Reviewer
       end
       assert_same config, yielded
     end
+
+    def test_review_dispatches_to_capabilities_with_long_flag
+      ARGV.replace(['--capabilities'])
+      out, _err = capture_subprocess_io { Reviewer.review }
+      assert_match(/"version"/, out)
+      assert_match(/"tools"/, out)
+    ensure
+      ARGV.replace([])
+    end
+
+    def test_review_dispatches_to_capabilities_with_short_flag
+      ARGV.replace(['-c'])
+      out, _err = capture_subprocess_io { Reviewer.review }
+      assert_match(/"version"/, out)
+      assert_match(/"keywords"/, out)
+    ensure
+      ARGV.replace([])
+    end
   end
 end
