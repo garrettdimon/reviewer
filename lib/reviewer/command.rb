@@ -5,7 +5,7 @@ require_relative 'command/string'
 module Reviewer
   # The core funtionality to translate a tool, command type, and verbosity into a runnable command
   class Command
-    include Conversions
+    include Tool::Conversions
 
     SEED_SUBSTITUTION_VALUE = '$SEED'
 

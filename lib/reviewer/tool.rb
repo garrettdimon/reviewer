@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'tool/conversions'
 require_relative 'tool/file_resolver'
 require_relative 'tool/settings'
 require_relative 'tool/test_file_mapper'

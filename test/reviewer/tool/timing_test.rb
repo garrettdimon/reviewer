@@ -47,7 +47,7 @@ module Reviewer
       end
 
       def test_record_timing_stores_and_retrieves
-        cmd = stub_command('ls -la')
+        cmd = stub_command('timing_store_test')
         @timing.record_timing(cmd, 1.234)
 
         times = @timing.get_timing(cmd)
@@ -55,13 +55,13 @@ module Reviewer
       end
 
       def test_record_timing_ignores_nil
-        cmd = stub_command('ls -la')
+        cmd = stub_command('timing_nil_test')
         @timing.record_timing(cmd, nil)
         # Should not raise
       end
 
       def test_record_timing_keeps_last_five
-        cmd = stub_command('ls -la')
+        cmd = stub_command('timing_five_test')
         6.times { |i| @timing.record_timing(cmd, i.to_f) }
 
         times = @timing.get_timing(cmd)
@@ -69,7 +69,7 @@ module Reviewer
       end
 
       def test_average_time_calculates_mean
-        cmd = stub_command('ls -la')
+        cmd = stub_command('timing_average_test')
         @timing.record_timing(cmd, 1.0)
         @timing.record_timing(cmd, 3.0)
 
@@ -77,7 +77,7 @@ module Reviewer
       end
 
       def test_average_time_returns_zero_when_no_history
-        assert_equal 0, @timing.average_time(stub_command('nonexistent'))
+        assert_equal 0, @timing.average_time(stub_command('timing_nonexistent_test'))
       end
 
       private

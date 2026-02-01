@@ -4,7 +4,7 @@ require 'test_helper'
 
 module Reviewer
   class ConversionsTest < Minitest::Test
-    include Conversions
+    include Tool::Conversions
 
     def test_tool_from_tool_instance
       tool = Tool.new(:enabled_tool)
