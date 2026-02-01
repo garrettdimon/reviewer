@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'runner/guidance'
 require_relative 'runner/result'
 require_relative 'runner/strategies/captured'
 require_relative 'runner/strategies/passthrough'
@@ -155,7 +156,7 @@ module Reviewer
     #   get back on track in the event of an unsuccessful run.
     #
     # @return [Guidance] the relevant guidance based on the result of the runner
-    def guidance = @guidance ||= Reviewer::Guidance.new(command: command, result: result, output: output)
+    def guidance = @guidance ||= Guidance.new(command: command, result: result, output: output)
 
     # Builds an immutable Result object from the current runner state
     #

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class GuidanceTest < Minitest::Test
+  class Runner::GuidanceTest < Minitest::Test
     def setup
       @output = Output.new
     end
@@ -13,7 +13,7 @@ module Reviewer
       process_status = MockProcessStatus.new(exitstatus: 127, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
-      guidance = Guidance.new(command: command, result: result, output: @output)
+      guidance = Runner::Guidance.new(command: command, result: result, output: @output)
       out, _err = capture_subprocess_io { guidance.show }
       assert_match(/Failure/i, out)
       assert_match(/#{command.tool.name}/i, out)
@@ -27,7 +27,7 @@ module Reviewer
       process_status = MockProcessStatus.new(exitstatus: 127, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
-      guidance = Guidance.new(command: command, result: result, output: @output)
+      guidance = Runner::Guidance.new(command: command, result: result, output: @output)
       out, _err = capture_subprocess_io { guidance.show }
       assert_match(/Failure/i, out)
       assert_match(/#{command.tool.name}/i, out)
@@ -41,7 +41,7 @@ module Reviewer
       process_status = MockProcessStatus.new(exitstatus: 126, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
-      guidance = Guidance.new(command: command, result: result, output: @output)
+      guidance = Runner::Guidance.new(command: command, result: result, output: @output)
       out, _err = capture_subprocess_io { guidance.show }
       assert_match(/Unrecoverable/i, out)
     end
@@ -51,7 +51,7 @@ module Reviewer
       process_status = MockProcessStatus.new(exitstatus: 1, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
-      guidance = Guidance.new(command: command, result: result, output: @output)
+      guidance = Runner::Guidance.new(command: command, result: result, output: @output)
       out, _err = capture_subprocess_io { guidance.show }
       assert_match(/Ignore/i, out)
     end
@@ -61,7 +61,7 @@ module Reviewer
       process_status = MockProcessStatus.new(exitstatus: 1, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
-      guidance = Guidance.new(command: command, result: result, output: @output)
+      guidance = Runner::Guidance.new(command: command, result: result, output: @output)
       out, _err = capture_subprocess_io { guidance.show }
       assert_match(/Selectively Ignore/i, out)
       assert_includes(out, 'https://example.com/ignore')
@@ -72,7 +72,7 @@ module Reviewer
       process_status = MockProcessStatus.new(exitstatus: 1, pid: 123)
       result = Reviewer::Shell::Result.new('Output', 'Error', process_status)
 
-      guidance = Guidance.new(command: command, result: result, output: @output)
+      guidance = Runner::Guidance.new(command: command, result: result, output: @output)
       out, _err = capture_subprocess_io { guidance.show }
       assert_match(/Fully Disable/i, out)
       assert_includes(out, 'https://example.com/disable')
