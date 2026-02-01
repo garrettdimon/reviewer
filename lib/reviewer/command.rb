@@ -19,12 +19,16 @@ module Reviewer
     # command type, and verbosity.
     # @param tool [Tool, Symbol] a tool or tool key to use to look up the command and options
     # @param type [Symbol] the desired command type (:install, :prepare, :review, :format)
+    # @param arguments [Arguments] the parsed CLI arguments
+    # @param history [History] the history store for seed and failed file persistence
     #
     # @return [Command] the intersection of a tool, command type, and verbosity
-    def initialize(tool, type)
+    def initialize(tool, type, arguments: Reviewer.arguments, history: Reviewer.history)
       @tool = Tool(tool)
       @type = type.to_sym
       @seed = nil
+      @arguments = arguments
+      @history = history
     end
 
     # The final command string with all of the conditions appled
@@ -42,14 +46,14 @@ module Reviewer
     #
     # @return [Integer] a random integer to pass to tools that use seeds
     def seed
-      @seed ||= if Reviewer.arguments.keywords.failed?
-                  Reviewer.history.get(tool.key, :last_seed) || Random.rand(100_000)
+      @seed ||= if @arguments.keywords.failed?
+                  @history.get(tool.key, :last_seed) || Random.rand(100_000)
                 else
                   Random.rand(100_000)
                 end
 
       # Store the seed for reference
-      Reviewer.history.set(tool.key, :last_seed, @seed)
+      @history.set(tool.key, :last_seed, @seed)
 
       @seed
     end
@@ -85,8 +89,8 @@ module Reviewer
     # @return [Array<String>] files from -f flag, keywords like 'staged', or stored failed files
     def requested_files
       @requested_files ||= begin
-        explicit = Reviewer.arguments.files.to_a
-        if explicit.empty? && Reviewer.arguments.keywords.failed?
+        explicit = @arguments.files.to_a
+        if explicit.empty? && @arguments.keywords.failed?
           stored_failed_files
         else
           explicit
@@ -98,7 +102,7 @@ module Reviewer
     #
     # @return [Array<String>] stored failed file paths, or empty array
     def stored_failed_files
-      Reviewer.history.get(tool.key, :last_failed_files) || []
+      @history.get(tool.key, :last_failed_files) || []
     end
 
     # The version of the command with the SEED_SUBSTITUTION_VALUE replaced
