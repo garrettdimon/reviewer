@@ -6,8 +6,8 @@ require 'forwardable'
 require 'rainbow'
 
 require_relative 'reviewer/configuration'
+require_relative 'reviewer/configuration/loader'
 require_relative 'reviewer/history'
-require_relative 'reviewer/loader'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
 

@@ -89,7 +89,7 @@ module Reviewer
 
     def failed_keyword? = @arguments.keywords.failed?
 
-    def configured = @configured ||= Loader.configuration
+    def configured = @configured ||= Configuration::Loader.configuration
     def tags = Array(@tags || @arguments.tags)
     def tool_names = Array(@tool_names || @arguments.keywords.for_tool_names)
     def tagged?(tool) = !tool.skip_in_batch? && tags.intersect?(tool.tags)
