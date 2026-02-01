@@ -160,15 +160,11 @@ module Reviewer
     end
 
     def test_uses_passthrough_strategy_when_raw_flag_set
-      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-r]))
-
+      raw_args = Arguments.new(%w[-r])
       tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
-      batch = Batch.new(:review, tools)
+      batch = Batch.new(:review, tools, arguments: raw_args)
 
-      assert_equal Runner::Strategies::Passthrough, batch.send(:strategy)
-    ensure
-      Reviewer.reset!
-      ensure_test_configuration!
+      assert_equal Runner::Strategies::Passthrough, batch.instance_variable_get(:@strategy)
     end
 
     def test_continues_past_missing_tools

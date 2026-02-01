@@ -11,11 +11,19 @@ module Reviewer
     # Generates an instance of Batch for running multiple tools together
     # @param command_type [Symbol] the type of command to run for each tool.
     # @param tools [Array<Tool>] the tools to run the commands for
+    # @param strategy [Class] the runner strategy class (Captured or Passthrough)
+    # @param history [History] the history store for status persistence
+    # @param output [Output] the output instance for display
+    # @param arguments [Arguments] the parsed CLI arguments
     #
     # @return [self]
-    def initialize(command_type, tools)
+    def initialize(command_type, tools, strategy: nil, history: Reviewer.history, output: Reviewer.output, arguments: Reviewer.arguments)
       @command_type = command_type
       @tools = tools
+      @strategy = strategy || determine_strategy(arguments)
+      @history = history
+      @output = output
+      @arguments = arguments
       @report = Report.new
     end
 
@@ -30,7 +38,7 @@ module Reviewer
         clear_last_statuses
 
         matching_tools.each do |tool|
-          runner = Runner.new(tool, command_type, strategy)
+          runner = Runner.new(tool, command_type, @strategy, output: @output, arguments: @arguments)
           runner.run
 
           @report.add(runner.to_result)
@@ -47,19 +55,18 @@ module Reviewer
     private
 
     def clear_last_statuses
-      history = Reviewer.history
       matching_tools.each do |tool|
-        history.set(tool.key, :last_status, nil)
+        @history.set(tool.key, :last_status, nil)
       end
     end
 
     # Records pass/fail status and failed files for the `failed` keyword to use on subsequent runs
     def record_run(tool, runner)
       success = runner.success?
-      Reviewer.history.set(tool.key, :last_status, success ? :passed : :failed)
+      @history.set(tool.key, :last_status, success ? :passed : :failed)
 
       if success
-        Reviewer.history.set(tool.key, :last_failed_files, nil)
+        @history.set(tool.key, :last_failed_files, nil)
       else
         store_failed_files(tool, runner)
       end
@@ -70,13 +77,12 @@ module Reviewer
     # (exit status exceeded the tool's max_exit_status threshold).
     def store_failed_files(tool, runner)
       files = Runner::FailedFiles.new(runner.stdout, runner.stderr).to_a
-      Reviewer.history.set(tool.key, :last_failed_files, files) if files.any?
+      @history.set(tool.key, :last_failed_files, files) if files.any?
     end
 
     def multiple_tools? = tools.size > 1
 
-    def strategy
-      args = Reviewer.arguments
+    def determine_strategy(args)
       return Runner::Strategies::Passthrough if args.raw?
       return Runner::Strategies::Captured unless args.streaming?
 
