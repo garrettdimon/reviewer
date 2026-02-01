@@ -5,18 +5,22 @@ module Reviewer
     # Output methods for the `rvw init` setup flow.
     # All methods are public — they are called directly from Setup.run and Reviewer.
     module Setup
-      # Prints guidance when .reviewer.yml is missing
-      # @param file [Pathname] the expected path of the configuration file
+      # Prints a greeting when running for the first time with no config
       #
       # @return [void]
-      def missing_configuration(file)
+      def first_run_greeting
         newline
-        printer.puts(:error, 'No configuration found')
-        printer.puts(:muted, "Expected: ./#{file.basename}")
+        printer.puts(:bold, "It looks like you're setting up Reviewer for the first time on this project.")
         newline
-        printer.puts(:bold, 'To get started:')
-        printer.puts(:default, '  rvw init              Auto-detect tools and generate .reviewer.yml')
-        printer.puts(:muted, "  Create manually       #{Reviewer::Setup::CONFIG_URL}")
+        printer.puts(:muted, 'This will auto-detect your tools and generate a .reviewer.yml configuration file.')
+        newline
+      end
+
+      # Prints guidance when the user declines interactive setup
+      #
+      # @return [void]
+      def first_run_skip
+        printer.puts(:muted, 'You can run `rvw init` any time to auto-detect and configure your tools.')
         newline
       end
 

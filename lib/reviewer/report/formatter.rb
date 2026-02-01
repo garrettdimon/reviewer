@@ -40,7 +40,7 @@ module Reviewer
       end
 
       def print_tool_line(result)
-        if result.missing
+        if result.missing?
           print_missing_tool(result)
         else
           print_executed_tool(result)
@@ -55,8 +55,8 @@ module Reviewer
       end
 
       def print_executed_tool(result)
-        style = result.success ? :success : :failure
-        mark = result.success ? CHECKMARK : XMARK
+        style = result.success? ? :success : :failure
+        mark = result.success? ? CHECKMARK : XMARK
         output.printer.print(style, "#{mark} #{result.tool_name}")
         print_timing(result)
         print_details(result)
@@ -108,7 +108,7 @@ module Reviewer
       end
 
       def print_failure_summary
-        failed_results = report.results.reject(&:success).reject(&:missing)
+        failed_results = report.results.reject(&:success?).reject(&:missing?)
 
         failed_results.each do |result|
           output.newline

@@ -18,6 +18,7 @@ require_relative 'reviewer/history'
 require_relative 'reviewer/keywords'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/output'
+require_relative 'reviewer/prompt'
 require_relative 'reviewer/report'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/shell'
@@ -34,7 +35,7 @@ module Reviewer
 
   class << self
     # Resets the loaded tools and arguments
-    def reset! = @tools = @arguments = nil
+    def reset! = @tools = @arguments = @prompt = nil
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     #   commands that are not disabled to have an entry for the `review` command.
@@ -80,6 +81,11 @@ module Reviewer
     #
     # @return [Reviewer::History] a YAML::Store (or Pstore) containing data on tools
     def history = @history ||= History.new
+
+    # An interactive prompt for yes/no questions
+    #
+    # @return [Reviewer::Prompt] prompt instance wrapping stdin/stdout
+    def prompt = @prompt ||= Prompt.new
 
     # Exposes the configuration options for Reviewer.
     #
@@ -132,7 +138,7 @@ module Reviewer
     def warn_no_matching_tools
       output.no_matching_tools(
         requested: arguments.keywords.provided + arguments.tags.to_a,
-        available: tools.all.map { |t| t.key.to_s }
+        available: tools.all.map { |tool| tool.key.to_s }
       )
       0
     end
@@ -158,11 +164,17 @@ module Reviewer
       end
     end
 
-    # Exits with guidance when .reviewer.yml is missing
+    # Exits with guidance when .reviewer.yml is missing.
+    # In interactive terminals, offers to run setup inline.
     def guard_missing_configuration!
       return if configuration.file.exist?
 
-      output.missing_configuration(configuration.file)
+      output.first_run_greeting
+      if prompt.yes?('Would you like to set it up now?')
+        Setup.run
+      else
+        output.first_run_skip
+      end
       exit 0
     end
 
@@ -214,7 +226,7 @@ module Reviewer
       if arguments.format == :summary
         Report::Formatter.new(report, output: output).print
       elsif report.success?
-        ran_count = report.results.count { |r| !r.missing && !r.skipped }
+        ran_count = report.results.count { |result| !result.missing? && !result.skipped? }
         output.batch_summary(ran_count, report.duration)
       end
     end
@@ -226,7 +238,7 @@ module Reviewer
     def show_missing_tools(report)
       return unless report.missing?
 
-      missing = report.missing_results.map { |r| Tool.new(r.tool_key) }
+      missing = report.missing_results.map { |result| Tool.new(result.tool_key) }
       output.missing_tools(missing)
     end
 

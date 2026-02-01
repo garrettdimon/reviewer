@@ -46,6 +46,10 @@ module Reviewer
         freeze
       end
 
+      alias_method :success?, :success
+      alias_method :skipped?, :skipped
+      alias_method :missing?, :missing
+
       # Converts the result to a hash suitable for serialization
       #
       # @return [Hash] hash representation with nil values removed

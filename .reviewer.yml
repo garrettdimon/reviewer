@@ -27,7 +27,7 @@ tests:
     # coverage: false
 
 reek:
-  disabled: true # Reek provides guidance and is generally run solo
+  skip_in_batch: true # Reek provides guidance and is generally run solo
   name: Reek
   description: Examine Ruby Classes for Code Smells
   tags: [ruby, quality, dev]
@@ -46,7 +46,7 @@ reek:
     documentation:
 
 flog:
-  disabled: true # Flog provides guidance and is generally run solo
+  skip_in_batch: true # Flog provides guidance and is generally run solo
   name: Flog
   description: Reports your most tortured ruby code in an easy to read pain report.
   tags: [ruby, quality, dev]
@@ -62,7 +62,7 @@ flog:
     methods-only:
 
 flay:
-  disabled: true # Flay provides guidance and is generally run solo
+  skip_in_batch: true # Flay provides guidance and is generally run solo
   name: Flay
   description: Review ruby code for structural similarities and refactoring opportunities.
   tags: [ruby, quality, dev]
@@ -99,7 +99,7 @@ rubocop:
 # The YARD Parser can also come in handy:
 #   https://yardoc.org/types
 inch:
-  disabled: true
+  skip_in_batch: true
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation Quality
@@ -111,7 +111,7 @@ inch:
     review: "bundle exec inch"
 
 yard:
-  disabled: true
+  skip_in_batch: true
   tags: [docs, ruby, dev]
   name: Yard
   description: Generates Documentation
@@ -128,7 +128,7 @@ yard:
     quiet_flag: "--quiet"
 
 alex:
-  disabled: true
+  skip_in_batch: true
   tags: [language, docs]
   name: Alex
   description: Catch insensitive, inconsiderate writing
@@ -141,7 +141,7 @@ alex:
 # New tools for expanded testing coverage
 
 brakeman:
-  disabled: true # Requires Rails application, not applicable to gems
+  skip_in_batch: true # Requires Rails application, not applicable to gems
   name: Brakeman
   description: Static analysis security scanner for Ruby
   tags: [security, ruby, dev]
@@ -167,7 +167,7 @@ fasterer:
     pattern: "*.rb"
 
 debride:
-  disabled: true # Broken on Ruby 3.4 (missing require for Racc, Timeout)
+  skip_in_batch: true # Broken on Ruby 3.4 (missing require for Racc, Timeout)
   name: Debride
   description: Find potentially unused methods and classes
   tags: [ruby, quality, dev]
@@ -178,7 +178,7 @@ debride:
     review: "bundle exec debride lib/"
 
 rubycritic:
-  disabled: true # Generates HTML reports, best run manually
+  skip_in_batch: true # Generates HTML reports, best run manually
   name: RubyCritic
   description: Code quality analysis with HTML reports
   tags: [ruby, quality, dev]
@@ -189,7 +189,7 @@ rubycritic:
     review: "bundle exec rubycritic lib/ --no-browser -f console"
 
 metric_fu:
-  disabled: true # Meta-tool that runs many others, slow
+  skip_in_batch: true # Meta-tool that runs many others, slow
   name: MetricFu
   description: Aggregate code metrics from multiple tools
   tags: [ruby, quality, dev]
@@ -200,7 +200,7 @@ metric_fu:
     review: "bundle exec metric_fu"
 
 yardstick:
-  disabled: true # Documentation coverage measurement
+  skip_in_batch: true # Documentation coverage measurement
   name: Yardstick
   description: Measure YARD documentation coverage
   tags: [docs, ruby, dev]
@@ -211,7 +211,7 @@ yardstick:
     review: "bundle exec yardstick lib/"
 
 standard:
-  disabled: true # Conflicts with existing RuboCop configuration
+  skip_in_batch: true # Conflicts with existing RuboCop configuration
   name: Standard
   description: Zero-configuration Ruby linter
   tags: [ruby, syntax, dev]
@@ -223,7 +223,7 @@ standard:
     format: "bundle exec standardrb --fix"
 
 rufo:
-  disabled: true # Alternative formatter to RuboCop
+  skip_in_batch: true # Alternative formatter to RuboCop
   name: Rufo
   description: Ruby code formatter
   tags: [ruby, syntax, dev]
@@ -235,7 +235,7 @@ rufo:
     format: "bundle exec rufo lib/"
 
 license_finder:
-  disabled: true # Slow - run manually with: rvw license_finder
+  skip_in_batch: true # Slow - run manually with: rvw license_finder
   name: License Finder
   description: Check dependency licenses for compliance
   tags: [dependencies, compliance, slow, dev]

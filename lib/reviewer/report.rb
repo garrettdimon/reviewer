@@ -33,7 +33,7 @@ module Reviewer
     #
     # @return [Boolean] true if all executed results are successful
     def success?
-      executed_results.all?(&:success)
+      executed_results.all?(&:success?)
     end
 
     # Returns the highest exit status from executed results (excludes missing and skipped)
@@ -47,7 +47,7 @@ module Reviewer
     #
     # @return [Array<Runner::Result>] missing tool results
     def missing_results
-      results.select(&:missing)
+      results.select(&:missing?)
     end
 
     # Whether any tools were missing
@@ -65,8 +65,8 @@ module Reviewer
         success: success?,
         summary: {
           total: results.size,
-          passed: results.count(&:success),
-          failed: results.count { |r| !r.success && !r.missing },
+          passed: results.count(&:success?),
+          failed: results.count { |result| !result.success? && !result.missing? },
           missing: missing_results.size,
           duration: duration
         },
@@ -87,7 +87,7 @@ module Reviewer
     #
     # @return [Array<Runner::Result>] executed results only
     def executed_results
-      results.reject { |r| r.skipped || r.missing }
+      results.reject { |result| result.skipped? || result.missing? }
     end
   end
 end

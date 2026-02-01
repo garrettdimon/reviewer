@@ -11,16 +11,16 @@ module Reviewer
         @report = report
       end
 
-      # Reports enabled/disabled status and available commands for each configured tool
+      # Reports batch/skip status and available commands for each configured tool
       def check
         return unless Reviewer.configuration.file.exist?
 
         Reviewer.tools.all.each do |tool|
-          disabled = tool.disabled?
+          skipped = tool.skip_in_batch?
 
           report.add(:tools,
-                     status: disabled ? :muted : :ok,
-                     message: "#{tool.name}: #{disabled ? 'disabled' : 'enabled'}",
+                     status: skipped ? :muted : :ok,
+                     message: "#{tool.name}: #{skipped ? 'skip in batch' : 'runs in batch'}",
                      detail: command_summary(tool))
         end
       end
@@ -28,7 +28,7 @@ module Reviewer
       private
 
       def command_summary(tool)
-        available = %i[review format install prepare].select { |c| tool.command?(c) }
+        available = %i[review format install prepare].select { |cmd| tool.command?(cmd) }
         "Commands: #{available.join(', ')}"
       end
     end

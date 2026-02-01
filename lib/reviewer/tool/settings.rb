@@ -29,8 +29,16 @@ module Reviewer
       end
       alias :== eql?
 
-      def disabled? = config.fetch(:disabled) { false }
-      def enabled? = !disabled?
+      def skip_in_batch?
+        if config.key?(:skip_in_batch)
+          config.fetch(:skip_in_batch) { false }
+        else
+          config.fetch(:disabled) { false }
+        end
+      end
+
+      def disabled? = skip_in_batch?
+      def enabled? = !skip_in_batch?
 
       # The human-readable name of the tool
       #

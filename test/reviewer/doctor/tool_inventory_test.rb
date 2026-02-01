@@ -20,7 +20,7 @@ module Reviewer
         enabled = report.section(:tools).find { |f| f.message.include?('Enabled Test Tool') }
         assert enabled
         assert_equal :ok, enabled.status
-        assert_match(/enabled/, enabled.message)
+        assert_match(/runs in batch/, enabled.message)
       end
 
       def test_disabled_tool_reported_as_muted
@@ -30,7 +30,7 @@ module Reviewer
         disabled = report.section(:tools).find { |f| f.message.include?('Disabled Test Tool') }
         assert disabled
         assert_equal :muted, disabled.status
-        assert_match(/disabled/, disabled.message)
+        assert_match(/skip in batch/, disabled.message)
       end
 
       def test_includes_command_summary

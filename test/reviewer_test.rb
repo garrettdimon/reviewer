@@ -52,7 +52,7 @@ module Reviewer
     def tags = Arguments::Tags.new(provided: [], keywords: [])
   end
 
-  class ReviewerTest < Minitest::Test
+  class ReviewerTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     # def setup
     #   Reviewer.reset
     #   Reviewer.configure do |config|
@@ -232,20 +232,50 @@ module Reviewer
       end
     end
 
-    def test_exits_with_guidance_when_config_missing
+    def test_exits_with_guidance_when_config_missing # rubocop:disable Metrics/MethodLength
       Reviewer.reset!
       Reviewer.configure do |config|
         config.file = Pathname('test/fixtures/files/nonexistent.yml')
       end
 
-      out, _err = capture_subprocess_io do
-        Reviewer.review
-      rescue SystemExit => e
-        assert_equal 0, e.status
+      # Non-TTY prompt returns false, so we get the skip message
+      stub_prompt = Prompt.new(input: StringIO.new, output: StringIO.new)
+      Reviewer.stub(:prompt, stub_prompt) do
+        out, _err = capture_subprocess_io do
+          Reviewer.review
+        rescue SystemExit => e
+          assert_equal 0, e.status
+        end
+
+        assert_match(/setting up Reviewer/i, out)
+        assert_match(/rvw init/, out)
+      end
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_runs_setup_when_config_missing_and_user_says_yes # rubocop:disable Metrics/MethodLength
+      Reviewer.reset!
+      Reviewer.configure do |config|
+        config.file = Pathname('test/fixtures/files/nonexistent.yml')
       end
 
-      assert_match(/no configuration found/i, out)
-      assert_match(/rvw init/, out)
+      tty_input = StringIO.new("y\n")
+      tty_input.define_singleton_method(:tty?) { true }
+      stub_prompt = Prompt.new(input: tty_input, output: StringIO.new)
+
+      setup_ran = false
+      Setup.stub(:run, -> { setup_ran = true }) do
+        Reviewer.stub(:prompt, stub_prompt) do
+          capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+        end
+      end
+
+      assert setup_ran, 'Expected Setup.run to be called when user says yes'
     ensure
       ensure_test_configuration!
     end

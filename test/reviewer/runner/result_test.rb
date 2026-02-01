@@ -146,6 +146,48 @@ module Reviewer
         refute @result.to_h.key?(:missing)
       end
 
+      def test_success_predicate
+        assert @result.success?
+      end
+
+      def test_success_predicate_when_false
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Tests', command_type: :review,
+          command_string: 'rake test', success: false, exit_status: 1,
+          duration: 2.5, stdout: nil, stderr: nil, skipped: nil
+        )
+
+        refute result.success?
+      end
+
+      def test_skipped_predicate
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Tests', command_type: :review,
+          command_string: nil, success: false, exit_status: 0,
+          duration: 0, stdout: nil, stderr: nil, skipped: true
+        )
+
+        assert result.skipped?
+      end
+
+      def test_skipped_predicate_when_nil
+        refute @result.skipped?
+      end
+
+      def test_missing_predicate
+        result = Result.new(
+          tool_key: :rubocop, tool_name: 'RuboCop', command_type: :review,
+          command_string: nil, success: false, exit_status: 127,
+          duration: 0, stdout: nil, stderr: nil, skipped: nil, missing: true
+        )
+
+        assert result.missing?
+      end
+
+      def test_missing_predicate_when_nil
+        refute @result.missing?
+      end
+
       def test_result_is_immutable
         assert_raises(FrozenError) do
           @result.instance_variable_set(:@tool_key, :other)

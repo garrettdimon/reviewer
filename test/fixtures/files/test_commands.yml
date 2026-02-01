@@ -24,9 +24,9 @@ enabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
-# For Testing Disabled Tools
+# For Testing Skip-in-Batch Tools (formerly "disabled")
 disabled_tool:
-  disabled: true
+  skip_in_batch: true
   name: 'Disabled Test Tool'
   description: 'Run the tests.'
   tags: [disabled, html]

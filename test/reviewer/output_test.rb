@@ -140,28 +140,19 @@ module Reviewer
       assert_match(/3 tools/, out)
     end
 
-    def test_missing_configuration_shows_heading
-      file = Pathname('/tmp/project/.reviewer.yml')
-      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
-      assert_match(/no configuration found/i, out)
+    def test_first_run_greeting_shows_message
+      out, _err = capture_subprocess_io { @output.first_run_greeting }
+      assert_match(/setting up Reviewer/i, out)
     end
 
-    def test_missing_configuration_shows_expected_path
-      file = Pathname('/tmp/project/.reviewer.yml')
-      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
-      assert_match(%r{\./\.reviewer\.yml}, out)
+    def test_first_run_greeting_explains_what_init_does
+      out, _err = capture_subprocess_io { @output.first_run_greeting }
+      assert_match(/auto-detect/i, out)
     end
 
-    def test_missing_configuration_shows_init_guidance
-      file = Pathname('/tmp/project/.reviewer.yml')
-      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
+    def test_first_run_skip_shows_rvw_init
+      out, _err = capture_subprocess_io { @output.first_run_skip }
       assert_match(/rvw init/, out)
-    end
-
-    def test_missing_configuration_shows_manual_link
-      file = Pathname('/tmp/project/.reviewer.yml')
-      out, _err = capture_subprocess_io { @output.missing_configuration(file) }
-      assert_match(%r{github\.com/garrettdimon/reviewer}, out)
     end
 
     def test_setup_already_exists

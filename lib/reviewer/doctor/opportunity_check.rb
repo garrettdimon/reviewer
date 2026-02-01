@@ -39,8 +39,9 @@ module Reviewer
 
       def check_missing_files_config
         Reviewer.tools.all.each do |tool|
-          next if tool.disabled?
+          next if tool.skip_in_batch?
           next if tool.supports_files?
+          next unless catalog_supports?(tool.key, :files)
 
           report.add(:opportunities, status: :info,
                                      message: "#{tool.name} has no file targeting configured",
@@ -50,12 +51,29 @@ module Reviewer
 
       def check_missing_format_command
         Reviewer.tools.all.each do |tool|
-          next if tool.disabled?
+          next if tool.skip_in_batch?
           next if tool.formattable?
+          next unless catalog_supports?(tool.key, :format)
 
           report.add(:opportunities, status: :info,
                                      message: "#{tool.name} has no format command",
                                      detail: 'Add a `format` command to enable `fmt` support')
+        end
+      end
+
+      # Returns true only if the catalog knows this tool AND the catalog entry
+      # includes the given capability (:files or :format command)
+      def catalog_supports?(key, capability)
+        entry = Setup::Catalog::TOOLS[key]
+        return false unless entry
+
+        case capability
+        when :files
+          entry.key?(:files)
+        when :format
+          entry.dig(:commands, :format) ? true : false
+        else
+          false
         end
       end
     end

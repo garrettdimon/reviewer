@@ -31,6 +31,7 @@ module Reviewer
                    :links,
                    :enabled?,
                    :disabled?,
+                   :skip_in_batch?,
                    :max_exit_status,
                    :supports_files?
 

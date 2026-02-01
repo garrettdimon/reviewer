@@ -27,17 +27,17 @@ module Reviewer
 
       # Whether all findings are free of errors
       def ok?
-        all_findings.none? { |f| f.status == :error }
+        all_findings.none? { |finding| finding.status == :error }
       end
 
       # All error findings across sections
       def errors
-        all_findings.select { |f| f.status == :error }
+        all_findings.select { |finding| finding.status == :error }
       end
 
       # All warning findings across sections
       def warnings
-        all_findings.select { |f| f.status == :warning }
+        all_findings.select { |finding| finding.status == :warning }
       end
 
       # Findings for a specific section
