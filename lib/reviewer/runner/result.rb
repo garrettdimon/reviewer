@@ -50,6 +50,11 @@ module Reviewer
       alias_method :skipped?, :skipped
       alias_method :missing?, :missing
 
+      # Whether this result represents a tool that actually ran (not skipped or missing)
+      #
+      # @return [Boolean] true if the tool was executed
+      def executed? = !skipped? && !missing?
+
       # Converts the result to a hash suitable for serialization
       #
       # @return [Hash] hash representation with nil values removed

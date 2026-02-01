@@ -87,7 +87,7 @@ module Reviewer
     #
     # @return [Array<Runner::Result>] executed results only
     def executed_results
-      results.reject { |result| result.skipped? || result.missing? }
+      results.select(&:executed?)
     end
   end
 end

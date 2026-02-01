@@ -73,6 +73,13 @@ module Reviewer
     # @return [Boolean] true if there is a non-blank `install` command configured
     def installable? = command?(:install)
 
+    # Returns the install command string for this tool
+    #
+    # @return [String, nil] the install command or nil if not configured
+    def install_command
+      commands[:install]
+    end
+
     # Determines if the tool can run a `prepare` command
     #
     # @return [Boolean] true if there is a non-blank `prepare` command configured

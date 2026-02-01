@@ -30,6 +30,13 @@ module Reviewer
       validate_configuration!
     end
 
+    # Whether all configured tools have a review command
+    #
+    # @return [Boolean] true if every tool has a review command configured
+    def review_commands_present?
+      configuration.all? { |_key, value| value[:commands]&.key?(:review) }
+    end
+
     # Converts the loader to its configuration hash
     #
     # @return [Hash] the parsed configuration
@@ -48,16 +55,10 @@ module Reviewer
     end
 
     def require_review_commands!
-      configuration.each do |key, value|
-        commands = value[:commands]
+      return if review_commands_present?
 
-        next if commands.key?(:review)
-
-        # Ideally, folks would want to fill out everything to receive the most benefit,
-        # but realistically, the 'review' command is the only required value. If the key
-        # is missing, or maybe there was a typo, fail right away.
-        raise MissingReviewCommandError, "'#{key}' does not have a 'review' key under 'commands' in `#{file}`"
-      end
+      missing = configuration.find { |_key, value| !value[:commands]&.key?(:review) }
+      raise MissingReviewCommandError, "'#{missing[0]}' does not have a 'review' key under 'commands' in `#{file}`"
     end
 
     def configuration_hash

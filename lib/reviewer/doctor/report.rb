@@ -13,7 +13,7 @@ module Reviewer
       attr_reader :findings
 
       def initialize
-        @findings = Hash.new { |h, k| h[k] = [] }
+        @findings = Hash.new { |hash, key| hash[key] = [] }
       end
 
       # Adds a finding to a section

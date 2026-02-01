@@ -36,7 +36,13 @@ module Reviewer
       @output = output
       @skipped = false
       @missing = false
+      @streaming = Reviewer.arguments.streaming?
     end
+
+    # Whether this runner is operating in streaming mode
+    #
+    # @return [Boolean] true if output should be streamed
+    def streaming? = @streaming
 
     # Executes the command and returns the exit status
     #
@@ -45,12 +51,12 @@ module Reviewer
       # Skip if files were requested but none match this tool's pattern
       if command.skip?
         @skipped = true
-        show_skipped if Reviewer.arguments.streaming?
+        show_skipped if streaming?
         return 0
       end
 
       # Show which tool is running (only in streaming mode)
-      identify_tool if Reviewer.arguments.streaming?
+      identify_tool if streaming?
 
       # Use the provided strategy to run the command
       execute_strategy
@@ -171,7 +177,7 @@ module Reviewer
     # @return [Integer] the exit status from the command
     def handle_missing
       @missing = true
-      output.skipped('not installed') if Reviewer.arguments.streaming?
+      output.skipped('not installed') if streaming?
       exit_status
     end
 
@@ -179,7 +185,7 @@ module Reviewer
     #
     # @return [Integer] the exit status from the command
     def handle_result
-      guidance.show if failure? && Reviewer.arguments.streaming?
+      guidance.show if failure? && streaming?
       exit_status
     end
 

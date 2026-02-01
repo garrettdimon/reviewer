@@ -153,10 +153,7 @@ module Reviewer
     def run_summary(entries)
       return if entries.empty?
 
-      entries.each do |entry|
-        printer.puts(:muted, entry[:name])
-        entry[:files].each { |file| printer.puts(:muted, "  #{file}") }
-      end
+      entries.each { |entry| print_run_entry(entry) }
       newline
     end
 
@@ -188,7 +185,7 @@ module Reviewer
       newline
       printer.puts(:warning, label)
       tools.each do |tool|
-        hint = tool.installable? ? tool.settings.commands[:install] : ''
+        hint = tool.installable? ? tool.install_command : ''
         printer.puts(:muted, "  #{tool.name.ljust(22)}#{hint}")
       end
       newline
@@ -255,6 +252,13 @@ module Reviewer
       return if value.nil? || value.strip.empty?
 
       printer.stream << value
+    end
+
+    private
+
+    def print_run_entry(entry)
+      printer.puts(:muted, entry[:name])
+      entry[:files].each { |file| printer.puts(:muted, "  #{file}") }
     end
 
     protected

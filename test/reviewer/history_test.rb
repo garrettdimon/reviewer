@@ -18,22 +18,22 @@ module Reviewer
       assert_equal 'value', @history.get(:tool, :key)
     end
 
-    def test_can_reset_history_store
+    def test_can_clear_history_store
       @history.set(:tool, :key, 'value')
       assert_equal 'value', @history.get(:tool, :key)
 
-      @history.reset!
+      @history.clear!
       assert_nil @history.get(:tool, :key)
     end
 
-    def test_gracefully_handles_resetting_when_history_file_missing
+    def test_gracefully_handles_clearing_when_history_file_missing
       missing_file = 'very_nonexistent_history_file.yml'
       refute File.exist?(missing_file)
 
       history = History.new(missing_file)
       assert_equal missing_file, history.file
 
-      history.reset!
+      history.clear!
     end
   end
 end

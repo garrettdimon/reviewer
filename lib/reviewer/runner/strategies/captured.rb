@@ -43,7 +43,7 @@ module Reviewer
           display_progress(command) { runner.shell.capture_main(command) }
 
           # Skip output for non-streaming modes - results are formatted at the end
-          return unless Reviewer.arguments.streaming?
+          return unless runner.streaming?
 
           # Missing tools are handled by the Runner (shows "Skipped (not installed)")
           return if runner.shell.result.executable_not_found?
@@ -54,6 +54,8 @@ module Reviewer
         end
 
         private
+
+        def timed?(average_time) = !average_time.zero?
 
         # Displays the progress of the current command since the output is captured/suppressed.
         #   Helps people know that the sub-command is running within expectations.
@@ -69,7 +71,7 @@ module Reviewer
           thread = Thread.new { yield }
 
           # Skip progress output for non-streaming modes
-          return thread.join unless Reviewer.arguments.streaming?
+          return thread.join unless runner.streaming?
 
           print_progress(thread, start_time, average_time)
         end
@@ -94,11 +96,11 @@ module Reviewer
         end
 
         def finish_progress_bar(bar, average_time)
-          if average_time.zero?
-            bar.stop
-          else
+          if timed?(average_time)
             bar.format = "\e[38;5;245m%b\e[38;5;240m%i %p%%\e[0m"
             bar.finish
+          else
+            bar.stop
           end
         end
 
@@ -110,25 +112,25 @@ module Reviewer
             remainder_mark: "\u2500"
           }
 
-          if average_time.zero?
-            ProgressBar.create(**shared, total: nil, format: "\e[38;5;245m%B\e[0m")
-          else
+          if timed?(average_time)
             eta = average_time >= 3 ? ' %e' : ''
             ProgressBar.create(
               **shared,
               total: 100,
               format: "\e[38;5;245m%b\e[38;5;240m%i %p%%#{eta}\e[0m"
             )
+          else
+            ProgressBar.create(**shared, total: nil, format: "\e[38;5;245m%B\e[0m")
           end
         end
 
         def update_progress(bar, start_time, average_time)
-          if average_time.zero?
-            bar.increment
-          else
+          if timed?(average_time)
             elapsed = Time.now - start_time
             percent = [(elapsed / average_time * 100).round, 99].min
             bar.progress = percent if percent > bar.progress
+          else
+            bar.increment
           end
         end
 

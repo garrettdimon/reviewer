@@ -78,6 +78,14 @@ module Reviewer
       refute @mvt.installable?
     end
 
+    def test_install_command_returns_command_string
+      assert_equal 'ls -a', @tool.install_command
+    end
+
+    def test_install_command_returns_nil_when_not_configured
+      assert_nil @mvt.install_command
+    end
+
     def test_knows_if_a_command_is_preparable
       assert @tool.preparable?
       refute @mvt.preparable?

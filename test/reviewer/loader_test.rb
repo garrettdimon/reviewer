@@ -44,6 +44,11 @@ module Reviewer
       ensure_test_configuration!
     end
 
+    def test_review_commands_present_returns_true_for_valid_config
+      loader = Loader.new
+      assert loader.review_commands_present?
+    end
+
     def test_raises_error_without_command_for_review
       file = 'test/fixtures/files/test_commands_no_review_command.yaml'
       Reviewer.configure do |config|
