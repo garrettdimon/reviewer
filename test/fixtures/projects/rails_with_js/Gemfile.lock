@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    brakeman (6.0.0)
+    rubocop (1.50.0)
+      json (~> 2.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  brakeman
+  rubocop
