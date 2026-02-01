@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Reviewer
-  class FailedFilesTest < Minitest::Test
+  class Runner::FailedFilesTest < Minitest::Test
     # --- Pattern matching: tool output formats ---
 
     def test_matches_rubocop_format
@@ -103,14 +103,14 @@ module Reviewer
     # --- Pattern matching: stream handling ---
 
     def test_matches_from_stderr
-      assert_includes FailedFiles.new(nil, "lib/reviewer/batch.rb:45:3: C: Style/Something\n").matched_paths,
+      assert_includes Runner::FailedFiles.new(nil, "lib/reviewer/batch.rb:45:3: C: Style/Something\n").matched_paths,
                       'lib/reviewer/batch.rb'
     end
 
     def test_matches_from_both_streams
       stdout = "lib/reviewer/batch.rb:10:3: C: Style/One\n"
       stderr = "lib/reviewer/command.rb:5:1: W: Warning\n"
-      paths = FailedFiles.new(stdout, stderr).matched_paths
+      paths = Runner::FailedFiles.new(stdout, stderr).matched_paths
 
       assert_includes paths, 'lib/reviewer/batch.rb'
       assert_includes paths, 'lib/reviewer/command.rb'
@@ -136,7 +136,7 @@ module Reviewer
         /home/user/.rbenv/versions/3.4.5/lib/ruby/site_ruby/3.4.0/rubygems/platform.rb:259: warning: previous definition of BAR was here
       OUTPUT
 
-      assert_empty FailedFiles.new(nil, stderr).matched_paths
+      assert_empty Runner::FailedFiles.new(nil, stderr).matched_paths
     end
 
     # --- Pattern rejection: non-path output ---
@@ -200,8 +200,8 @@ module Reviewer
     def test_filters_nonexistent_paths
       stdout = "totally/fake/path.rb:45:3: C: Style/StringLiterals\n"
 
-      assert_includes FailedFiles.new(stdout, nil).matched_paths, 'totally/fake/path.rb'
-      assert_empty FailedFiles.new(stdout, nil).to_a
+      assert_includes Runner::FailedFiles.new(stdout, nil).matched_paths, 'totally/fake/path.rb'
+      assert_empty Runner::FailedFiles.new(stdout, nil).to_a
     end
 
     def test_deduplicates_results
@@ -210,7 +210,7 @@ module Reviewer
         lib/reviewer/batch.rb:20:5: C: Style/Two
       OUTPUT
 
-      assert_equal 1, FailedFiles.new(stdout, nil).to_a.count('lib/reviewer/batch.rb')
+      assert_equal 1, Runner::FailedFiles.new(stdout, nil).to_a.count('lib/reviewer/batch.rb')
     end
 
     # --- Pattern matching: ANSI color codes ---
@@ -230,21 +230,21 @@ module Reviewer
     # --- Edge cases ---
 
     def test_handles_nil_inputs
-      assert_empty FailedFiles.new(nil, nil).matched_paths
+      assert_empty Runner::FailedFiles.new(nil, nil).matched_paths
     end
 
     def test_handles_empty_string_inputs
-      assert_empty FailedFiles.new('', '').matched_paths
+      assert_empty Runner::FailedFiles.new('', '').matched_paths
     end
 
     private
 
     def assert_match_extracts(expected_path, output)
-      assert_includes FailedFiles.new(output, nil).matched_paths, expected_path
+      assert_includes Runner::FailedFiles.new(output, nil).matched_paths, expected_path
     end
 
     def assert_no_match_in(output)
-      assert_empty FailedFiles.new(output, nil).matched_paths
+      assert_empty Runner::FailedFiles.new(output, nil).matched_paths
     end
   end
 end
