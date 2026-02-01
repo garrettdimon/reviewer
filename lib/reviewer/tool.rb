@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require 'date'
-
 require_relative 'tool/file_resolver'
 require_relative 'tool/settings'
 require_relative 'tool/test_file_mapper'
+require_relative 'tool/timing'
 
 module Reviewer
   # Provides an instance of a specific tool for accessing its settings and run history
@@ -12,12 +11,7 @@ module Reviewer
     extend Forwardable
     include Comparable
 
-    # In general, Reviewer tries to save time where it can. In the case of the "prepare" command
-    # used by some tools to retrieve data, it only runs it occasionally in order to save time.
-    # This is the default window that it uses to determine if the tool's preparation step should be
-    # considered stale and needs to be rerun. Frequent enough that it shouldn't get stale, but
-    # infrequent enough that it's not cumbersome.
-    SIX_HOURS_IN_SECONDS = 60 * 60 * 6
+    SIX_HOURS_IN_SECONDS = Timing::SIX_HOURS_IN_SECONDS
 
     attr_reader :settings
 
@@ -53,6 +47,7 @@ module Reviewer
     def initialize(tool_key, history: Reviewer.history)
       @settings = Settings.new(tool_key)
       @history = history
+      @timing = Timing.new(history, key)
     end
 
     # For determining if the tool should run it's prepration command. It will only be run both if
@@ -97,53 +92,12 @@ module Reviewer
     # @return [Boolean] true if there is a non-blank `format` command configured
     def formattable? = command?(:format)
 
-    # Specifies when the tool last had it's `prepare` command run
-    #
-    # @return [Time] timestamp of when the `prepare` command was last run
-    def last_prepared_at
-      date_string = @history.get(key, :last_prepared_at)
-
-      date_string == '' || date_string.nil? ? nil : DateTime.parse(date_string).to_time
-    end
-
-    # Sets the timestamp for when the tool last ran its `prepare` command
-    # @param last_prepared_at [DateTime] the value to record for when the `prepare` command last ran
-    #
-    # @return [DateTime] timestamp of when the `prepare` command was last run
-    def last_prepared_at=(last_prepared_at)
-      @history.set(key, :last_prepared_at, last_prepared_at.to_s)
-    end
-
-    # Calculates the average execution time for a command
-    # @param command [Command] the command to get timing for
-    #
-    # @return [Float] the average time in seconds or 0 if no history
-    def average_time(command)
-      times = get_timing(command)
-
-      times.any? ? times.sum / times.size : 0
-    end
-
-    # Retrieves historical timing data for a command
-    # @param command [Command] the command to look up
-    #
-    # @return [Array<Float>] the last few recorded execution times
-    def get_timing(command)
-      @history.get(key, command.raw_string) || []
-    end
-
-    # Records the execution time for a command to calculate running averages
-    # @param command [Command] the command that was run
-    # @param time [Float, nil] the execution time in seconds
-    #
-    # @return [void]
-    def record_timing(command, time)
-      return if time.nil?
-
-      timing = get_timing(command).take(4) << time.round(2)
-
-      @history.set(key, command.raw_string, timing)
-    end
+    def_delegators :@timing,
+                   :last_prepared_at,
+                   :last_prepared_at=,
+                   :average_time,
+                   :get_timing,
+                   :record_timing
 
     # Determines whether the `prepare` command was run recently enough
     #
@@ -152,7 +106,7 @@ module Reviewer
     def stale?
       return false unless preparable?
 
-      last_prepared_at.nil? || last_prepared_at < Time.now - SIX_HOURS_IN_SECONDS
+      @timing.stale?
     end
 
     # Convenience method for determining if a tool has a configured install link
