@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'open3'
+
 module Reviewer
   class Arguments
     # Generates a Ruby-friendly list (Array) of files to run the command against from the provided
@@ -79,28 +81,32 @@ module Reviewer
       end
 
       def staged
-        ::Reviewer::Keywords::Git.staged
-      rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
-        []
+        git_files(%w[diff --staged --name-only])
       end
 
       def unstaged
-        ::Reviewer::Keywords::Git.unstaged
-      rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
-        []
+        git_files(%w[diff --name-only])
       end
 
       def modified
-        ::Reviewer::Keywords::Git.modified
-      rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
-        []
+        git_files(%w[diff --name-only HEAD])
       end
 
       def untracked
-        ::Reviewer::Keywords::Git.untracked
+        git_files(%w[ls-files --others --exclude-standard])
+      end
+
+      # Executes a git command and returns the output as an array of file paths
+      # @param options [Array<String>] the git command options
+      #
+      # @return [Array<String>] the output lines from the command
+      def git_files(options)
+        command = (%w[git --no-pager] + options).join(' ')
+        stdout, stderr, status = Open3.capture3(command)
+
+        return stdout.split("\n").reject(&:empty?) if status.success?
+
+        raise SystemCallError.new("Git Error: #{stderr} (#{command})", status.exitstatus.to_i)
       rescue SystemCallError => e
         Reviewer.output.git_error(e.message)
         []

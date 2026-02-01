@@ -54,7 +54,7 @@ module Reviewer
           keywords: keywords_array
         )
 
-        ::Reviewer::Keywords::Git.stub :staged, staged_files do
+        stub_git_success("lib/reviewer.rb\n") do
           assert_equal staged_files, files.to_a
         end
       end
@@ -70,7 +70,7 @@ module Reviewer
           keywords: keywords_array
         )
 
-        ::Reviewer::Keywords::Git.stub :staged, staged_files do
+        stub_git_success("lib/reviewer.rb\n") do
           assert_equal full_files_array.sort, files.to_a
         end
       end
@@ -82,8 +82,7 @@ module Reviewer
           keywords: keywords_array
         )
 
-        error = SystemCallError.new('fatal: not a git repository', 128)
-        ::Reviewer::Keywords::Git.stub :staged, -> { raise error } do
+        stub_git_failure('fatal: not a git repository', 128) do
           out, _err = capture_subprocess_io { files.to_a }
           assert_empty files.to_a
           assert_match(/not a git repository/i, out)
@@ -97,12 +96,23 @@ module Reviewer
           keywords: keywords_array
         )
 
-        error = SystemCallError.new('git error', 1)
-        ::Reviewer::Keywords::Git.stub :staged, -> { raise error } do
+        stub_git_failure('git error', 1) do
           _out, _err = capture_subprocess_io do
             assert_equal ['app/models/user.rb'], files.to_a
           end
         end
+      end
+
+      private
+
+      MockStatus = Struct.new(:success?, :exitstatus)
+
+      def stub_git_success(stdout, &block)
+        Open3.stub :capture3, [stdout, '', MockStatus.new(true, 0)], &block
+      end
+
+      def stub_git_failure(stderr, exit_code, &block)
+        Open3.stub :capture3, ['', stderr, MockStatus.new(false, exit_code)], &block
       end
     end
   end
