@@ -9,11 +9,15 @@ module Reviewer
     # Provides an instance to work with for knowing which tools to run in a given context.
     # @param tags: nil [Array] the tags to use to filter tools for a run
     # @param tool_names: nil [type] the explicitly provided tool names to filter tools for a run
+    # @param arguments [Arguments] the parsed CLI arguments
+    # @param history [History] the history store for status persistence
     #
     # @return [Reviewer::Tools] collection of tools based on the current run context
-    def initialize(tags: nil, tool_names: nil)
+    def initialize(tags: nil, tool_names: nil, arguments: Reviewer.arguments, history: Reviewer.history)
       @tags       = tags
       @tool_names = tool_names
+      @arguments  = arguments
+      @history    = history
     end
 
     # The current state of all available configured tools regardless of whether they are disabled
@@ -65,7 +69,7 @@ module Reviewer
     #
     # @return [Array<Tool>] tools with :last_status of :failed in history
     def failed_from_history
-      all.select { |tool| Reviewer.history.get(tool.key, :last_status) == :failed }
+      all.select { |tool| @history.get(tool.key, :last_status) == :failed }
     end
 
     private
@@ -83,11 +87,11 @@ module Reviewer
       failed_from_history
     end
 
-    def failed_keyword? = Reviewer.arguments.keywords.failed?
+    def failed_keyword? = @arguments.keywords.failed?
 
     def configured = @configured ||= Loader.configuration
-    def tags = Array(@tags || Reviewer.arguments.tags)
-    def tool_names = Array(@tool_names || Reviewer.arguments.keywords.for_tool_names)
+    def tags = Array(@tags || @arguments.tags)
+    def tool_names = Array(@tool_names || @arguments.keywords.for_tool_names)
     def tagged?(tool) = !tool.skip_in_batch? && tags.intersect?(tool.tags)
     def named?(tool) = tool_names.map(&:to_s).include?(tool.key.to_s)
   end
