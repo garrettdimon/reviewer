@@ -158,7 +158,7 @@ GEM
       roodi (~> 5.0.0)
     metric_fu-Saikuro (1.1.3)
     minitest (5.27.0)
-    minitest-heat (1.2.0)
+    minitest-heat (2.1.0)
       minitest
     mize (0.6.1)
     multi_json (1.18.0)

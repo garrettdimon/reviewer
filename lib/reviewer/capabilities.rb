@@ -60,7 +60,7 @@ module Reviewer
         name: tool.name,
         description: tool.description,
         tags: tool.tags,
-        enabled: tool.enabled?,
+        skip_in_batch: tool.skip_in_batch?,
         commands: {
           review: tool.reviewable?,
           format: tool.formattable?

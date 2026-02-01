@@ -19,7 +19,7 @@ module Reviewer
         end
 
         def test_passthrough_runner_implementation_with_prep
-          History.reset!
+          History.clear!
           passthrough_runner = Runner.new(:list, :review, @strategy)
           result = nil
           capture_subprocess_io { result = passthrough_runner.run }

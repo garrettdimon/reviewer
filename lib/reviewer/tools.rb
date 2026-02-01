@@ -30,10 +30,10 @@ module Reviewer
     end
     alias to_a all
 
-    # Provides a collection of all enabled tools instantiated as Tool instances
+    # Provides a collection of all tools that run in the default batch
     #
-    # @return [Array<Tool>] the full collection of all enabled Tool instances
-    def enabled = @enabled ||= all.keep_if(&:enabled?)
+    # @return [Array<Tool>] the full collection of batch-included Tool instances
+    def enabled = @enabled ||= all.reject(&:skip_in_batch?)
 
     # Provides a collection of all explicitly-specified-via-command-line tools as Tool instances
     #
@@ -88,7 +88,7 @@ module Reviewer
     def configured = @configured ||= Loader.configuration
     def tags = Array(@tags || Reviewer.arguments.tags)
     def tool_names = Array(@tool_names || Reviewer.arguments.keywords.for_tool_names)
-    def tagged?(tool) = tool.enabled? && tags.intersect?(tool.tags)
+    def tagged?(tool) = !tool.skip_in_batch? && tags.intersect?(tool.tags)
     def named?(tool) = tool_names.map(&:to_s).include?(tool.key.to_s)
   end
 end

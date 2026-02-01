@@ -19,6 +19,9 @@ module Reviewer
   #   `rvw ruby staged`
   #
   class Arguments
+    # Valid output format options for the --format flag
+    KNOWN_FORMATS = %i[streaming summary json].freeze
+
     # @!attribute options
     #   @return [Slop::Result] the parsed command-line options
     attr_accessor :options
@@ -114,7 +117,11 @@ module Reviewer
     def format
       return :json if json?
 
-      options[:format].to_sym
+      value = options[:format].to_sym
+      return value if KNOWN_FORMATS.include?(value)
+
+      output.invalid_format(options[:format], KNOWN_FORMATS)
+      :streaming
     end
 
     # Whether output should be streamed directly (not captured for later formatting)

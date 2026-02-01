@@ -174,6 +174,23 @@ module Reviewer
       refute Arguments.new(%w[--json]).streaming?
     end
 
+    def test_invalid_format_falls_back_to_streaming
+      out, _err = capture_subprocess_io do
+        arguments = Arguments.new(%w[--format verbose])
+        assert_equal :streaming, arguments.format
+      end
+      assert_match(/Unknown format 'verbose'/, out)
+      assert_match(/Valid formats:/, out)
+    end
+
+    def test_valid_formats_not_warned
+      out, _err = capture_subprocess_io do
+        arguments = Arguments.new(%w[--format summary])
+        assert_equal :summary, arguments.format
+      end
+      refute_match(/Unknown format/, out)
+    end
+
     def test_prints_capabilities_json_with_short_flag
       out, _err = capture_subprocess_io do
         assert_raises(SystemExit) { Arguments.new(%w[-c]) }

@@ -24,9 +24,9 @@ enabled_tool:
     third: 'third flag'
     fourth: 'fourth flag'
 
-# For Testing Disabled Tools
+# For Testing Skip-in-Batch Tools (formerly "disabled")
 disabled_tool:
-  disabled: true
+  skip_in_batch: true
   name: 'Disabled Test Tool'
   description: 'Run the tests.'
   tags: [disabled, html]
@@ -92,6 +92,16 @@ missing_command_without_guidance:
   commands:
     review: 'exit 127'
 
+# Missing command with install command configured
+# For testing missing tool summary with install hints
+missing_with_install:
+  disabled: true
+  name: 'Missing With Install'
+  description: 'A tool that is not installed but has install instructions.'
+  commands:
+    install: 'gem install missing-tool'
+    review: 'exit 127'
+
 # Intentionally Failing Command with File-Path Output
 # Echoes lines that look like rubocop output referencing real project files, then exits 1
 failing_with_output:
@@ -110,6 +120,15 @@ failing_dynamic_seed_tool:
   disabled: true
   commands:
     review: 'exit 1 --seed $SEED'
+
+# For Testing File Targeting with a Passing Command
+file_targeting_list:
+  disabled: true
+  commands:
+    review: 'echo'
+  files:
+    flag: ''
+    separator: ' '
 
 # For Testing File Targeting
 file_targeting_tool:
@@ -159,3 +178,14 @@ test_mapping_tool:
     separator: ' '
     pattern: '*_test.rb'
     map_to_tests: minitest
+
+# For Testing File-Scoped Command Override
+file_scoped_command_tool:
+  disabled: true
+  commands:
+    review: 'bundle exec rake test'
+  files:
+    review: 'bundle exec ruby -Itest'
+    flag: ''
+    separator: ' '
+    pattern: '*_test.rb'

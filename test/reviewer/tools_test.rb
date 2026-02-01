@@ -46,6 +46,13 @@ module Reviewer
       assert_equal 'Disabled Test Tool', @tools.current.first.name
     end
 
+    def test_excludes_skip_in_batch_tools_from_enabled
+      @tools = Tools.new
+      @tools.enabled.each do |tool|
+        refute tool.skip_in_batch?, "`#{tool.name}` is skip_in_batch but included in enabled tools"
+      end
+    end
+
     def test_removes_duplicate_tools
       @tools = Tools.new(tags: %w[tagged], tool_names: %w[tagged])
       assert_equal 1, @tools.current.size

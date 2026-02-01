@@ -40,6 +40,36 @@ module Reviewer
         assert @settings.disabled?
       end
 
+      def test_skip_in_batch_defaults_to_false
+        refute @settings.skip_in_batch?
+      end
+
+      def test_skip_in_batch_reads_new_key
+        @config[:skip_in_batch] = true
+        @settings = Settings.new(@tool, config: @config)
+        assert @settings.skip_in_batch?
+      end
+
+      def test_skip_in_batch_falls_back_to_disabled_key
+        @config[:disabled] = true
+        @settings = Settings.new(@tool, config: @config)
+        assert @settings.skip_in_batch?
+      end
+
+      def test_skip_in_batch_prefers_new_key_over_disabled
+        @config[:skip_in_batch] = false
+        @config[:disabled] = true
+        @settings = Settings.new(@tool, config: @config)
+        refute @settings.skip_in_batch?
+      end
+
+      def test_enabled_reflects_skip_in_batch
+        @config[:skip_in_batch] = true
+        @settings = Settings.new(@tool, config: @config)
+        refute @settings.enabled?
+        assert @settings.disabled?
+      end
+
       def test_provides_the_tool_name_with_the_key_as_default
         assert_equal @tool, @settings.key
         assert_equal @tool.to_s.capitalize, @settings.name
@@ -147,6 +177,29 @@ module Reviewer
         @config[:files] = { flag: '', separator: ' ', pattern: '*_test.rb', map_to_tests: 'minitest' }
         @settings = Settings.new(@tool, config: @config)
         assert_equal 'minitest', @settings.map_to_tests
+      end
+
+      def test_provides_files_command_with_nil_as_default
+        assert_nil @settings.files_command(:review)
+        assert_nil @settings.files_command(:format)
+      end
+
+      def test_provides_files_command_for_review
+        @config[:files] = { review: 'bundle exec ruby -Itest', pattern: '*_test.rb' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal 'bundle exec ruby -Itest', @settings.files_command(:review)
+      end
+
+      def test_provides_files_command_for_format
+        @config[:files] = { format: 'bundle exec ruby -Itest --fix' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_equal 'bundle exec ruby -Itest --fix', @settings.files_command(:format)
+      end
+
+      def test_files_command_returns_nil_for_unconfigured_type
+        @config[:files] = { review: 'bundle exec ruby -Itest' }
+        @settings = Settings.new(@tool, config: @config)
+        assert_nil @settings.files_command(:format)
       end
     end
   end

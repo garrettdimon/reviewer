@@ -2,12 +2,17 @@
 
 require 'io/console/size' # For determining console width/height
 
+require_relative 'output/doctor'
 require_relative 'output/printer'
+require_relative 'output/setup'
 require_relative 'output/token'
 
 module Reviewer
   # Friendly API for printing nicely-formatted output to the console
   class Output
+    include Output::Doctor
+    include Output::Setup
+
     DEFAULT_CONSOLE_WIDTH = 120
     DIVIDER = '─'
     RAKE_ABORTED_TEXT = "rake aborted!\n"
@@ -148,10 +153,7 @@ module Reviewer
     def run_summary(entries)
       return if entries.empty?
 
-      entries.each do |entry|
-        printer.puts(:muted, entry[:name])
-        entry[:files].each { |file| printer.puts(:muted, "  #{file}") }
-      end
+      entries.each { |entry| print_run_entry(entry) }
       newline
     end
 
@@ -175,6 +177,73 @@ module Reviewer
       printer.puts(:muted, details)
     end
 
+    # Prints a summary of tools whose executables were not found
+    # @param tools [Array<Tool>] the missing tools
+    # @return [void]
+    def missing_tools(tools)
+      label = tools.size == 1 ? '1 not installed:' : "#{tools.size} not installed:"
+      newline
+      printer.puts(:warning, label)
+      tools.each do |tool|
+        hint = tool.installable? ? tool.install_command : ''
+        printer.puts(:muted, "  #{tool.name.ljust(22)}#{hint}")
+      end
+      newline
+    end
+
+    # Prints warnings for unrecognized keywords with did-you-mean suggestions
+    # @param unrecognized [Array<String>] the unrecognized keywords
+    # @param suggestions [Hash<String, String>] keyword => suggestion mapping
+    #
+    # @return [void]
+    def unrecognized_keywords(unrecognized, suggestions)
+      unrecognized.each do |keyword|
+        printer.puts(:warning, "Unrecognized: #{keyword}")
+        suggestion = suggestions[keyword]
+        printer.puts(:muted, "  did you mean '#{suggestion}'?") if suggestion
+      end
+      newline
+    end
+
+    # Prints a warning when no tools match the requested filters
+    # @param requested [Array<String>] the requested keywords and tags
+    # @param available [Array<String>] all available tool keys
+    #
+    # @return [void]
+    def no_matching_tools(requested:, available:)
+      newline
+      printer.puts(:warning, 'No matching tools found')
+      printer.puts(:muted, "Requested: #{requested.join(', ')}") if requested.any?
+      printer.puts(:muted, "Available: #{available.join(', ')}") if available.any?
+      newline
+    end
+
+    # Prints a warning for an invalid output format
+    # @param value [String] the invalid format value
+    # @param known [Array<Symbol>] the valid format names
+    #
+    # @return [void]
+    def invalid_format(value, known)
+      printer.puts(:warning, "Unknown format '#{value}', using 'streaming'")
+      printer.puts(:muted, "Valid formats: #{known.join(', ')}")
+      newline
+    end
+
+    # Prints a warning when a git command fails
+    # @param message [String] the error message from the git command
+    #
+    # @return [void]
+    def git_error(message)
+      if message.include?('not a git repository')
+        printer.puts(:warning, 'Not a git repository')
+        printer.puts(:muted, 'Git keywords (staged, modified, etc.) require a git repository')
+      else
+        printer.puts(:warning, 'Git command failed')
+        printer.puts(:muted, message)
+        printer.puts(:muted, 'Continuing without file filtering')
+      end
+    end
+
     # Outputs raw content directly to the stream without styling
     # @param value [String, nil] the content to output
     #
@@ -183,6 +252,13 @@ module Reviewer
       return if value.nil? || value.strip.empty?
 
       printer.stream << value
+    end
+
+    private
+
+    def print_run_entry(entry)
+      printer.puts(:muted, entry[:name])
+      entry[:files].each { |file| printer.puts(:muted, "  #{file}") }
     end
 
     protected

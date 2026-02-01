@@ -65,9 +65,25 @@ module Reviewer
       assert_equal 'https://example.com/install', @tool.install_link
     end
 
+    def test_delegates_skip_in_batch
+      tool = Tool.new(:disabled_tool)
+      assert tool.skip_in_batch?
+
+      tool = Tool.new(:enabled_tool)
+      refute tool.skip_in_batch?
+    end
+
     def test_knows_if_a_command_is_installable
       assert @tool.installable?
       refute @mvt.installable?
+    end
+
+    def test_install_command_returns_command_string
+      assert_equal 'ls -a', @tool.install_command
+    end
+
+    def test_install_command_returns_nil_when_not_configured
+      assert_nil @mvt.install_command
     end
 
     def test_knows_if_a_command_is_preparable

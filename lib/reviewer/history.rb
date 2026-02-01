@@ -53,7 +53,7 @@ module Reviewer
     # Removes the existing history file.
     #
     # @return [void]
-    def reset!
+    def clear!
       return unless File.exist?(file)
 
       FileUtils.rm(file)
@@ -62,6 +62,6 @@ module Reviewer
     # Convenience class method for removing the history file.
     #
     # @return [void]
-    def self.reset! = new.reset!
+    def self.clear! = new.clear!
   end
 end

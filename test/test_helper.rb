@@ -24,7 +24,9 @@ require 'minitest/autorun'
 require 'minitest/heat'
 
 # Makes it easy to mock process statuses
-MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true)
+MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true) do
+  def success? = exitstatus.zero?
+end
 
 # Ensure it's using the test configuration file since some tests intentionally
 # change it to test how it recovers when misconfigured

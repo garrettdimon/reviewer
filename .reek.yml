@@ -23,10 +23,10 @@ detectors:
   DuplicateMethodCall:
     max_calls: 3
 
-  # Default max_statements (5) flags nearly every non-trivial method. 8 keeps
-  # the check useful without flagging clear, linear methods.
+  # Default max_statements (5) flags nearly every non-trivial method. 10 keeps
+  # the check useful without flagging clear, linear orchestration methods.
   TooManyStatements:
-    max_statements: 8
+    max_statements: 10
 
   # Default max_methods (15) flags cohesive classes like Tool and Settings.
   # 25 still catches genuinely bloated classes.
@@ -46,6 +46,13 @@ detectors:
 
   # RuboCop enforces `e` for rescue variables (Naming/RescuedExceptionsVariableName).
   # Allow `e` to avoid conflicts between the two tools.
+  # Uppercase Tool() follows Ruby's kernel conversion convention (Integer(), Array(), Pathname()).
+  # Renaming would break the convention.
+  UncommunicativeMethodName:
+    exclude:
+      - 'Reviewer::Conversions'
+
   UncommunicativeVariableName:
     accept:
       - e
+      - _

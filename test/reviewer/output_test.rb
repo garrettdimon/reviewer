@@ -139,5 +139,116 @@ module Reviewer
       assert_match(/~1.5 seconds/, out)
       assert_match(/3 tools/, out)
     end
+
+    def test_first_run_greeting_shows_message
+      out, _err = capture_subprocess_io { @output.first_run_greeting }
+      assert_match(/setting up Reviewer/i, out)
+    end
+
+    def test_first_run_greeting_explains_what_init_does
+      out, _err = capture_subprocess_io { @output.first_run_greeting }
+      assert_match(/auto-detect/i, out)
+    end
+
+    def test_first_run_skip_shows_rvw_init
+      out, _err = capture_subprocess_io { @output.first_run_skip }
+      assert_match(/rvw init/, out)
+    end
+
+    def test_setup_already_exists
+      file = Pathname('/tmp/project/.reviewer.yml')
+      out, _err = capture_subprocess_io { @output.setup_already_exists(file) }
+      assert_match(/already exists/i, out)
+      assert_match(/rvw init/, out)
+    end
+
+    def test_setup_no_tools_detected
+      out, _err = capture_subprocess_io { @output.setup_no_tools_detected }
+      assert_match(/no supported tools detected/i, out)
+      assert_match(%r{github\.com/garrettdimon/reviewer}, out)
+    end
+
+    def test_setup_success
+      results = [
+        Reviewer::Setup::Detector::Result.new(key: :rubocop, reasons: ['rubocop in Gemfile.lock'])
+      ]
+      out, _err = capture_subprocess_io { @output.setup_success(results) }
+      assert_match(/created \.reviewer\.yml/i, out)
+      assert_match(/RuboCop/, out)
+      assert_match(/Gemfile\.lock/, out)
+    end
+
+    def test_missing_tools_shows_count
+      tools = [Tool.new(:missing_with_install)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/1 not installed/i, out)
+    end
+
+    def test_missing_tools_shows_tool_name
+      tools = [Tool.new(:missing_with_install)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/Missing With Install/i, out)
+    end
+
+    def test_missing_tools_shows_install_hint
+      tools = [Tool.new(:missing_with_install)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/gem install missing-tool/, out)
+    end
+
+    def test_missing_tools_pluralizes_for_multiple
+      tools = [Tool.new(:missing_with_install), Tool.new(:missing_command)]
+      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
+      assert_match(/2 not installed/i, out)
+    end
+
+    def test_unrecognized_keywords_shows_warning
+      out, _err = capture_subprocess_io do
+        @output.unrecognized_keywords(['rubocp'], { 'rubocp' => 'rubocop' })
+      end
+      assert_match(/Unrecognized: rubocp/, out)
+      assert_match(/did you mean 'rubocop'/, out)
+    end
+
+    def test_unrecognized_keywords_without_suggestion
+      out, _err = capture_subprocess_io do
+        @output.unrecognized_keywords(['zzzzz'], {})
+      end
+      assert_match(/Unrecognized: zzzzz/, out)
+      refute_match(/did you mean/, out)
+    end
+
+    def test_no_matching_tools
+      out, _err = capture_subprocess_io do
+        @output.no_matching_tools(requested: ['rubocp'], available: %w[rubocop tests reek])
+      end
+      assert_match(/No matching tools found/, out)
+      assert_match(/Requested: rubocp/, out)
+      assert_match(/Available: rubocop, tests, reek/, out)
+    end
+
+    def test_invalid_format
+      out, _err = capture_subprocess_io do
+        @output.invalid_format('verbose', %i[streaming summary json])
+      end
+      assert_match(/Unknown format 'verbose'/, out)
+      assert_match(/Valid formats:/, out)
+    end
+
+    def test_git_error_for_not_a_repo
+      out, _err = capture_subprocess_io do
+        @output.git_error('fatal: not a git repository')
+      end
+      assert_match(/Not a git repository/, out)
+      assert_match(/Git keywords/, out)
+    end
+
+    def test_git_error_for_other_errors
+      out, _err = capture_subprocess_io do
+        @output.git_error('some other git failure')
+      end
+      assert_match(/Git command failed/, out)
+      assert_match(/Continuing without file filtering/, out)
+    end
   end
 end

@@ -13,12 +13,14 @@ module Reviewer
     def failed? = false
     def provided = []
     def for_tool_names = []
+    def unrecognized = []
   end
 
   # Keywords stub that reports keywords were provided
   StubKeywordsWithProvided = Struct.new(:provided) do
     def failed? = false
     def for_tool_names = []
+    def unrecognized = []
   end
 
   # Keywords stub that reports failed keyword
@@ -26,6 +28,7 @@ module Reviewer
     def failed? = true
     def provided = ['failed']
     def for_tool_names = []
+    def unrecognized = []
   end
 
   # Stub for testing different argument configurations
@@ -49,7 +52,7 @@ module Reviewer
     def tags = Arguments::Tags.new(provided: [], keywords: [])
   end
 
-  class ReviewerTest < Minitest::Test
+  class ReviewerTest < Minitest::Test # rubocop:disable Metrics/ClassLength
     # def setup
     #   Reviewer.reset
     #   Reviewer.configure do |config|
@@ -61,14 +64,15 @@ module Reviewer
       refute_nil VERSION
     end
 
-    def test_returns_largest_exit_status
-      tools = [Tool.new(:list), Tool.new(:enabled_tool), Tool.new(:missing_command), Tool.new(:failing_command)]
+    def test_returns_largest_exit_status_excluding_missing
+      tools = [Tool.new(:list), Tool.new(:missing_command)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
           Reviewer.review
         rescue SystemExit => e
-          assert_equal 127, e.status
+          # Missing tools (exit 127) should not affect exit status
+          assert_equal 0, e.status
         end
       end
     end
@@ -226,6 +230,165 @@ module Reviewer
           assert_match(/"tools":/, out)
         end
       end
+    end
+
+    def test_exits_with_guidance_when_config_missing # rubocop:disable Metrics/MethodLength
+      Reviewer.reset!
+      Reviewer.configure do |config|
+        config.file = Pathname('test/fixtures/files/nonexistent.yml')
+      end
+
+      # Non-TTY prompt returns false, so we get the skip message
+      stub_prompt = Prompt.new(input: StringIO.new, output: StringIO.new)
+      Reviewer.stub(:prompt, stub_prompt) do
+        out, _err = capture_subprocess_io do
+          Reviewer.review
+        rescue SystemExit => e
+          assert_equal 0, e.status
+        end
+
+        assert_match(/setting up Reviewer/i, out)
+        assert_match(/rvw init/, out)
+      end
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_runs_setup_when_config_missing_and_user_says_yes # rubocop:disable Metrics/MethodLength
+      Reviewer.reset!
+      Reviewer.configure do |config|
+        config.file = Pathname('test/fixtures/files/nonexistent.yml')
+      end
+
+      tty_input = StringIO.new("y\n")
+      tty_input.define_singleton_method(:tty?) { true }
+      stub_prompt = Prompt.new(input: tty_input, output: StringIO.new)
+
+      setup_ran = false
+      Setup.stub(:run, -> { setup_ran = true }) do
+        Reviewer.stub(:prompt, stub_prompt) do
+          capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+        end
+      end
+
+      assert setup_ran, 'Expected Setup.run to be called when user says yes'
+    ensure
+      ensure_test_configuration!
+    end
+
+    def test_missing_tools_summary_shown_in_streaming_mode
+      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+
+      Reviewer.tools.stub(:current, tools) do
+        out, _err = capture_subprocess_io do
+          Reviewer.review
+        rescue SystemExit
+          # Expected
+        end
+
+        assert_match(/not installed:/i, out)
+        assert_match(/Missing With Install/i, out)
+        assert_match(/gem install missing-tool/, out)
+      end
+    end
+
+    def test_missing_tools_summary_not_shown_in_json_mode
+      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :json, json?: true, raw?: false, streaming?: false)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          # JSON output should contain missing in the data, not a separate summary
+          parsed = JSON.parse(out)
+          assert_equal 1, parsed['summary']['missing']
+        end
+      end
+    end
+
+    def test_summary_format_shows_missing_tools
+      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+
+      Reviewer.reset!
+      ensure_test_configuration!
+
+      stub_args = StubArgs.new(format: :summary, json?: false, raw?: false, streaming?: false)
+
+      Reviewer.stub(:arguments, stub_args) do
+        Reviewer.tools.stub(:current, tools) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit
+            # Expected
+          end
+
+          assert_match(/not installed/i, out)
+          assert_match(/Missing With Install/i, out)
+        end
+      end
+    end
+
+    def test_review_dispatches_to_init_when_subcommand
+      setup_ran = false
+      Setup.stub(:run, -> { setup_ran = true }) do
+        ARGV.replace(['init'])
+        Reviewer.review
+      ensure
+        ARGV.replace([])
+      end
+      assert setup_ran, 'Expected Setup.run to be called for rvw init'
+    end
+
+    def test_review_dispatches_to_doctor_when_subcommand
+      doctor_ran = false
+      Doctor.stub(:run, lambda {
+        doctor_ran = true
+        Doctor::Report.new
+      }) do
+        ARGV.replace(['doctor'])
+        capture_subprocess_io { Reviewer.review }
+      ensure
+        ARGV.replace([])
+      end
+      assert doctor_ran, 'Expected Doctor.run to be called for rvw doctor'
+    end
+
+    def test_format_dispatches_to_init_when_subcommand
+      setup_ran = false
+      Setup.stub(:run, -> { setup_ran = true }) do
+        ARGV.replace(['init'])
+        Reviewer.format
+      ensure
+        ARGV.replace([])
+      end
+      assert setup_ran, 'Expected Setup.run to be called for fmt init'
+    end
+
+    def test_format_dispatches_to_doctor_when_subcommand
+      doctor_ran = false
+      Doctor.stub(:run, lambda {
+        doctor_ran = true
+        Doctor::Report.new
+      }) do
+        ARGV.replace(['doctor'])
+        capture_subprocess_io { Reviewer.format }
+      ensure
+        ARGV.replace([])
+      end
+      assert doctor_ran, 'Expected Doctor.run to be called for fmt doctor'
     end
 
     def test_failed_with_nothing_to_run_handles_tags_object

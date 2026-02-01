@@ -80,5 +80,11 @@ module Reviewer
       capture_subprocess_io { @shell.direct('very_unlikely_to_exist_command') }
       assert_equal 127, @shell.exit_status
     end
+
+    def test_capture_main_returns_127_for_missing_command
+      @shell.capture_main('very_unlikely_to_exist_command')
+      assert_equal 127, @shell.exit_status
+      assert @shell.result.executable_not_found?
+    end
   end
 end

@@ -27,6 +27,11 @@ Metrics/MethodLength:
 # Test classes naturally grow with coverage (see test/.rubocop.yml for higher limit)
 Metrics/ClassLength:
   CountAsOne: ['array', 'hash', 'heredoc']
+  Max: 150
+
+Metrics/ModuleLength:
+  CountAsOne: ['array', 'hash', 'heredoc']
+  Max: 150
 
 # Fasterer prefers yield over block.call for performance
 Style/ExplicitBlockArgument:

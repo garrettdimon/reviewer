@@ -31,7 +31,9 @@ module Reviewer
                    :links,
                    :enabled?,
                    :disabled?,
-                   :max_exit_status
+                   :skip_in_batch?,
+                   :max_exit_status,
+                   :supports_files?
 
     # @!method to_sym
     #   Returns the tool's key as a symbol
@@ -70,6 +72,13 @@ module Reviewer
     #
     # @return [Boolean] true if there is a non-blank `install` command configured
     def installable? = command?(:install)
+
+    # Returns the install command string for this tool
+    #
+    # @return [String, nil] the install command or nil if not configured
+    def install_command
+      commands[:install]
+    end
 
     # Determines if the tool can run a `prepare` command
     #

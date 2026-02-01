@@ -1,0 +1,26 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.2)
+    bundler-audit (0.9.1)
+      bundler (>= 1.2.0, < 3)
+      thor (~> 1.0)
+    minitest (5.18.0)
+    reek (6.1.4)
+      kwalify (~> 0.7.0)
+      parser (~> 3.2)
+      rainbow (>= 2.0, < 4.0)
+    rubocop (1.50.0)
+      json (~> 2.3)
+      parallel (~> 1.10)
+      parser (>= 3.2.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler-audit
+  minitest
+  reek
+  rubocop

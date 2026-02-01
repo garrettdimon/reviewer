@@ -29,8 +29,16 @@ module Reviewer
       end
       alias :== eql?
 
-      def disabled? = config.fetch(:disabled) { false }
-      def enabled? = !disabled?
+      def skip_in_batch?
+        if config.key?(:skip_in_batch)
+          config.fetch(:skip_in_batch) { false }
+        else
+          config.fetch(:disabled) { false }
+        end
+      end
+
+      def disabled? = skip_in_batch?
+      def enabled? = !skip_in_batch?
 
       # The human-readable name of the tool
       #
@@ -83,6 +91,13 @@ module Reviewer
       def map_to_tests = config.dig(:files, :map_to_tests)
 
       def supports_files? = config.key?(:files)
+
+      # Returns the file-scoped command override for a given command type.
+      # When configured, this command replaces the standard command when files are passed.
+      #
+      # @param command_type [Symbol] the command type (:review, :format)
+      # @return [String, nil] the file-scoped command or nil if not configured
+      def files_command(command_type) = config.dig(:files, command_type)
 
       # The collection of configured commands for the tool
       #

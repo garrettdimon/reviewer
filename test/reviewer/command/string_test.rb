@@ -69,6 +69,30 @@ module Reviewer
 
         assert_equal 'rubocop', cmd.to_s
       end
+
+      def test_uses_file_scoped_command_when_files_present
+        settings = ::Reviewer::Tool::Settings.new(:file_scoped_command_tool)
+        files = %w[test/models/user_test.rb test/models/post_test.rb]
+        cmd = Command::String.new(:review, tool_settings: settings, files: files)
+
+        assert_equal 'bundle exec ruby -Itest test/models/user_test.rb test/models/post_test.rb', cmd.to_s
+      end
+
+      def test_uses_standard_command_when_no_files_scoped
+        settings = ::Reviewer::Tool::Settings.new(:file_scoped_command_tool)
+        cmd = Command::String.new(:review, tool_settings: settings, files: [])
+
+        assert_equal 'bundle exec rake test', cmd.to_s
+      end
+
+      def test_uses_standard_command_when_no_file_scoped_override
+        settings = ::Reviewer::Tool::Settings.new(:file_targeting_tool)
+        files = %w[lib/foo.rb lib/bar.rb]
+        cmd = Command::String.new(:review, tool_settings: settings, files: files)
+
+        # file_targeting_tool has no files.review override, uses normal command + files
+        assert_equal 'rubocop lib/foo.rb lib/bar.rb', cmd.to_s
+      end
     end
   end
 end

@@ -2,7 +2,8 @@
 # It can be handy to leave this section in your configuration file as a convenient reference.
 #
 # <command_key>:                // ex. 'rubocop', 'bundler-audit', etc.
-#  disabled: true               // Optional. Tools are enabled by default
+#  skip_in_batch: true           // Optional. Tools run in batch by default. Set to true to only run when explicitly named.
+#  disabled: true               // Deprecated. Use skip_in_batch instead. Still supported as fallback.
 #  name:                        // Optional. Will use the `command_key` if name isn't provided.
 #  description:                 // Optional. Serves as a handy reminder for the purpose of the command.
 #  tags: [ruby, dependencies]   // Optional. Lets you run commands tagged with the same word.
@@ -38,7 +39,7 @@
 
 # In practice, a configuration block would look something like the block below.
 tool-name-key:
-  disabled: true
+  skip_in_batch: true
   name: Tool
   description: A tool that finds issues and fixes code.
   tags: [syntax, security]

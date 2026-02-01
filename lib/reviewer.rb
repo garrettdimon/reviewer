@@ -18,11 +18,14 @@ require_relative 'reviewer/history'
 require_relative 'reviewer/keywords'
 require_relative 'reviewer/loader'
 require_relative 'reviewer/output'
+require_relative 'reviewer/prompt'
 require_relative 'reviewer/report'
 require_relative 'reviewer/runner'
 require_relative 'reviewer/shell'
 require_relative 'reviewer/tool'
 require_relative 'reviewer/tools'
+require_relative 'reviewer/setup'
+require_relative 'reviewer/doctor'
 require_relative 'reviewer/version'
 
 # Primary interface for the reviewer tools
@@ -32,7 +35,7 @@ module Reviewer
 
   class << self
     # Resets the loaded tools and arguments
-    def reset! = @tools = @arguments = nil
+    def reset! = @tools = @arguments = @prompt = nil
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     #   commands that are not disabled to have an entry for the `review` command.
@@ -40,7 +43,10 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def review(clear_screen: false)
-      perform(:review, clear_screen: clear_screen)
+      return Setup.run if subcommand?(:init)
+      return run_doctor if subcommand?(:doctor)
+
+      run_tools(:review, clear_screen: clear_screen)
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
@@ -48,7 +54,10 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def format(clear_screen: false)
-      perform(:format, clear_screen: clear_screen)
+      return Setup.run if subcommand?(:init)
+      return run_doctor if subcommand?(:doctor)
+
+      run_tools(:format, clear_screen: clear_screen)
     end
 
     # The collection of arguments that were passed via the command line.
@@ -73,6 +82,11 @@ module Reviewer
     # @return [Reviewer::History] a YAML::Store (or Pstore) containing data on tools
     def history = @history ||= History.new
 
+    # An interactive prompt for yes/no questions
+    #
+    # @return [Reviewer::Prompt] prompt instance wrapping stdin/stdout
+    def prompt = @prompt ||= Prompt.new
+
     # Exposes the configuration options for Reviewer.
     #
     # @return [Reviewer::Configuration] configuration settings instance
@@ -90,31 +104,86 @@ module Reviewer
 
     private
 
-    # Provides a consistent approach to running and benchmarking commmands and preventing further
-    #   execution of later tools if a command fails.
-    # @param command_type [Symbol] the specific command to run for each tool
-    # @param clear_screen [Boolean] if true, clears the screen before a run
-    #
-    # @example Run the `review` command for each relevant tool
-    #   perform(:review)
-    #
-    # @return [void] exits with the maximum exit status from all tools
-    def perform(command_type, clear_screen: false)
+    def subcommand?(name) = ARGV.first == name.to_s
+
+    def run_doctor
+      report = Doctor.run
+      output.doctor_report(report)
+    end
+
+    def run_tools(command_type, clear_screen: false)
+      prepare_run(clear_screen)
+      exit run_and_report(command_type)
+    end
+
+    def prepare_run(clear_screen)
       output.clear if clear_screen && !arguments.json?
+      guard_missing_configuration!
+      warn_unrecognized_keywords!
+      guard_failed_with_nothing_to_run!
+    end
 
-      # When `failed` is the sole keyword and there's nothing to re-run, exit early with a message
-      if failed_with_nothing_to_run?
-        display_failed_empty_message
-        exit 0
-      end
-
+    def run_and_report(command_type)
       current_tools = tools.current
+      return warn_no_matching_tools if current_tools.empty?
+
       show_run_summary(current_tools, command_type)
 
       report = Batch.new(command_type, current_tools).run
       display_report(report)
 
-      exit report.max_exit_status
+      report.max_exit_status
+    end
+
+    def warn_no_matching_tools
+      output.no_matching_tools(
+        requested: arguments.keywords.provided + arguments.tags.to_a,
+        available: tools.all.map { |tool| tool.key.to_s }
+      )
+      0
+    end
+
+    # Warns when keywords don't match any known tool, tag, or reserved word
+    def warn_unrecognized_keywords!
+      return if arguments.json?
+
+      unrecognized = arguments.keywords.unrecognized
+      return if unrecognized.empty?
+
+      suggestions = build_suggestions(unrecognized)
+      output.unrecognized_keywords(unrecognized, suggestions)
+    end
+
+    def build_suggestions(unrecognized)
+      possible = arguments.keywords.possible
+      checker = DidYouMean::SpellChecker.new(dictionary: possible)
+
+      unrecognized.each_with_object({}) do |keyword, map|
+        corrections = checker.correct(keyword)
+        map[keyword] = corrections.first if corrections.any?
+      end
+    end
+
+    # Exits with guidance when .reviewer.yml is missing.
+    # In interactive terminals, offers to run setup inline.
+    def guard_missing_configuration!
+      return if configuration.file.exist?
+
+      output.first_run_greeting
+      if prompt.yes?('Would you like to set it up now?')
+        Setup.run
+      else
+        output.first_run_skip
+      end
+      exit 0
+    end
+
+    # Exits early when `failed` keyword is used but there's nothing to re-run
+    def guard_failed_with_nothing_to_run!
+      return unless failed_with_nothing_to_run?
+
+      display_failed_empty_message
+      exit 0
     end
 
     # Whether the `failed` keyword was used as the sole keyword but there are no failed tools
@@ -146,11 +215,31 @@ module Reviewer
     def display_report(report)
       if arguments.json?
         puts report.to_json
-      elsif arguments.format == :summary
+        return
+      end
+
+      display_text_report(report)
+      show_missing_tools(report)
+    end
+
+    def display_text_report(report)
+      if arguments.format == :summary
         Report::Formatter.new(report, output: output).print
       elsif report.success?
-        output.batch_summary(report.results.size, report.duration)
+        ran_count = report.results.count { |result| !result.missing? && !result.skipped? }
+        output.batch_summary(ran_count, report.duration)
       end
+    end
+
+    # Shows a consolidated summary of missing tools with install hints
+    #
+    # @param report [Report] the report to check for missing tools
+    # @return [void]
+    def show_missing_tools(report)
+      return unless report.missing?
+
+      missing = report.missing_results.map { |result| Tool.new(result.tool_key) }
+      output.missing_tools(missing)
     end
 
     def show_run_summary(current_tools, command_type)

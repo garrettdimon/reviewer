@@ -30,7 +30,7 @@ module Reviewer
       assert tool.key?(:name), 'Tool should have :name'
       assert tool.key?(:description), 'Tool should have :description'
       assert tool.key?(:tags), 'Tool should have :tags'
-      assert tool.key?(:enabled), 'Tool should have :enabled'
+      assert tool.key?(:skip_in_batch), 'Tool should have :skip_in_batch'
       assert tool.key?(:commands), 'Tool should have :commands'
     end
 

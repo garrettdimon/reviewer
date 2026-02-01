@@ -86,6 +86,39 @@ module Reviewer
       ensure_test_configuration!
     end
 
+    def test_missing_returns_false_by_default
+      runner = Runner.new(:enabled_tool, :review)
+      refute runner.missing?
+    end
+
+    def test_missing_returns_true_after_executable_not_found
+      runner = Runner.new(:missing_command, :review)
+
+      capture_subprocess_io { runner.run }
+
+      assert runner.missing?
+    end
+
+    def test_to_result_returns_missing_result_for_executable_not_found
+      runner = Runner.new(:missing_command, :review)
+
+      capture_subprocess_io { runner.run }
+
+      result = runner.to_result
+      assert result.missing
+      refute result.success
+      assert_equal 127, result.exit_status
+      assert_equal 0, result.duration
+    end
+
+    def test_missing_tool_is_not_successful
+      runner = Runner.new(:missing_command, :review)
+
+      capture_subprocess_io { runner.run }
+
+      refute runner.success?
+    end
+
     private
 
     def with_mock_shell_result

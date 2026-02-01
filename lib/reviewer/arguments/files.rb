@@ -78,10 +78,33 @@ module Reviewer
         end.flatten.compact.uniq
       end
 
-      def staged = ::Reviewer::Keywords::Git.staged
-      def unstaged = ::Reviewer::Keywords::Git.unstaged
-      def modified = ::Reviewer::Keywords::Git.modified
-      def untracked = ::Reviewer::Keywords::Git.untracked
+      def staged
+        ::Reviewer::Keywords::Git.staged
+      rescue SystemCallError => e
+        Reviewer.output.git_error(e.message)
+        []
+      end
+
+      def unstaged
+        ::Reviewer::Keywords::Git.unstaged
+      rescue SystemCallError => e
+        Reviewer.output.git_error(e.message)
+        []
+      end
+
+      def modified
+        ::Reviewer::Keywords::Git.modified
+      rescue SystemCallError => e
+        Reviewer.output.git_error(e.message)
+        []
+      end
+
+      def untracked
+        ::Reviewer::Keywords::Git.untracked
+      rescue SystemCallError => e
+        Reviewer.output.git_error(e.message)
+        []
+      end
     end
   end
 end
