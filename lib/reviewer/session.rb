@@ -24,27 +24,22 @@ module Reviewer
     end
 
     # Runs the review command for the current set of tools
-    # @param prompt [Prompt] interactive prompt for first-run setup
-    # @param configuration [Configuration] the loaded .reviewer.yml configuration
     #
     # @return [Integer] the maximum exit status from all tools
-    def review(prompt: Reviewer.prompt, configuration: Reviewer.configuration)
-      run_tools(:review, prompt: prompt, configuration: configuration)
+    def review
+      run_tools(:review)
     end
 
     # Runs the format command for the current set of tools
-    # @param prompt [Prompt] interactive prompt for first-run setup
-    # @param configuration [Configuration] the loaded .reviewer.yml configuration
     #
     # @return [Integer] the maximum exit status from all tools
-    def format(prompt: Reviewer.prompt, configuration: Reviewer.configuration)
-      run_tools(:format, prompt: prompt, configuration: configuration)
+    def format
+      run_tools(:format)
     end
 
     private
 
-    def run_tools(command_type, prompt:, configuration:)
-      return 0 if handle_missing_configuration?(prompt: prompt, configuration: configuration)
+    def run_tools(command_type)
       return 0 if handle_failed_with_nothing_to_run?
 
       if json_output?
@@ -108,21 +103,6 @@ module Reviewer
       end
     end
 
-    # Returns true if configuration is missing (caller should return early)
-    # @param prompt [Prompt] interactive prompt for yes/no questions
-    # @param configuration [Configuration] the loaded .reviewer.yml configuration
-    def handle_missing_configuration?(prompt:, configuration:)
-      return false if configuration.file.exist?
-
-      setup_formatter.first_run_greeting
-      if prompt.yes?('Would you like to set it up now?')
-        Setup.run
-      else
-        setup_formatter.first_run_skip
-      end
-      true
-    end
-
     # Returns true if failed keyword is present with nothing to re-run (caller should return early)
     def handle_failed_with_nothing_to_run?
       return false unless failed_with_nothing_to_run?
@@ -178,7 +158,6 @@ module Reviewer
     end
 
     def formatter = @formatter ||= Session::Formatter.new(output)
-    def setup_formatter = @setup_formatter ||= Setup::Formatter.new(output)
 
     def batch_formatter
       Batch::Formatter.new(output)
