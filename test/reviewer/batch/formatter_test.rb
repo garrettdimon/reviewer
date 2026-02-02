@@ -54,8 +54,8 @@ module Reviewer
         assert_empty out
       end
 
-      def test_batch_summary_shows_checkmark_and_timing
-        out, _err = capture_subprocess_io { @formatter.batch_summary(3, 1.5) }
+      def test_summary_shows_checkmark_and_timing
+        out, _err = capture_subprocess_io { @formatter.summary(3, 1.5) }
         assert_match(/✓/, out)
         assert_match(/~1.5 seconds/, out)
         assert_match(/3 tools/, out)

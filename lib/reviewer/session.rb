@@ -152,7 +152,7 @@ module Reviewer
         Report::Formatter.new(report, output: output).print
       elsif report.success?
         ran_count = report.results.count { |result| !result.missing? && !result.skipped? }
-        batch_formatter.batch_summary(ran_count, report.duration)
+        batch_formatter.summary(ran_count, report.duration)
       end
     end
 

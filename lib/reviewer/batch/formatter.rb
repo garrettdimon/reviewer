@@ -25,7 +25,7 @@ module Reviewer
       # @param seconds [Float] total elapsed time in seconds
       #
       # @return [void]
-      def batch_summary(tool_count, seconds)
+      def summary(tool_count, seconds)
         output.newline
         printer.print(:success, CHECKMARK)
         printer.print(:muted, " ~#{seconds.round(1)} seconds")
