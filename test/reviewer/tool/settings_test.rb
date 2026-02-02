@@ -16,17 +16,20 @@ module Reviewer
       end
 
       def test_compares_settings_values_for_equality
-        settings_one = Settings.new(:enabled_tool)
-        settings_two = Settings.new(:enabled_tool)
-        settings_three = Settings.new(:disabled_tool)
+        config_a = { name: 'Tool A', commands: { review: 'ls' } }
+        config_b = { name: 'Tool B', commands: { review: 'ls -a' } }
+        settings_one = Settings.new(:tool_a, config: config_a)
+        settings_two = Settings.new(:tool_a, config: config_a)
+        settings_three = Settings.new(:tool_b, config: config_b)
         assert settings_one == settings_two
         assert settings_one.eql?(settings_two)
         refute settings_one == settings_three
         refute settings_one.eql?(settings_three)
       end
 
-      def test_uses_reviewer_configuration_when_config_not_provided
-        settings = Settings.new(:enabled_tool)
+      def test_uses_provided_config
+        config = { name: 'Enabled Test Tool', commands: { review: 'ls' } }
+        settings = Settings.new(:enabled_tool, config: config)
         assert_equal 'Enabled Test Tool', settings.name
       end
 

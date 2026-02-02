@@ -15,7 +15,7 @@ module Reviewer
     # @param tools [Tools] the tools collection to report on
     #
     # @return [Capabilities]
-    def initialize(tools: Reviewer.tools)
+    def initialize(tools:)
       @tools = tools
     end
 

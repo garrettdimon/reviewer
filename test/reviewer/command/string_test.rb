@@ -6,12 +6,12 @@ module Reviewer
   class Command
     class StringTest < Minitest::Test
       def setup
-        @settings = ::Reviewer::Tool::Settings.new(:enabled_tool)
+        @settings = build_tool(:enabled_tool).settings
       end
 
       def test_can_control_seed_via_string_replacement
-        @settings = ::Reviewer::Tool::Settings.new(:dynamic_seed_tool)
-        cmd = Command::String.new(:review, tool_settings: @settings)
+        settings = build_tool(:dynamic_seed_tool).settings
+        cmd = Command::String.new(:review, tool_settings: settings)
         assert_equal 'ls -c --seed $SEED', cmd.to_s
       end
 
@@ -40,7 +40,7 @@ module Reviewer
       end
 
       def test_appends_files_when_tool_supports_file_targeting
-        settings = ::Reviewer::Tool::Settings.new(:file_targeting_tool)
+        settings = build_tool(:file_targeting_tool).settings
         files = %w[lib/foo.rb lib/bar.rb]
         cmd = Command::String.new(:review, tool_settings: settings, files: files)
 
@@ -48,7 +48,7 @@ module Reviewer
       end
 
       def test_appends_files_with_flag_and_custom_separator
-        settings = ::Reviewer::Tool::Settings.new(:file_targeting_with_flag_tool)
+        settings = build_tool(:file_targeting_with_flag_tool).settings
         files = %w[lib/foo.rb lib/bar.rb]
         cmd = Command::String.new(:review, tool_settings: settings, files: files)
 
@@ -64,14 +64,14 @@ module Reviewer
       end
 
       def test_does_not_append_files_when_no_files_provided
-        settings = ::Reviewer::Tool::Settings.new(:file_targeting_tool)
+        settings = build_tool(:file_targeting_tool).settings
         cmd = Command::String.new(:review, tool_settings: settings, files: [])
 
         assert_equal 'rubocop', cmd.to_s
       end
 
       def test_uses_file_scoped_command_when_files_present
-        settings = ::Reviewer::Tool::Settings.new(:file_scoped_command_tool)
+        settings = build_tool(:file_scoped_command_tool).settings
         files = %w[test/models/user_test.rb test/models/post_test.rb]
         cmd = Command::String.new(:review, tool_settings: settings, files: files)
 
@@ -79,14 +79,14 @@ module Reviewer
       end
 
       def test_uses_standard_command_when_no_files_scoped
-        settings = ::Reviewer::Tool::Settings.new(:file_scoped_command_tool)
+        settings = build_tool(:file_scoped_command_tool).settings
         cmd = Command::String.new(:review, tool_settings: settings, files: [])
 
         assert_equal 'bundle exec rake test', cmd.to_s
       end
 
       def test_uses_standard_command_when_no_file_scoped_override
-        settings = ::Reviewer::Tool::Settings.new(:file_targeting_tool)
+        settings = build_tool(:file_targeting_tool).settings
         files = %w[lib/foo.rb lib/bar.rb]
         cmd = Command::String.new(:review, tool_settings: settings, files: files)
 

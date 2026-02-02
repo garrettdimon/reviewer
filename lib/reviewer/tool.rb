@@ -40,11 +40,12 @@ module Reviewer
 
     # Create an instance of a tool
     # @param tool_key [Symbol] the key to the tool from the configuration file
+    # @param config [Hash] the tool's configuration hash
     # @param history [History] the history store for timing and state persistence
     #
     # @return [Tool] an instance of tool for accessing settings information and facts about the tool
-    def initialize(tool_key, history: Reviewer.history)
-      @settings = Settings.new(tool_key)
+    def initialize(tool_key, config:, history:)
+      @settings = Settings.new(tool_key, config: config)
       @history = history
       @timing = Timing.new(history, key)
     end
@@ -134,6 +135,22 @@ module Reviewer
       settings == other.settings
     end
     alias :== eql?
+
+    # Records the pass/fail status and failed files from a result into history
+    # @param result [Runner::Result] the result of running this tool
+    #
+    # @return [void]
+    def record_run(result)
+      status = result.success? ? :passed : :failed
+      @history.set(key, :last_status, status)
+
+      if result.success?
+        @history.set(key, :last_failed_files, nil)
+      else
+        files = Runner::FailedFiles.new(result.stdout, result.stderr).to_a
+        @history.set(key, :last_failed_files, files) if files.any?
+      end
+    end
 
     # Resolves which files this tool should process
     # @param files [Array<String>] the input files to resolve

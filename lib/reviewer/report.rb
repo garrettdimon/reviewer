@@ -57,11 +57,11 @@ module Reviewer
       missing_results.any?
     end
 
-    # Returns Tool objects for missing results
+    # Returns data for missing tools (name and key)
     #
-    # @return [Array<Tool>] tools whose executables were not found
+    # @return [Array<Runner::Result>] the missing results with tool info
     def missing_tools
-      missing_results.map { |result| Tool.new(result.tool_key) }
+      missing_results
     end
 
     # Converts the report to a hash suitable for serialization

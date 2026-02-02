@@ -82,6 +82,11 @@ module Reviewer
       assert_equal ['./app/**/*.rb', './test/**/*.rb'], arguments.files.raw
     end
 
+    def test_passes_reserved_keywords_to_files
+      arguments = Arguments.new(%w[staged])
+      assert_includes arguments.files.keywords, 'staged'
+    end
+
     def test_defines_custom_inspect
       args = %w[staged --tags ruby,css --files ./app/**/*.rb,./test/**/*.rb]
       arguments = Arguments.new(args)

@@ -13,7 +13,7 @@ module Reviewer
       # @param tools [Tools] the tools collection to analyze
       #
       # @return [OpportunityCheck]
-      def initialize(report, project_dir, configuration: Reviewer.configuration, tools: Reviewer.tools)
+      def initialize(report, project_dir, configuration:, tools:)
         @report = report
         @project_dir = project_dir
         @configuration = configuration

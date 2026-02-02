@@ -33,7 +33,7 @@ module Reviewer
 
   class << self
     # Resets the loaded tools and arguments
-    def reset! = @tools = @arguments = @prompt = nil
+    def reset! = @tools = @arguments = @prompt = @output = @history = @configuration = nil
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     #   commands that are not disabled to have an entry for the `review` command.
@@ -69,7 +69,7 @@ module Reviewer
     #   based on enabled/disabled, tags, keywords, etc.
     #
     # @return [Reviewer::Tools] exposes the set of tools to be run in a given context
-    def tools = @tools ||= Tools.new
+    def tools = @tools ||= Tools.new(arguments: arguments, history: history, config_file: configuration.file)
 
     # The primary output method for Reviewer to consistently display success/failure details for a
     #   unique run of each tool and the collective summary when relevant.
@@ -80,7 +80,7 @@ module Reviewer
     # A file store for sharing information across runs
     #
     # @return [Reviewer::History] a YAML::Store (or Pstore) containing data on tools
-    def history = @history ||= History.new
+    def history = @history ||= History.new(file: configuration.history_file)
 
     # An interactive prompt for yes/no questions
     #
@@ -108,11 +108,11 @@ module Reviewer
     def capabilities_flag? = ARGV.include?('--capabilities') || ARGV.include?('-c')
 
     def run_capabilities
-      puts Capabilities.new.to_json
+      puts Capabilities.new(tools: tools).to_json
     end
 
     def run_doctor
-      report = Doctor.run
+      report = Doctor.run(configuration: configuration, tools: tools)
       Doctor::Formatter.new(output).print(report)
     end
 
@@ -120,7 +120,7 @@ module Reviewer
       formatter = Setup::Formatter.new(output)
       formatter.first_run_greeting
       if prompt.yes?('Would you like to set it up now?')
-        Setup.run
+        Setup.run(configuration: configuration)
       else
         formatter.first_run_skip
       end

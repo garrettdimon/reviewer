@@ -105,23 +105,32 @@ module Reviewer
         end
       end
 
-      def test_git_error_returns_empty_and_warns
-        files = Files.new(provided: [], keywords: %w[staged])
+      def test_git_error_calls_callback_and_returns_empty
+        errors = []
+        files = Files.new(provided: [], keywords: %w[staged], on_git_error: ->(msg) { errors << msg })
 
         stub_git_failure('fatal: not a git repository', 128) do
-          out, _err = capture_subprocess_io { files.to_a }
           assert_empty files.to_a
-          assert_match(/not a git repository/i, out)
+          assert_equal 1, errors.size
+          assert_match(/not a git repository/i, errors.first)
         end
       end
 
       def test_git_error_continues_with_provided_files
-        files = Files.new(provided: ['app/models/user.rb'], keywords: %w[staged])
+        errors = []
+        files = Files.new(provided: ['app/models/user.rb'], keywords: %w[staged], on_git_error: ->(msg) { errors << msg })
 
         stub_git_failure('git error', 1) do
-          capture_subprocess_io do
-            assert_equal ['app/models/user.rb'], files.to_a
-          end
+          assert_equal ['app/models/user.rb'], files.to_a
+          assert_equal 1, errors.size
+        end
+      end
+
+      def test_git_error_without_callback_returns_empty_silently
+        files = Files.new(provided: [], keywords: %w[staged])
+
+        stub_git_failure('fatal: not a git repository', 128) do
+          assert_empty files.to_a
         end
       end
 

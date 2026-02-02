@@ -11,15 +11,7 @@ module Reviewer
   #   @return [Output] the output channel for displaying content
   # @!attribute [rw] history
   #   @return [History] the YAML store for timing data and prepare timestamps
-  Context = Struct.new(:arguments, :output, :history, keyword_init: true) do
-    # Creates a new Context, defaulting each dependency to the current Reviewer globals.
-    # Entry points (Session, tests) call Context.new; downstream classes receive it as a required parameter.
-    #
-    # @param arguments [Arguments] defaults to Reviewer.arguments
-    # @param output [Output] defaults to Reviewer.output
-    # @param history [History] defaults to Reviewer.history
-    def initialize(arguments: Reviewer.arguments, output: Reviewer.output, history: Reviewer.history)
-      super
-    end
-  end
+  # Bundles the shared runtime dependencies that flow through the review/format lifecycle.
+  # All parameters are required — no global defaults.
+  Context = Struct.new(:arguments, :output, :history, keyword_init: true)
 end

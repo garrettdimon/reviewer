@@ -27,7 +27,7 @@ module Reviewer
       #   Reviewer::Arguments::Tags.new.to_a # => ['css', 'ruby']
       #
       # @return [self]
-      def initialize(provided: Reviewer.arguments.tags.raw, keywords: Reviewer.arguments.keywords.for_tags)
+      def initialize(provided: [], keywords: [])
         @provided = Array(provided)
         @keywords = Array(keywords)
       end

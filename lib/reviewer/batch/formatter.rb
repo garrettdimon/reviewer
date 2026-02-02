@@ -45,17 +45,15 @@ module Reviewer
       end
 
       # Displays a list of tools whose executables were not found, with install hints
-      # @param tools [Array<Tool>] the tools that were missing
+      # @param missing [Array<Runner::Result>] the results for missing tools
+      # @param tools [Array<Tool>] the tools that were in the batch
       #
       # @return [void]
-      def missing_tools(tools)
-        label = "#{tools.size} not installed:"
+      def missing_tools(missing, tools:)
         output.newline
-        printer.puts(:warning, label)
-        tools.each do |tool|
-          hint = tool.installable? ? tool.install_command : ''
-          printer.puts(:muted, "  #{tool.name.ljust(22)}#{hint}")
-        end
+        printer.puts(:warning, "#{missing.size} not installed:")
+        tool_lookup = tools.to_h { |tool| [tool.key, tool] }
+        missing.each { |result| print_missing_hint(result.tool_name, tool_lookup[result.tool_key]) }
         output.newline
       end
 
@@ -74,6 +72,11 @@ module Reviewer
       end
 
       private
+
+      def print_missing_hint(name, tool)
+        hint = tool&.installable? ? tool.install_command : ''
+        printer.puts(:muted, "  #{name.ljust(22)}#{hint}")
+      end
 
       def print_run_entry(entry)
         printer.puts(:muted, entry[:name])

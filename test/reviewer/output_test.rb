@@ -41,6 +41,31 @@ module Reviewer
       assert_match(/Usage: rvw/, out)
     end
 
+    def test_console_width_returns_default_when_io_console_nil
+      IO.stub(:console, nil) do
+        output = Output.new
+        assert_equal Output::DEFAULT_CONSOLE_WIDTH, output.send(:console_width)
+      end
+    end
+
+    def test_console_width_returns_default_when_winsize_zero
+      fake_console = Object.new
+      fake_console.define_singleton_method(:winsize) { [0, 0] }
+      IO.stub(:console, fake_console) do
+        output = Output.new
+        assert_equal Output::DEFAULT_CONSOLE_WIDTH, output.send(:console_width)
+      end
+    end
+
+    def test_console_width_returns_actual_width_when_positive
+      fake_console = Object.new
+      fake_console.define_singleton_method(:winsize) { [24, 120] }
+      IO.stub(:console, fake_console) do
+        output = Output.new
+        assert_equal 120, output.send(:console_width)
+      end
+    end
+
     def test_scrub_removes_rake_aborted_text
       text = "some error\nrake aborted!\nmore text"
       assert_equal "some error\n", Output.scrub(text)

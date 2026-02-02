@@ -10,12 +10,12 @@ module Reviewer
 
       # Creates an instance of settings for retrieving values from the configuration file
       # @param tool_key [Symbol] the unique identifier for the tool in the config file
-      # @param config [Hash, nil] the configuration values to examine for the settings
+      # @param config [Hash] the configuration values to examine for the settings
       #
       # @return [Settings]
-      def initialize(tool_key, config: nil)
+      def initialize(tool_key, config:)
         @tool_key = tool_key.to_sym
-        @config = config || load_config
+        @config = config
       end
 
       # Returns a hash code for comparing settings instances
@@ -127,10 +127,6 @@ module Reviewer
       # Returns the configuration as a plain hash for comparison
       # @return [Hash] the configuration state
       def state = config.to_hash
-
-      # Loads the tool's configuration from the global tools registry
-      # @return [Hash] the tool's configuration hash
-      def load_config = Reviewer.tools.to_h.fetch(key) { {} }
     end
   end
 end

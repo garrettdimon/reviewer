@@ -7,7 +7,7 @@ module Reviewer
     class ToolInventoryTest < Minitest::Test
       def test_reports_all_configured_tools
         report = Report.new
-        ToolInventory.new(report).check
+        ToolInventory.new(report, configuration: Reviewer.configuration, tools: Reviewer.tools).check
 
         tool_findings = report.section(:tools)
         refute_empty tool_findings
@@ -15,7 +15,7 @@ module Reviewer
 
       def test_enabled_tool_reported_as_ok
         report = Report.new
-        ToolInventory.new(report).check
+        ToolInventory.new(report, configuration: Reviewer.configuration, tools: Reviewer.tools).check
 
         enabled = report.section(:tools).find { |f| f.message.include?('Enabled Test Tool') }
         assert enabled
@@ -25,7 +25,7 @@ module Reviewer
 
       def test_disabled_tool_reported_as_muted
         report = Report.new
-        ToolInventory.new(report).check
+        ToolInventory.new(report, configuration: Reviewer.configuration, tools: Reviewer.tools).check
 
         disabled = report.section(:tools).find { |f| f.message.include?('Disabled Test Tool') }
         assert disabled
@@ -35,7 +35,7 @@ module Reviewer
 
       def test_includes_command_summary
         report = Report.new
-        ToolInventory.new(report).check
+        ToolInventory.new(report, configuration: Reviewer.configuration, tools: Reviewer.tools).check
 
         finding = report.section(:tools).find { |f| f.message.include?('Enabled Test Tool') }
         assert_match(/Commands:/, finding.detail)

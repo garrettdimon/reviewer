@@ -53,7 +53,8 @@ module Reviewer
       current_tools = tools.current
       return 0 if current_tools.empty?
 
-      report = Batch.new(command_type, current_tools, context: context).run
+      strategy = runner_strategy(current_tools)
+      report = Batch.new(command_type, current_tools, strategy: strategy, context: context).run
       puts report.to_json
       report.max_exit_status
     end
@@ -66,9 +67,10 @@ module Reviewer
 
       show_run_summary(current_tools, command_type)
 
-      report = Batch.new(command_type, current_tools, context: context).run
+      strategy = runner_strategy(current_tools)
+      report = Batch.new(command_type, current_tools, strategy: strategy, context: context).run
       display_text_report(report)
-      show_missing_tools(report)
+      show_missing_tools(report, current_tools)
 
       report.max_exit_status
     end
@@ -136,10 +138,10 @@ module Reviewer
       end
     end
 
-    def show_missing_tools(report)
+    def show_missing_tools(report, current_tools)
       return unless report.missing?
 
-      batch_formatter.missing_tools(report.missing_tools)
+      batch_formatter.missing_tools(report.missing_tools, tools: current_tools)
     end
 
     def show_run_summary(current_tools, command_type)
@@ -155,6 +157,10 @@ module Reviewer
       current_tools.filter_map do |tool|
         Command.new(tool, command_type, context: context).run_summary
       end
+    end
+
+    def runner_strategy(current_tools)
+      arguments.runner_strategy(multiple_tools: current_tools.size > 1)
     end
 
     def formatter = @formatter ||= Session::Formatter.new(output)

@@ -112,6 +112,12 @@ failing_with_output:
   commands:
     review: "echo 'lib/reviewer/batch.rb:10:3: C: Style/StringLiterals' && echo 'lib/reviewer/command.rb:5:1: W: Lint/Foo' && exit 1"
 
+# Intentionally Failing Command with stderr output
+failing_with_stderr:
+  disabled: true
+  commands:
+    review: "echo 'stderr warning' >&2 && exit 1"
+
 # For Testing Seed String Replacement
 dynamic_seed_tool:
   disabled: true

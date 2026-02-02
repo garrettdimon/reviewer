@@ -23,12 +23,5 @@ module Reviewer
       context = Context.new(arguments: :args, output: :out, history: :hist)
       assert_equal %i[arguments output history], context.members
     end
-
-    def test_defaults_to_reviewer_globals
-      context = Context.new
-      assert_equal Reviewer.arguments, context.arguments
-      assert_equal Reviewer.output, context.output
-      assert_equal Reviewer.history, context.history
-    end
   end
 end

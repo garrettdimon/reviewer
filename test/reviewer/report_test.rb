@@ -154,14 +154,14 @@ module Reviewer
       assert_equal 0, summary[:failed]
     end
 
-    def test_missing_tools_returns_tool_objects
+    def test_missing_tools_returns_missing_results
       @report.add(build_result(tool_key: :rubocop, success: true))
       @report.add(build_missing_result(tool_key: :list))
 
       missing = @report.missing_tools
       assert_equal 1, missing.size
-      assert_instance_of Tool, missing.first
-      assert_equal :list, missing.first.key
+      assert_instance_of Runner::Result, missing.first
+      assert_equal :list, missing.first.tool_key
     end
 
     def test_missing_tools_returns_empty_when_none_missing

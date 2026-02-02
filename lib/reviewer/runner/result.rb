@@ -62,10 +62,20 @@ module Reviewer
         end
       end
 
+      def self.base_attributes(runner)
+        tool = runner.tool
+        {
+          tool_key: tool.key,
+          tool_name: tool.name,
+          command_type: runner.command.type,
+          command_string: runner.command.string
+        }
+      end
+
       def self.build_skipped(runner)
         new(
-          tool_key: runner.tool.key, tool_name: runner.tool.name,
-          command_type: runner.command.type, command_string: nil,
+          **base_attributes(runner),
+          command_string: nil,
           success: true, exit_status: 0, duration: 0,
           stdout: nil, stderr: nil, skipped: true
         )
@@ -73,30 +83,27 @@ module Reviewer
 
       def self.build_missing(runner)
         new(
-          tool_key: runner.tool.key, tool_name: runner.tool.name,
-          command_type: runner.command.type, command_string: runner.command.string,
+          **base_attributes(runner),
           success: false, exit_status: runner.shell.result.exit_status, duration: 0,
           stdout: nil, stderr: nil, skipped: nil, missing: true
         )
       end
 
       def self.build_executed(runner)
-        tool = runner.tool
-        command = runner.command
         shell = runner.shell
-        result = shell.result
+        shell_result = shell.result
+        settings = runner.tool.settings
         new(
-          tool_key: tool.key, tool_name: tool.name,
-          command_type: command.type, command_string: command.string,
-          success: runner.success?, exit_status: result.exit_status,
+          **base_attributes(runner),
+          success: runner.success?, exit_status: shell_result.exit_status,
           duration: shell.timer.total_seconds,
-          stdout: result.stdout, stderr: result.stderr, skipped: nil,
-          summary_pattern: tool.settings.summary_pattern,
-          summary_label: tool.settings.summary_label
+          stdout: shell_result.stdout, stderr: shell_result.stderr, skipped: nil,
+          summary_pattern: settings.summary_pattern,
+          summary_label: settings.summary_label
         )
       end
 
-      private_class_method :build_skipped, :build_missing, :build_executed
+      private_class_method :base_attributes, :build_skipped, :build_missing, :build_executed
 
       alias_method :success?, :success
       alias_method :skipped?, :skipped

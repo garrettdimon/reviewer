@@ -12,7 +12,7 @@ module Reviewer
       # @param tools [Tools] the tools collection to report on
       #
       # @return [ToolInventory]
-      def initialize(report, configuration: Reviewer.configuration, tools: Reviewer.tools)
+      def initialize(report, configuration:, tools:)
         @report = report
         @configuration = configuration
         @tools = tools

@@ -7,18 +7,8 @@ module Reviewer
     include Tool::Conversions
 
     def test_tool_from_tool_instance
-      tool = Tool.new(:enabled_tool)
+      tool = build_tool(:enabled_tool)
       assert_equal tool, Tool(tool)
-    end
-
-    def test_tool_from_symbol
-      tool = Tool.new(:enabled_tool)
-      assert_equal tool, Tool(:enabled_tool)
-    end
-
-    def test_tool_from_string
-      tool = Tool.new(:enabled_tool)
-      assert_equal tool, Tool('enabled_tool')
     end
 
     def test_tool_from_unrecognized

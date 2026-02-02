@@ -9,7 +9,7 @@ module Reviewer
       def test_reports_error_when_config_missing
         with_temp_config do
           report = Report.new
-          ConfigCheck.new(report).check
+          ConfigCheck.new(report, configuration: Reviewer.configuration).check
 
           errors = report.section(:configuration).select { |f| f.status == :error }
           assert_equal 1, errors.size
@@ -28,7 +28,7 @@ module Reviewer
       def test_reports_error_for_invalid_yaml
         with_temp_config(content: 'bad: yaml: [invalid') do
           report = Report.new
-          ConfigCheck.new(report).check
+          ConfigCheck.new(report, configuration: Reviewer.configuration).check
 
           errors = report.section(:configuration).select { |f| f.status == :error }
           assert(errors.any? { |f| f.message =~ /yaml syntax error/i })
@@ -38,7 +38,7 @@ module Reviewer
       def test_reports_error_for_missing_review_command
         with_temp_config(content: "tool:\n  commands:\n    format: 'ls'") do
           report = Report.new
-          ConfigCheck.new(report).check
+          ConfigCheck.new(report, configuration: Reviewer.configuration).check
 
           errors = report.section(:configuration).select { |f| f.status == :error }
           assert(errors.any? { |f| f.message =~ /missing review command/i })
@@ -49,7 +49,7 @@ module Reviewer
 
       def run_check
         report = Report.new
-        ConfigCheck.new(report).check
+        ConfigCheck.new(report, configuration: Reviewer.configuration).check
         report.section(:configuration)
       end
 

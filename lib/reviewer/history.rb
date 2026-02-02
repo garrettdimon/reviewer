@@ -21,7 +21,7 @@ module Reviewer
     # @param file [Pathname] the history file to store data
     #
     # @return [History]
-    def initialize(file = Reviewer.configuration.history_file)
+    def initialize(file:)
       @file = file
       @store = YAML::Store.new(file)
     end
@@ -58,10 +58,5 @@ module Reviewer
 
       FileUtils.rm(file)
     end
-
-    # Convenience class method for removing the history file.
-    #
-    # @return [void]
-    def self.clear = new.clear
   end
 end

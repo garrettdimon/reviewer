@@ -9,7 +9,7 @@ module Reviewer
     end
 
     def test_review_command
-      tools = [Tool.new(:list)]
+      tools = [build_tool(:list)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
@@ -21,7 +21,7 @@ module Reviewer
     end
 
     def test_format_command
-      tools = [Tool.new(:enabled_tool)]
+      tools = [build_tool(:enabled_tool)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
@@ -33,7 +33,7 @@ module Reviewer
     end
 
     def test_returns_largest_exit_status_excluding_missing
-      tools = [Tool.new(:list), Tool.new(:missing_command)]
+      tools = [build_tool(:list), build_tool(:missing_command)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
@@ -46,7 +46,7 @@ module Reviewer
     end
 
     def test_review_runs_successfully
-      tools = [Tool.new(:list)]
+      tools = [build_tool(:list)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
@@ -77,7 +77,7 @@ module Reviewer
       with_missing_config do
         stub_prompt = build_tty_prompt("y\n")
         setup_ran = false
-        Setup.stub(:run, -> { setup_ran = true }) do
+        Setup.stub(:run, ->(**) { setup_ran = true }) do
           Reviewer.stub(:prompt, stub_prompt) do
             capture_subprocess_io do
               Reviewer.review
@@ -92,7 +92,7 @@ module Reviewer
     end
 
     def test_missing_tools_summary_shown_in_streaming_mode
-      tools = [Tool.new(:list), Tool.new(:missing_with_install)]
+      tools = [build_tool(:list), build_tool(:missing_with_install)]
 
       Reviewer.tools.stub(:current, tools) do
         out, _err = capture_subprocess_io do
@@ -109,7 +109,7 @@ module Reviewer
 
     def test_review_dispatches_to_init_when_subcommand
       setup_ran = false
-      Setup.stub(:run, -> { setup_ran = true }) do
+      Setup.stub(:run, ->(**) { setup_ran = true }) do
         ARGV.replace(['init'])
         Reviewer.review
       ensure
@@ -120,7 +120,7 @@ module Reviewer
 
     def test_review_dispatches_to_doctor_when_subcommand
       doctor_ran = false
-      Doctor.stub(:run, lambda {
+      Doctor.stub(:run, lambda { |**|
         doctor_ran = true
         Doctor::Report.new
       }) do
@@ -134,7 +134,7 @@ module Reviewer
 
     def test_format_dispatches_to_init_when_subcommand
       setup_ran = false
-      Setup.stub(:run, -> { setup_ran = true }) do
+      Setup.stub(:run, ->(**) { setup_ran = true }) do
         ARGV.replace(['init'])
         Reviewer.format
       ensure
@@ -145,7 +145,7 @@ module Reviewer
 
     def test_format_dispatches_to_doctor_when_subcommand
       doctor_ran = false
-      Doctor.stub(:run, lambda {
+      Doctor.stub(:run, lambda { |**|
         doctor_ran = true
         Doctor::Report.new
       }) do

@@ -94,7 +94,14 @@ module Reviewer
     # The file arguments collected from the command line via the `-f` or `--files` flag
     #
     # @return [Arguments::Files] an collection of the file arguments collected from the command-line
-    def files = @files ||= Arguments::Files.new(provided: options[:files], output: output)
+    def files
+      @files ||= Arguments::Files.new(
+        provided: options[:files],
+        keywords: keywords.reserved,
+        output: output,
+        on_git_error: session_formatter.method(:git_error)
+      )
+    end
 
     # The leftover arguments collected from the command line without being associated with a flag
     #

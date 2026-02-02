@@ -307,7 +307,7 @@ module Reviewer
       private
 
       def build_via_from_runner(skipped: false, missing: false, success: true, exit_status: nil)
-        tool = Tool.new(:enabled_tool)
+        tool = build_tool(:enabled_tool)
         command = Command.new(tool, :review, context: default_context)
         shell = Shell.new
 

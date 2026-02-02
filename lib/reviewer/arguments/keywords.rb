@@ -19,7 +19,7 @@ module Reviewer
       # @param tools [Tools] the collection of configured tools for keyword recognition
       #
       # @return [self]
-      def initialize(*provided, tools: Reviewer.tools)
+      def initialize(*provided, tools: nil)
         @provided = Array(provided.flatten)
         @tools = tools
       end
@@ -89,12 +89,18 @@ module Reviewer
       # Provides the complete list of all configured tags for enabled tools
       #
       # @return [Array<String>] all unique configured tags
-      def configured_tags = tools.enabled.map(&:tags).flatten.uniq.sort
+      def configured_tags
+        return [] unless tools
+
+        tools.enabled.map(&:tags).flatten.uniq.sort
+      end
 
       # Provides the complete list of all configured tool names for enabled tools
       #
       # @return [Array<String>] all unique configured tools
       def configured_tool_names
+        return [] unless tools
+
         # We explicitly don't sort the tool names list because Reviewer uses the configuration order
         # to determine the execution order. So not sorting maintains the predicted order it will run
         # in and leaves the option to sort to the consuming code if needed

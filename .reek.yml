@@ -75,7 +75,7 @@ detectors:
       - 'Reviewer::Setup::ToolBlock#apply_js_runner'                        # String substitution on input
       - 'Reviewer::Setup::ToolBlock#quote'                                  # YAML quoting on input string
       - 'Reviewer::Tool::Timing#average_time'                               # Array computation
-      - 'Reviewer::Arguments::Files#git_files'                               # Inlined error handler uses Reviewer.output
+
 
   # Intentional dynamic dispatch via respond_to?/send.
   ManualDispatch:
@@ -94,8 +94,10 @@ detectors:
   # DI constructors store each dependency as an ivar.
   TooManyInstanceVariables:
     exclude:
+      - 'Reviewer::Batch'                                                   # 5: command_type + tools + strategy + context + report
       - 'Reviewer::Command'                                                 # 5: tool + type + seed + arguments + history
       - 'Reviewer::Runner'                                                  # 6: command + strategy + shell + context + skipped + missing
+      - 'Reviewer::Tools'                                                   # 5: tags + tool_names + arguments + history + config_file
 
   # ANSI escape sequence module -- 6 constants is the natural decomposition.
   TooManyConstants:

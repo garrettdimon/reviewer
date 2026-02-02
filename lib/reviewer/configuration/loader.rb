@@ -24,7 +24,7 @@ module Reviewer
       # @raise [MissingConfigurationError] if the file doesn't exist
       # @raise [InvalidConfigurationError] if the YAML is malformed
       # @raise [MissingReviewCommandError] if a tool lacks a review command
-      def initialize(file = Reviewer.configuration.file)
+      def initialize(file:)
         @file = file
         @configuration = configuration_hash
 
@@ -46,7 +46,7 @@ module Reviewer
       # Loads and returns the tools configuration hash
       #
       # @return [Hash] the parsed configuration from the YAML file
-      def self.configuration = new.configuration
+      def self.configuration(file:) = new(file: file).configuration
 
       private
 

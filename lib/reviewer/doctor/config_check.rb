@@ -11,7 +11,7 @@ module Reviewer
       # @param configuration [Configuration] the configuration to validate
       #
       # @return [ConfigCheck]
-      def initialize(report, configuration: Reviewer.configuration)
+      def initialize(report, configuration:)
         @report = report
         @configuration = configuration
       end
@@ -34,7 +34,7 @@ module Reviewer
 
       # Exercises the full Configuration::Loader pipeline (parse + validate) to surface config errors
       def validate_via_loader
-        Configuration::Loader.configuration
+        Configuration::Loader.configuration(file: @configuration.file)
         report.add(:configuration, status: :ok, message: 'Configuration is valid')
       rescue Configuration::Loader::InvalidConfigurationError => e
         report.add(:configuration, status: :error, message: 'YAML syntax error', detail: e.message)

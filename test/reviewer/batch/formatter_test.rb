@@ -62,27 +62,47 @@ module Reviewer
       end
 
       def test_missing_tools_shows_count
-        tools = [Tool.new(:missing_with_install)]
-        out, _err = capture_subprocess_io { @formatter.missing_tools(tools) }
+        tools = [build_tool(:missing_with_install)]
+        results = [build_missing_result(:missing_with_install)]
+        out, _err = capture_subprocess_io { @formatter.missing_tools(results, tools: tools) }
         assert_match(/1 not installed/i, out)
       end
 
       def test_missing_tools_shows_tool_name
-        tools = [Tool.new(:missing_with_install)]
-        out, _err = capture_subprocess_io { @formatter.missing_tools(tools) }
+        tools = [build_tool(:missing_with_install)]
+        results = [build_missing_result(:missing_with_install)]
+        out, _err = capture_subprocess_io { @formatter.missing_tools(results, tools: tools) }
         assert_match(/Missing With Install/i, out)
       end
 
       def test_missing_tools_shows_install_hint
-        tools = [Tool.new(:missing_with_install)]
-        out, _err = capture_subprocess_io { @formatter.missing_tools(tools) }
+        tools = [build_tool(:missing_with_install)]
+        results = [build_missing_result(:missing_with_install)]
+        out, _err = capture_subprocess_io { @formatter.missing_tools(results, tools: tools) }
         assert_match(/gem install missing-tool/, out)
       end
 
       def test_missing_tools_pluralizes_for_multiple
-        tools = [Tool.new(:missing_with_install), Tool.new(:missing_command)]
-        out, _err = capture_subprocess_io { @formatter.missing_tools(tools) }
+        tools = [build_tool(:missing_with_install), build_tool(:missing_command)]
+        results = [build_missing_result(:missing_with_install), build_missing_result(:missing_command)]
+        out, _err = capture_subprocess_io { @formatter.missing_tools(results, tools: tools) }
         assert_match(/2 not installed/i, out)
+      end
+
+      private
+
+      def build_missing_result(tool_key)
+        tool = build_tool(tool_key)
+        Runner::Result.new(
+          tool_key: tool.key,
+          tool_name: tool.name,
+          command_type: :review,
+          command_string: nil,
+          success: false,
+          exit_status: 127,
+          duration: 0,
+          missing: true
+        )
       end
     end
   end

@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class CapabilitiesTest < Minitest::Test
     def setup
-      @capabilities = Capabilities.new
+      @capabilities = Capabilities.new(tools: Reviewer.tools)
     end
 
     def test_to_h_returns_hash

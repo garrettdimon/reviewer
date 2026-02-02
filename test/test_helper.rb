@@ -28,11 +28,22 @@ MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true) do
   def success? = exitstatus.zero?
 end
 
-class Minitest::Test
-  private
+module Minitest
+  class Test
+    private
 
-  def default_context(arguments: Reviewer::Arguments.new([]), output: Reviewer::Output.new, history: Reviewer.history)
-    Reviewer::Context.new(arguments: arguments, output: output, history: history)
+    def default_context(arguments: Reviewer::Arguments.new([]), output: Reviewer::Output.new, history: Reviewer.history)
+      Reviewer::Context.new(arguments: arguments, output: output, history: history)
+    end
+
+    def build_tool(key, history: Reviewer.history)
+      config = test_fixture_config.fetch(key.to_sym) { {} }
+      Reviewer::Tool.new(key, config: config, history: history)
+    end
+
+    def test_fixture_config
+      @test_fixture_config ||= Reviewer::Configuration::Loader.configuration(file: Reviewer.configuration.file)
+    end
   end
 end
 

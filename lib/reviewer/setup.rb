@@ -17,8 +17,8 @@ module Reviewer
     # @param output [Output] the console output handler
     #
     # @return [void]
-    def self.run(project_dir: Pathname.pwd, output: Reviewer.output)
-      config_file = Reviewer.configuration.file
+    def self.run(configuration:, project_dir: Pathname.pwd, output: Output.new)
+      config_file = configuration.file
       formatter = Formatter.new(output)
 
       if config_file.exist?

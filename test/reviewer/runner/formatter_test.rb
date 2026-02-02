@@ -11,7 +11,7 @@ module Reviewer
       end
 
       def test_tool_summary
-        tool = Tool.new(:enabled_tool)
+        tool = build_tool(:enabled_tool)
         out, _err = capture_subprocess_io { @formatter.tool_summary(tool) }
         assert_match(/#{tool.name}/i, out)
         assert_match(/#{tool.description}/i, out)
