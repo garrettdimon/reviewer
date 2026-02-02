@@ -92,14 +92,12 @@ module Reviewer
       end
     end
 
-    def build_session(arguments: nil, tools: nil, output: nil, history: nil, prompt: nil, configuration: nil)
+    def build_session(arguments: nil, tools: nil, output: nil, history: nil)
       Session.new(
         arguments: arguments || StubArgs.new(format: :streaming, json?: false, raw?: false, streaming?: true),
         tools: tools || Reviewer.tools,
         output: output || Output.new,
-        history: history || Reviewer.history,
-        prompt: prompt || Prompt.new(input: StringIO.new, output: StringIO.new),
-        configuration: configuration || Reviewer.configuration
+        history: history || Reviewer.history
       )
     end
 

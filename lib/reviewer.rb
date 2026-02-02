@@ -118,9 +118,7 @@ module Reviewer
         arguments: arguments,
         tools: tools,
         output: output,
-        history: history,
-        prompt: prompt,
-        configuration: configuration
+        history: history
       )
     end
   end

@@ -6,45 +6,45 @@ module Reviewer
   # Run lifecycle with full dependency injection.
   # Owns the review/format lifecycle that was previously in Reviewer module methods.
   class Session
-    attr_reader :arguments, :tools, :output, :history, :prompt, :configuration
-    private :arguments, :tools, :output, :history, :prompt, :configuration
+    attr_reader :arguments, :tools, :output, :history
+    private :arguments, :tools, :output, :history
 
     # Creates a session with all dependencies injected
     # @param arguments [Arguments] parsed CLI arguments
     # @param tools [Tools] the collection of configured tools
     # @param output [Output] console output handler
     # @param history [History] YAML store for run history and timing
-    # @param prompt [Prompt] interactive prompt for yes/no questions
-    # @param configuration [Configuration] the loaded .reviewer.yml configuration
     #
     # @return [Session]
-    def initialize(arguments:, tools:, output:, history:, prompt:, configuration:)
+    def initialize(arguments:, tools:, output:, history:)
       @arguments = arguments
       @tools = tools
       @output = output
       @history = history
-      @prompt = prompt
-      @configuration = configuration
     end
 
     # Runs the review command for the current set of tools
+    # @param prompt [Prompt] interactive prompt for first-run setup
+    # @param configuration [Configuration] the loaded .reviewer.yml configuration
     #
     # @return [Integer] the maximum exit status from all tools
-    def review
-      run_tools(:review)
+    def review(prompt: Reviewer.prompt, configuration: Reviewer.configuration)
+      run_tools(:review, prompt: prompt, configuration: configuration)
     end
 
     # Runs the format command for the current set of tools
+    # @param prompt [Prompt] interactive prompt for first-run setup
+    # @param configuration [Configuration] the loaded .reviewer.yml configuration
     #
     # @return [Integer] the maximum exit status from all tools
-    def format
-      run_tools(:format)
+    def format(prompt: Reviewer.prompt, configuration: Reviewer.configuration)
+      run_tools(:format, prompt: prompt, configuration: configuration)
     end
 
     private
 
-    def run_tools(command_type)
-      return 0 if handle_missing_configuration?
+    def run_tools(command_type, prompt:, configuration:)
+      return 0 if handle_missing_configuration?(prompt: prompt, configuration: configuration)
       return 0 if handle_failed_with_nothing_to_run?
 
       if json_output?
@@ -109,7 +109,9 @@ module Reviewer
     end
 
     # Returns true if configuration is missing (caller should return early)
-    def handle_missing_configuration?
+    # @param prompt [Prompt] interactive prompt for yes/no questions
+    # @param configuration [Configuration] the loaded .reviewer.yml configuration
+    def handle_missing_configuration?(prompt:, configuration:)
       return false if configuration.file.exist?
 
       setup_formatter.first_run_greeting
