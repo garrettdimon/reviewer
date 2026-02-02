@@ -11,7 +11,7 @@ module Reviewer
         end
 
         def test_passthrough_runner_implementation
-          passthrough_runner = Runner.new(:list, :review, @strategy)
+          passthrough_runner = Runner.new(:list, :review, @strategy, context: Context.new)
           result = nil
           capture_subprocess_io { result = passthrough_runner.run }
           assert_equal 0, result
@@ -20,7 +20,7 @@ module Reviewer
 
         def test_passthrough_runner_implementation_with_prep
           History.clear
-          passthrough_runner = Runner.new(:list, :review, @strategy)
+          passthrough_runner = Runner.new(:list, :review, @strategy, context: Context.new)
           result = nil
           capture_subprocess_io { result = passthrough_runner.run }
           assert_equal 0, result

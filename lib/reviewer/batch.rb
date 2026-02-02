@@ -8,25 +8,19 @@ module Reviewer
     # Raised when a tool specifies an unrecognized command type
     class UnrecognizedCommandError < ArgumentError; end
 
-    attr_reader :command_type, :tools, :report, :strategy, :history, :output, :arguments
-    private :strategy, :history, :output, :arguments
+    attr_reader :command_type, :tools, :report, :context
+    private :context
 
     # Generates an instance of Batch for running multiple tools together
     # @param command_type [Symbol] the type of command to run for each tool.
     # @param tools [Array<Tool>] the tools to run the commands for
-    # @param strategy [Class] the runner strategy class (Captured or Passthrough)
-    # @param history [History] the history store for status persistence
-    # @param output [Output] the output instance for display
-    # @param arguments [Arguments] the parsed CLI arguments
+    # @param context [Context] the shared runtime dependencies (arguments, output, history)
     #
     # @return [self]
-    def initialize(command_type, tools, strategy: nil, history: Reviewer.history, output: Reviewer.output, arguments: Reviewer.arguments)
+    def initialize(command_type, tools, context:)
       @command_type = command_type
       @tools = tools
-      @strategy = strategy || arguments.runner_strategy(multiple_tools: tools.size > 1)
-      @history = history
-      @output = output
-      @arguments = arguments
+      @context = context
       @report = Report.new
     end
 
@@ -52,7 +46,7 @@ module Reviewer
     # Runs a single tool and records its result in the report.
     # @return [Runner] the runner after execution
     def run_tool(tool)
-      runner = Runner.new(tool, command_type, strategy, output: output, arguments: arguments)
+      runner = Runner.new(tool, command_type, strategy, context: context)
       runner.run
 
       @report.add(runner.to_result)
@@ -63,17 +57,17 @@ module Reviewer
 
     def clear_last_statuses
       matching_tools.each do |tool|
-        history.set(tool.key, :last_status, nil)
+        context.history.set(tool.key, :last_status, nil)
       end
     end
 
     # Records pass/fail status and failed files for the `failed` keyword to use on subsequent runs
     def record_run(tool, runner)
       success = runner.success?
-      history.set(tool.key, :last_status, success ? :passed : :failed)
+      context.history.set(tool.key, :last_status, success ? :passed : :failed)
 
       if success
-        history.set(tool.key, :last_failed_files, nil)
+        context.history.set(tool.key, :last_failed_files, nil)
       else
         store_failed_files(tool, runner)
       end
@@ -83,7 +77,14 @@ module Reviewer
     # in history for the `failed` keyword to use on subsequent runs.
     def store_failed_files(tool, runner)
       files = runner.failed_files
-      history.set(tool.key, :last_failed_files, files) if files.any?
+      context.history.set(tool.key, :last_failed_files, files) if files.any?
+    end
+
+    # Determines the runner strategy based on CLI flags and tool count
+    #
+    # @return [Class] the strategy class (Captured or Passthrough)
+    def strategy
+      context.arguments.runner_strategy(multiple_tools: tools.size > 1)
     end
 
     # Returns the set of tools matching the provided command. So when formatting, if a tool does not

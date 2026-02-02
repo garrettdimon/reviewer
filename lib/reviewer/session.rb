@@ -6,21 +6,17 @@ module Reviewer
   # Run lifecycle with full dependency injection.
   # Owns the review/format lifecycle that was previously in Reviewer module methods.
   class Session
-    attr_reader :arguments, :tools, :output, :history
-    private :arguments, :tools, :output, :history
+    attr_reader :context, :tools
+    private :context, :tools
 
     # Creates a session with all dependencies injected
-    # @param arguments [Arguments] parsed CLI arguments
+    # @param context [Context] the shared runtime dependencies (arguments, output, history)
     # @param tools [Tools] the collection of configured tools
-    # @param output [Output] console output handler
-    # @param history [History] YAML store for run history and timing
     #
     # @return [Session]
-    def initialize(arguments:, tools:, output:, history:)
-      @arguments = arguments
+    def initialize(context:, tools:)
+      @context = context
       @tools = tools
-      @output = output
-      @history = history
     end
 
     # Runs the review command for the current set of tools
@@ -39,6 +35,10 @@ module Reviewer
 
     private
 
+    def arguments = context.arguments
+    def output = context.output
+    def history = context.history
+
     def run_tools(command_type)
       return 0 if handle_failed_with_nothing_to_run?
 
@@ -53,7 +53,7 @@ module Reviewer
       current_tools = tools.current
       return 0 if current_tools.empty?
 
-      report = Batch.new(command_type, current_tools, output: output, arguments: arguments).run
+      report = Batch.new(command_type, current_tools, context: context).run
       puts report.to_json
       report.max_exit_status
     end
@@ -66,7 +66,7 @@ module Reviewer
 
       show_run_summary(current_tools, command_type)
 
-      report = Batch.new(command_type, current_tools, output: output, arguments: arguments).run
+      report = Batch.new(command_type, current_tools, context: context).run
       display_text_report(report)
       show_missing_tools(report)
 
@@ -153,7 +153,7 @@ module Reviewer
 
     def build_run_summary(current_tools, command_type)
       current_tools.filter_map do |tool|
-        Command.new(tool, command_type, arguments: arguments).run_summary
+        Command.new(tool, command_type, context: context).run_summary
       end
     end
 

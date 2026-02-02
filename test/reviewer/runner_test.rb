@@ -35,7 +35,7 @@ module Reviewer
     end
 
     def test_determines_success_based_on_configured_max_exit_status_for_review
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(:enabled_tool, :review, context: Context.new)
       max_exit_status = 3
       assert_equal max_exit_status, runner.tool.max_exit_status
       runner.stub(:exit_status, max_exit_status) do
@@ -47,7 +47,7 @@ module Reviewer
     end
 
     def test_ignores_max_exit_status_for_non_review_commands
-      runner = Runner.new(:enabled_tool, :format)
+      runner = Runner.new(:enabled_tool, :format, context: Context.new)
       runner.stub(:exit_status, 0) do
         assert runner.success?
       end
@@ -57,8 +57,8 @@ module Reviewer
     end
 
     def test_skips_when_files_requested_but_none_match_pattern
-      arguments = Arguments.new(%w[-f lib/foo.js])
-      runner = Runner.new(:file_pattern_tool, :review, arguments: arguments)
+      context = context_with(Arguments.new(%w[-f lib/foo.js]))
+      runner = Runner.new(:file_pattern_tool, :review, context: context)
 
       capture_subprocess_io do
         exit_status = runner.run
@@ -71,19 +71,19 @@ module Reviewer
     end
 
     def test_does_not_skip_when_files_match_pattern
-      arguments = Arguments.new(%w[-f lib/foo.rb])
-      runner = Runner.new(:file_pattern_tool, :review, arguments: arguments)
+      context = context_with(Arguments.new(%w[-f lib/foo.rb]))
+      runner = Runner.new(:file_pattern_tool, :review, context: context)
 
       refute runner.command.skip?
     end
 
     def test_missing_returns_false_by_default
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(:enabled_tool, :review, context: Context.new)
       refute runner.missing?
     end
 
     def test_missing_returns_true_after_executable_not_found
-      runner = Runner.new(:missing_command, :review)
+      runner = Runner.new(:missing_command, :review, context: Context.new)
 
       capture_subprocess_io { runner.run }
 
@@ -91,7 +91,7 @@ module Reviewer
     end
 
     def test_to_result_returns_missing_result_for_executable_not_found
-      runner = Runner.new(:missing_command, :review)
+      runner = Runner.new(:missing_command, :review, context: Context.new)
 
       capture_subprocess_io { runner.run }
 
@@ -103,7 +103,7 @@ module Reviewer
     end
 
     def test_missing_tool_is_not_successful
-      runner = Runner.new(:missing_command, :review)
+      runner = Runner.new(:missing_command, :review, context: Context.new)
 
       capture_subprocess_io { runner.run }
 
@@ -111,7 +111,7 @@ module Reviewer
     end
 
     def test_failed_files_extracts_paths_from_output
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(:enabled_tool, :review, context: Context.new)
       mock_shell_result = Shell::Result.new(
         "lib/reviewer/batch.rb:10: warning\nlib/reviewer/command.rb:20: error",
         '',
@@ -125,7 +125,7 @@ module Reviewer
     end
 
     def test_failed_files_returns_empty_for_no_output
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(:enabled_tool, :review, context: Context.new)
       mock_shell_result = Shell::Result.new('', '', MockProcessStatus.new(exitstatus: 0))
 
       runner.shell.stub(:result, mock_shell_result) do
@@ -135,8 +135,12 @@ module Reviewer
 
     private
 
+    def context_with(arguments)
+      Context.new(arguments: arguments, output: Output.new, history: Reviewer.history)
+    end
+
     def with_mock_shell_result
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(:enabled_tool, :review, context: Context.new)
       mock_timer = Shell::Timer.new(prep: 1.0, main: 2.5)
       mock_shell_result = Shell::Result.new('stdout content', 'stderr content', MockProcessStatus.new(exitstatus: 0))
 

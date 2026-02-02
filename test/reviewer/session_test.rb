@@ -93,12 +93,12 @@ module Reviewer
     end
 
     def build_session(arguments: nil, tools: nil, output: nil, history: nil)
-      Session.new(
+      ctx = Context.new(
         arguments: arguments || StubArgs.new(format: :streaming, json?: false, raw?: false, streaming?: true),
-        tools: tools || Reviewer.tools,
         output: output || Output.new,
         history: history || Reviewer.history
       )
+      Session.new(context: ctx, tools: tools || Reviewer.tools)
     end
 
     def test_review_runs_tools_and_returns_exit_status

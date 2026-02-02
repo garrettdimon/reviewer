@@ -16,31 +16,34 @@ module Reviewer
     #   @return [Class] the strategy class for running the command (Captured or Passthrough)
     attr_accessor :strategy
 
-    attr_reader :command, :shell, :output
+    attr_reader :command, :shell
 
     def_delegators :@command, :tool
     def_delegators :@shell, :result, :timer
     def_delegators :result, :exit_status, :stdout, :stderr, :rerunnable?
 
-    # Creates a wrapper for running commansd through Reviewer in order to provide a more accessible
+    # Creates a wrapper for running commands through Reviewer in order to provide a more accessible
     #   API for recording execution time and interpreting the results of a command in a more
-    #   generous way so that non-zero exit statuses can still potentiall be passing.
+    #   generous way so that non-zero exit statuses can still potentially be passing.
     # @param tool [Symbol] the key for the desired tool to run
     # @param command_type [Symbol] the key for the type of command to run
-    # @param strategy = Strategies::Captured [Runner::Strategies] how to execute and handle the
-    #   results of the command
-    # @param output [Review::Output] the output formatter for the results
+    # @param strategy [Runner::Strategies] how to execute and handle the results of the command
+    # @param context [Context] the shared runtime dependencies (arguments, output, history)
     #
     # @return [self]
-    def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output, arguments: Reviewer.arguments)
-      @command = Command.new(tool, command_type, arguments: arguments)
+    def initialize(tool, command_type, strategy = Strategies::Captured, context:)
+      @command = Command.new(tool, command_type, context: context)
       @strategy = strategy
       @shell = Shell.new
-      @output = output
+      @context = context
       @skipped = false
       @missing = false
-      @streaming = arguments.streaming?
     end
+
+    # The output channel for displaying content, delegated from context.
+    #
+    # @return [Output]
+    def output = @context.output
 
     # Display formatter for runner-specific output (tool summary, success, failure, etc.)
     # Computed rather than stored to avoid exceeding instance variable threshold.
@@ -51,7 +54,7 @@ module Reviewer
     # Whether this runner is operating in streaming mode
     #
     # @return [Boolean] true if output should be streamed
-    def streaming? = @streaming
+    def streaming? = @context.arguments.streaming?
 
     # Executes the command and returns the exit status
     #
@@ -151,7 +154,7 @@ module Reviewer
     # Creates_an instance of the prepare command for a tool
     #
     # @return [Comman] the current tool's prepare command
-    def prepare_command = @prepare_command ||= Command.new(tool, :prepare)
+    def prepare_command = @prepare_command ||= Command.new(tool, :prepare, context: @context)
 
     # Updates the 'last prepared at' timestamp that Reviewer uses to know if a tool's preparation
     #   step is stale and needs to be run again.
@@ -175,7 +178,7 @@ module Reviewer
     #   get back on track in the event of an unsuccessful run.
     #
     # @return [Guidance] the relevant guidance based on the result of the runner
-    def guidance = @guidance ||= Guidance.new(command: command, result: result, output: output)
+    def guidance = @guidance ||= Guidance.new(command: command, result: result, context: @context)
 
     # Builds an immutable Result object from the current runner state
     #

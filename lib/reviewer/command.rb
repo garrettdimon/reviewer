@@ -20,16 +20,15 @@ module Reviewer
     # command type, and verbosity.
     # @param tool [Tool, Symbol] a tool or tool key to use to look up the command and options
     # @param type [Symbol] the desired command type (:install, :prepare, :review, :format)
-    # @param arguments [Arguments] the parsed CLI arguments
-    # @param history [History] the history store for seed and failed file persistence
+    # @param context [Context] the shared runtime dependencies (arguments, output, history)
     #
     # @return [Command] the intersection of a tool, command type, and verbosity
-    def initialize(tool, type, arguments: Reviewer.arguments, history: Reviewer.history)
+    def initialize(tool, type, context:)
       @tool = Tool(tool)
       @type = type.to_sym
       @seed = nil
-      @arguments = arguments
-      @history = history
+      @arguments = context.arguments
+      @history = context.history
     end
 
     # The final command string with all of the conditions appled

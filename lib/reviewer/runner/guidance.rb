@@ -4,18 +4,20 @@ module Reviewer
   class Runner
     # Handles the logic around what to display after a command has been run
     class Guidance
-      attr_reader :command, :result, :formatter
+      attr_reader :command, :result, :formatter, :context
+      private :context
 
       # Create an instance of guidance for suggesting recovery steps after errors
       # @param command [Command] the command that was run and needs recovery guidance
       # @param result [Result] the result of the command
-      # @param output [Output] the output channel for displaying content
+      # @param context [Context] the shared runtime dependencies
       #
       # @return [Guidance] the guidance class to suggest relevant recovery steps
-      def initialize(command:, result:, output: Reviewer.output)
+      def initialize(command:, result:, context:)
         @command = command
         @result = result
-        @formatter = Runner::Formatter.new(output)
+        @context = context
+        @formatter = Runner::Formatter.new(context.output)
       end
 
       # Prints the relevant guidance based on the command and result context
@@ -50,7 +52,7 @@ module Reviewer
       # @return [void] prints missing executable guidance
       def show_missing_executable_guidance
         tool = command.tool
-        installation_command = Command.new(tool, :install).string if tool.installable?
+        installation_command = Command.new(tool, :install, context: context).string if tool.installable?
         install_link = tool.install_link
 
         formatter.failure("Missing executable for '#{tool}'", command: command)

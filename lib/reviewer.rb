@@ -127,12 +127,8 @@ module Reviewer
     end
 
     def build_session
-      Session.new(
-        arguments: arguments,
-        tools: tools,
-        output: output,
-        history: history
-      )
+      context = Context.new(arguments: arguments, output: output, history: history)
+      Session.new(context: context, tools: tools)
     end
   end
 end
