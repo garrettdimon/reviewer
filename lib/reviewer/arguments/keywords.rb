@@ -16,10 +16,12 @@ module Reviewer
 
       # Generates an instance of parsed keywords from the provided arguments
       # @param provided [Array<String>] the leftover (non-flag) arguments from the command line
+      # @param tools [Tools] the collection of configured tools for keyword recognition
       #
       # @return [self]
-      def initialize(*provided)
+      def initialize(*provided, tools: Reviewer.tools)
         @provided = Array(provided.flatten)
+        @tools = tools
       end
 
       # Proves the full list of raw keyword arguments explicitly passed via command-line as an array
@@ -101,10 +103,7 @@ module Reviewer
 
       private
 
-      # Provides a collection of enabled Tools for convenient access
-      #
-      # @return [Array<Reviewer::Tool>] collection of all currently enabled tools
-      def tools = @tools ||= Reviewer.tools
+      attr_reader :tools
 
       # Syntactic sugar for finding intersections with valid keywords
       # @param values [Array<String>] the collection to use for finding intersecting values

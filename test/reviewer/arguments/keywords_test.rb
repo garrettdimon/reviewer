@@ -111,6 +111,13 @@ module Reviewer
         assert_equal Keywords::RESERVED.sort, keywords.recognized
         assert_equal unrecognized_keywords, keywords.unrecognized
       end
+
+      def test_uses_injected_tools_for_keyword_recognition
+        tools = Reviewer::Tools.new
+        keywords = Keywords.new('list', tools: tools)
+        assert_includes keywords.for_tool_names, 'list'
+        assert_includes keywords.configured_tool_names, 'list'
+      end
     end
   end
 end
