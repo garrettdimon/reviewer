@@ -15,6 +15,12 @@ module Reviewer
         assert_equal '*.css,*.rb', Files.new(provided: ['*.rb', '*.css'], keywords: []).to_s
       end
 
+      def test_accepts_output_parameter
+        output = Output.new
+        files = Files.new(provided: [], keywords: [], output: output)
+        assert_equal [], files.to_a
+      end
+
       def test_raw_aliases_provided
         files = Files.new
         assert_equal files.provided, files.raw
