@@ -99,28 +99,8 @@ module Reviewer
         end
       end
 
-      def test_git_error_calls_injected_handler
-        captured = []
-        handler = ->(message) { captured << message }
-        files = Files.new(
-          provided: [],
-          keywords: %w[staged],
-          on_git_error: handler
-        )
-
-        stub_git_failure('fatal: not a git repository', 128) do
-          assert_empty files.to_a
-          assert_equal 1, captured.size
-          assert_match(/not a git repository/i, captured.first)
-        end
-      end
-
       def test_git_error_returns_empty_and_warns
-        keywords_array = %w[staged]
-        files = Files.new(
-          provided: [],
-          keywords: keywords_array
-        )
+        files = Files.new(provided: [], keywords: %w[staged])
 
         stub_git_failure('fatal: not a git repository', 128) do
           out, _err = capture_subprocess_io { files.to_a }
@@ -130,16 +110,12 @@ module Reviewer
       end
 
       def test_git_error_continues_with_provided_files
-        captured = []
-        handler = ->(message) { captured << message }
-        files = Files.new(
-          provided: ['app/models/user.rb'],
-          keywords: %w[staged],
-          on_git_error: handler
-        )
+        files = Files.new(provided: ['app/models/user.rb'], keywords: %w[staged])
 
         stub_git_failure('git error', 1) do
-          assert_equal ['app/models/user.rb'], files.to_a
+          capture_subprocess_io do
+            assert_equal ['app/models/user.rb'], files.to_a
+          end
         end
       end
 

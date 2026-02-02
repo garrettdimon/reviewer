@@ -23,7 +23,7 @@ detectors:
   ControlParameter:
     exclude:
       - 'Reviewer::Arguments#runner_strategy'                               # Strategy selection from boolean
-      - 'Reviewer::Batch#initialize'                                        # DI: optional strategy override
+      - 'Reviewer::Batch#strategy'                                           # Boolean -> strategy mapping
       - 'Reviewer::Output::Formatting#status_mark'                          # Boolean -> symbol mapping
       - 'Reviewer::Output::Formatting#status_style'                         # Boolean -> symbol mapping
       - 'Reviewer::Doctor::OpportunityCheck#catalog_supports?'              # Type-based capability query
@@ -75,6 +75,7 @@ detectors:
       - 'Reviewer::Setup::ToolBlock#apply_js_runner'                        # String substitution on input
       - 'Reviewer::Setup::ToolBlock#quote'                                  # YAML quoting on input string
       - 'Reviewer::Tool::Timing#average_time'                               # Array computation
+      - 'Reviewer::Arguments::Files#git_files'                               # Inlined error handler uses Reviewer.output
 
   # Intentional dynamic dispatch via respond_to?/send.
   ManualDispatch:
@@ -93,11 +94,8 @@ detectors:
   # DI constructors store each dependency as an ivar.
   TooManyInstanceVariables:
     exclude:
-      - 'Reviewer::Batch'                                                   # 7: 6 DI deps + @report
-      - 'Reviewer::Command'                                                 # 5: 4 DI deps + memoization
-      - 'Reviewer::Runner'                                                  # 7: 4 DI deps + 3 flags
-      - 'Reviewer::Runner::ResultBuilder'                                   # 6: 6 DI deps
-      - 'Reviewer::Session'                                                 # 6: 6 DI deps for lifecycle orchestrator
+      - 'Reviewer::Command'                                                 # 5: tool + type + seed + arguments + history
+      - 'Reviewer::Runner'                                                  # 6: command + strategy + shell + context + skipped + missing
 
   # ANSI escape sequence module -- 6 constants is the natural decomposition.
   TooManyConstants:
