@@ -49,7 +49,7 @@ module Reviewer
     # Computed rather than stored to avoid exceeding instance variable threshold.
     #
     # @return [Runner::Formatter]
-    def formatter = Runner::Formatter.new(output)
+    def formatter = @formatter ||= Runner::Formatter.new(output)
 
     # Whether this runner is operating in streaming mode
     #
