@@ -4,7 +4,6 @@ require_relative 'runner/failed_files'
 require_relative 'runner/formatter'
 require_relative 'runner/guidance'
 require_relative 'runner/result'
-require_relative 'runner/result_builder'
 require_relative 'runner/strategies/captured'
 require_relative 'runner/strategies/passthrough'
 
@@ -182,14 +181,7 @@ module Reviewer
     #
     # @return [Runner::Result] the result of running this tool
     def to_result
-      ResultBuilder.new(
-        tool: tool,
-        command: command,
-        shell: shell,
-        skipped: skipped?,
-        missing: missing?,
-        success: success?
-      ).build
+      Result.from_runner(self)
     end
 
     private

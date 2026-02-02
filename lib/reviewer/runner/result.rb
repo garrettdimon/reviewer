@@ -46,6 +46,54 @@ module Reviewer
         freeze
       end
 
+      # Builds an immutable Result from a runner's current state.
+      # @param runner [Runner] the runner after command execution
+      #
+      # @return [Result] an immutable result for reporting
+      def self.from_runner(runner)
+        if runner.skipped?
+          build_skipped(runner)
+        elsif runner.missing?
+          build_missing(runner)
+        else
+          build_executed(runner)
+        end
+      end
+
+      def self.build_skipped(runner)
+        new(
+          tool_key: runner.tool.key, tool_name: runner.tool.name,
+          command_type: runner.command.type, command_string: nil,
+          success: true, exit_status: 0, duration: 0,
+          stdout: nil, stderr: nil, skipped: true
+        )
+      end
+
+      def self.build_missing(runner)
+        new(
+          tool_key: runner.tool.key, tool_name: runner.tool.name,
+          command_type: runner.command.type, command_string: runner.command.string,
+          success: false, exit_status: runner.shell.result.exit_status, duration: 0,
+          stdout: nil, stderr: nil, skipped: nil, missing: true
+        )
+      end
+
+      def self.build_executed(runner)
+        tool = runner.tool
+        command = runner.command
+        shell = runner.shell
+        result = shell.result
+        new(
+          tool_key: tool.key, tool_name: tool.name,
+          command_type: command.type, command_string: command.string,
+          success: runner.success?, exit_status: result.exit_status,
+          duration: shell.timer.total_seconds,
+          stdout: result.stdout, stderr: result.stderr, skipped: nil
+        )
+      end
+
+      private_class_method :build_skipped, :build_missing, :build_executed
+
       alias_method :success?, :success
       alias_method :skipped?, :skipped
       alias_method :missing?, :missing

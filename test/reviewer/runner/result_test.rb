@@ -257,6 +257,72 @@ module Reviewer
 
         assert_nil result.detail_summary
       end
+
+      def test_from_runner_builds_skipped_result
+        result = build_via_from_runner(skipped: true)
+
+        assert result.skipped
+        assert result.success
+        assert_equal 0, result.exit_status
+        assert_equal 0, result.duration
+        assert_nil result.command_string
+      end
+
+      def test_from_runner_builds_missing_result
+        result = build_via_from_runner(missing: true)
+
+        assert result.missing
+        refute result.success
+        assert_equal 127, result.exit_status
+        assert_equal 0, result.duration
+      end
+
+      def test_from_runner_builds_executed_result
+        result = build_via_from_runner
+
+        refute result.skipped
+        assert result.success
+        assert_equal 0, result.exit_status
+        assert_equal 3.5, result.duration
+        assert_equal 'stdout', result.stdout
+        assert_equal 'stderr', result.stderr
+      end
+
+      def test_from_runner_builds_failed_result
+        result = build_via_from_runner(success: false, exit_status: 1)
+
+        refute result.success
+        assert_equal 1, result.exit_status
+      end
+
+      RunnerDouble = Struct.new(:tool, :command, :shell, :skipped, :missing, :success, keyword_init: true) do
+        def skipped? = skipped
+        def missing? = missing
+        def success? = success
+      end
+
+      private
+
+      def build_via_from_runner(skipped: false, missing: false, success: true, exit_status: nil)
+        tool = Tool.new(:enabled_tool)
+        command = Command.new(tool, :review)
+        shell = Shell.new
+
+        status = exit_status || (missing ? 127 : 0)
+        mock_status = MockProcessStatus.new(exitstatus: status)
+        mock_result = Shell::Result.new('stdout', 'stderr', mock_status)
+        mock_timer = Shell::Timer.new(prep: 1.0, main: 2.5)
+
+        shell.stub(:result, mock_result) do
+          shell.stub(:timer, mock_timer) do
+            runner = RunnerDouble.new(
+              tool: tool, command: command, shell: shell,
+              skipped: skipped, missing: missing, success: success
+            )
+            Result.from_runner(runner)
+          end
+        end
+      end
     end
   end
 end
