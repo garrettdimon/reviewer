@@ -14,6 +14,9 @@ tests:
   name: Minitest
   description: Unit Tests & Coverage
   tags: [ruby, tests, dev]
+  summary:
+    pattern: '(\d+)\s+tests?'
+    label: '\1 tests'
   links:
     home:
   commands:
@@ -80,6 +83,9 @@ rubocop:
   name: Rubocop
   description: Review Ruby Syntax & Formatting for Consistency
   tags: [ruby, syntax, dev]
+  summary:
+    pattern: '(\d+)\s+offenses?'
+    label: '\1 offenses'
   links:
     home: https://rubocop.org
     install: https://docs.rubocop.org/rubocop/1.13/installation.html

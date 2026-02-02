@@ -3,6 +3,9 @@ enabled_tool:
   name: 'Enabled Test Tool'
   description: 'Run the tests.'
   tags: [enabled, ruby]
+  summary:
+    pattern: '(\d+)\s+tests?'
+    label: '\1 tests'
   links:
     home: 'https://example.com'
     install: 'https://example.com/install'

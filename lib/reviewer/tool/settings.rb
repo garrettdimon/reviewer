@@ -95,6 +95,16 @@ module Reviewer
 
       def supports_files? = config.key?(:files)
 
+      # The regex pattern for extracting a summary detail from tool output
+      #
+      # @return [String, nil] the configured pattern or nil
+      def summary_pattern = config.dig(:summary, :pattern)
+
+      # The label template for displaying the extracted summary detail
+      #
+      # @return [String, nil] the configured label or nil
+      def summary_label = config.dig(:summary, :label)
+
       # Returns the file-scoped command override for a given command type.
       # When configured, this command replaces the standard command when files are passed.
       #

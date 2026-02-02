@@ -54,7 +54,9 @@ module Reviewer
                       tool_key: :tests,
                       tool_name: 'Minitest',
                       success: true,
-                      stdout: '0.19s · 209 tests (1102.02/s) with 419 assertions'
+                      stdout: '0.19s · 209 tests (1102.02/s) with 419 assertions',
+                      summary_pattern: '(\d+)\s+tests?',
+                      summary_label: '\1 tests'
                     ))
         @report.record_duration(0.5)
 
@@ -71,7 +73,9 @@ module Reviewer
                       tool_name: 'RuboCop',
                       success: false,
                       exit_status: 1,
-                      stdout: '70 files inspected, 3 offenses detected'
+                      stdout: '70 files inspected, 3 offenses detected',
+                      summary_pattern: '(\d+)\s+offenses?',
+                      summary_label: '\1 offenses'
                     ))
         @report.record_duration(0.8)
 
@@ -167,7 +171,9 @@ module Reviewer
           stdout: options[:stdout],
           stderr: options[:stderr],
           skipped: nil,
-          missing: nil
+          missing: nil,
+          summary_pattern: options[:summary_pattern],
+          summary_label: options[:summary_label]
         )
       end
 

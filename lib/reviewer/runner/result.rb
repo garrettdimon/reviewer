@@ -38,6 +38,8 @@ module Reviewer
       :stderr,
       :skipped,
       :missing,
+      :summary_pattern,
+      :summary_label,
       keyword_init: true
     ) do
       # Freeze on initialization to maintain immutability like Data.define
@@ -88,7 +90,9 @@ module Reviewer
           command_type: command.type, command_string: command.string,
           success: runner.success?, exit_status: result.exit_status,
           duration: shell.timer.total_seconds,
-          stdout: result.stdout, stderr: result.stderr, skipped: nil
+          stdout: result.stdout, stderr: result.stderr, skipped: nil,
+          summary_pattern: tool.settings.summary_pattern,
+          summary_label: tool.settings.summary_label
         )
       end
 
@@ -108,14 +112,12 @@ module Reviewer
       #
       # @return [String, nil] a brief summary or nil if no detail can be extracted
       def detail_summary
-        case tool_key
-        when :tests
-          match = stdout&.match(/(\d+)\s+tests?/i)
-          match ? "#{match[1]} tests" : nil
-        when :rubocop
-          match = stdout&.match(/(\d+)\s+offenses?/i)
-          match ? "#{match[1]} offenses" : nil
-        end
+        return nil unless summary_pattern
+
+        match = stdout&.match(/#{summary_pattern}/i)
+        return nil unless match
+
+        summary_label.gsub(/\\(\d+)/) { match[Regexp.last_match(1).to_i] }
       end
 
       # Converts the result to a hash suitable for serialization
@@ -134,7 +136,7 @@ module Reviewer
           stderr: stderr,
           skipped: skipped,
           missing: missing
-        }.compact
+        }.compact # Excludes summary_pattern/summary_label (config, not results)
       end
     end
   end
