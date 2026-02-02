@@ -112,11 +112,11 @@ module Reviewer
     def handle_missing_configuration?
       return false if configuration.file.exist?
 
-      output.first_run_greeting
+      setup_formatter.first_run_greeting
       if prompt.yes?('Would you like to set it up now?')
         Setup.run
       else
-        output.first_run_skip
+        setup_formatter.first_run_skip
       end
       true
     end
@@ -176,6 +176,7 @@ module Reviewer
     end
 
     def formatter = @formatter ||= Session::Formatter.new(output)
+    def setup_formatter = @setup_formatter ||= Setup::Formatter.new(output)
 
     def batch_formatter
       Batch::Formatter.new(output)

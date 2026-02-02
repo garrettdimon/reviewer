@@ -110,7 +110,7 @@ module Reviewer
 
     def run_doctor
       report = Doctor.run
-      output.doctor_report(report)
+      Doctor::Formatter.new(output).print(report)
     end
 
     def build_session

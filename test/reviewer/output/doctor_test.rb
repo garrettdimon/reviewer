@@ -63,7 +63,8 @@ module Reviewer
 
     def capture_output(report)
       output = Reviewer::Output.new
-      out, _err = capture_subprocess_io { output.doctor_report(report) }
+      formatter = Reviewer::Doctor::Formatter.new(output)
+      out, _err = capture_subprocess_io { formatter.print(report) }
       out
     end
   end

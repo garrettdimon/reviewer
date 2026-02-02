@@ -25,7 +25,7 @@ module Reviewer
       #   reviewer.to_a # => ['./file.rb','./directory/file.rb']
       #
       # @return [self]
-      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords, on_git_error: ->(message) { Reviewer.output.git_error(message) })
+      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords, on_git_error: ->(message) { Session::Formatter.new(Reviewer.output).git_error(message) })
         @provided = Array(provided)
         @keywords = Array(keywords)
         @on_git_error = on_git_error

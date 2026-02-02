@@ -31,6 +31,7 @@ module Reviewer
     # A catch all for aguments passed to reviewer via the command-line so they can be interpreted
     #   and made available via the relevant classes.
     # @param options = ARGV [Hash] options to parse and extract the relevant values for a run
+    # @param output [Output] the console output handler for displaying messages
     #
     # @example Using all options: `rvw keyword_one keyword_two --files ./example.rb,./example_test.rb --tags syntax`
     #   reviewer = Reviewer::Arguments.new
@@ -39,8 +40,8 @@ module Reviewer
     #   reviewer.keywords.to_a # => ['keyword_one', 'keyword_two']
     #
     # @return [self]
-    def initialize(options = ARGV)
-      @output = Output.new
+    def initialize(options = ARGV, output: Output.new)
+      @output = output
       @options = Slop.parse(options) { |opts| configure_options(opts) }
     end
 
@@ -68,6 +69,8 @@ module Reviewer
       opts.on('-h', '--help', 'print the help') { @output.help(opts) && exit }
       opts.on('-c', '--capabilities', 'output capabilities as JSON')
     end
+
+    def session_formatter = @session_formatter ||= Session::Formatter.new(output)
 
     public
 
@@ -117,7 +120,7 @@ module Reviewer
       value = options[:format].to_sym
       return value if KNOWN_FORMATS.include?(value)
 
-      output.invalid_format(options[:format], KNOWN_FORMATS)
+      session_formatter.invalid_format(options[:format], KNOWN_FORMATS)
       :streaming
     end
 
