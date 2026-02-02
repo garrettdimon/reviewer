@@ -81,7 +81,7 @@ module Reviewer
       # @param content [String, nil] the raw text to write
       # @return [void]
       def write_raw(content)
-        return if content.nil? || content.strip.empty?
+        return if content.to_s.strip.empty?
 
         stream << content
       end

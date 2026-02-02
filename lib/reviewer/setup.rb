@@ -18,22 +18,23 @@ module Reviewer
     # @return [void]
     def self.run(project_dir: Pathname.pwd)
       config_file = Reviewer.configuration.file
+      output = Reviewer.output
 
       if config_file.exist?
-        Reviewer.output.setup_already_exists(config_file)
+        output.setup_already_exists(config_file)
         return
       end
 
       results = Detector.new(project_dir).detect
 
       if results.empty?
-        Reviewer.output.setup_no_tools_detected
+        output.setup_no_tools_detected
         return
       end
 
       yaml = Generator.new(results.map(&:key), project_dir: project_dir).generate
       config_file.write(yaml)
-      Reviewer.output.setup_success(results)
+      output.setup_success(results)
     end
   end
 end

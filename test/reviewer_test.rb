@@ -45,12 +45,12 @@ module Reviewer
       end
     end
 
-    def test_clear_screen
+    def test_review_runs_successfully
       tools = [Tool.new(:list)]
 
       Reviewer.tools.stub(:current, tools) do
         capture_subprocess_io do
-          Reviewer.review(clear_screen: true)
+          Reviewer.review
         rescue SystemExit => e
           assert_equal 0, e.status
         end

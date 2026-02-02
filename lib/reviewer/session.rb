@@ -6,8 +6,8 @@ module Reviewer
   # Run lifecycle with full dependency injection.
   # Owns the review/format lifecycle that was previously in Reviewer module methods.
   class Session
-    attr_reader :arguments, :tools, :output, :history, :prompt, :configuration, :formatter
-    private :arguments, :tools, :output, :history, :prompt, :configuration, :formatter
+    attr_reader :arguments, :tools, :output, :history, :prompt, :configuration
+    private :arguments, :tools, :output, :history, :prompt, :configuration
 
     # Creates a session with all dependencies injected
     # @param arguments [Arguments] parsed CLI arguments
@@ -25,35 +25,32 @@ module Reviewer
       @history = history
       @prompt = prompt
       @configuration = configuration
-      @formatter = Session::Formatter.new(output)
     end
 
     # Runs the review command for the current set of tools
-    # @param clear_screen [Boolean] whether to clear the screen before running
     #
     # @return [Integer] the maximum exit status from all tools
-    def review(clear_screen: false)
-      run_tools(:review, clear_screen: clear_screen)
+    def review
+      run_tools(:review)
     end
 
     # Runs the format command for the current set of tools
-    # @param clear_screen [Boolean] whether to clear the screen before running
     #
     # @return [Integer] the maximum exit status from all tools
-    def format(clear_screen: false)
-      run_tools(:format, clear_screen: clear_screen)
+    def format
+      run_tools(:format)
     end
 
     private
 
-    def run_tools(command_type, clear_screen: false)
+    def run_tools(command_type)
       return 0 if handle_missing_configuration?
       return 0 if handle_failed_with_nothing_to_run?
 
       if json_output?
         run_json(command_type)
       else
-        run_text(command_type, clear_screen: clear_screen)
+        run_text(command_type)
       end
     end
 
@@ -66,8 +63,7 @@ module Reviewer
       report.max_exit_status
     end
 
-    def run_text(command_type, clear_screen: false)
-      output.clear if clear_screen
+    def run_text(command_type)
       warn_unrecognized_keywords
 
       current_tools = tools.current
@@ -178,6 +174,8 @@ module Reviewer
         Command.new(tool, command_type, arguments: arguments).run_summary
       end
     end
+
+    def formatter = @formatter ||= Session::Formatter.new(output)
 
     def batch_formatter
       Batch::Formatter.new(output)

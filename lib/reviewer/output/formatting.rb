@@ -14,9 +14,7 @@ module Reviewer
       # @param seconds [Float, nil] the duration to format
       # @return [String] formatted duration (e.g., "1.23s")
       def format_duration(seconds)
-        return '0.0s' if seconds.nil?
-
-        "#{seconds.round(2)}s"
+        "#{seconds.to_f.round(2)}s"
       end
 
       # Returns the appropriate status mark

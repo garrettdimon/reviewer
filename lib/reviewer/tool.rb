@@ -61,7 +61,7 @@ module Reviewer
     #
     # @return [Boolean] true if the command type is configured and not blank
     def command?(command_type)
-      commands.key?(command_type) && !commands[command_type].nil?
+      commands.key?(command_type) && commands[command_type]
     end
 
     # Determines if the tool can run a `install` command
@@ -119,7 +119,7 @@ module Reviewer
     # Convenience method for determining if a tool has a configured install link
     #
     # @return [Boolean] true if there is an `install` key under links and the value isn't blank
-    def install_link? = links.key?(:install) && !links[:install].nil?
+    def install_link? = links.key?(:install) && !!links[:install]
 
     # Returns the text for the install link if available
     #

@@ -71,16 +71,17 @@ module Reviewer
       end
 
       def executed_result
+        result = @shell.result
         Result.new(
           tool_key: @tool.key,
           tool_name: @tool.name,
           command_type: @command.type,
           command_string: @command.string,
           success: @success,
-          exit_status: @shell.result.exit_status,
+          exit_status: result.exit_status,
           duration: @shell.timer.total_seconds,
-          stdout: @shell.result.stdout,
-          stderr: @shell.result.stderr,
+          stdout: result.stdout,
+          stderr: result.stderr,
           skipped: nil
         )
       end

@@ -69,7 +69,7 @@ module Reviewer
         printer.print(:failure, 'Failure')
         printer.puts(:muted, " #{details}")
 
-        return if command.nil?
+        return unless command
 
         output.newline
         printer.puts(:bold, 'Failed Command:')
@@ -91,7 +91,7 @@ module Reviewer
       #
       # @return [void]
       def guidance(summary, details)
-        return if details.nil?
+        return unless details
 
         output.newline
         printer.puts(:bold, summary)

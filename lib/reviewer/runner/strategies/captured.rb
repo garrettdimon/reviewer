@@ -138,7 +138,7 @@ module Reviewer
         #
         # @return [Boolean] true if either stdout or stderr contain printable content
         def usable_output_captured?
-          [runner.stdout, runner.stderr].reject { |value| value.nil? || value.strip.empty? }.any?
+          [runner.stdout, runner.stderr].reject { |value| value.to_s.strip.empty? }.any?
         end
 
         # Prints "Success" and the resulting timing details before moving on to the next tool
@@ -176,21 +176,23 @@ module Reviewer
         # If there's a useful stdout value, display it with a divider to visually separate it.
         #
         # @return [void]
-        def show_captured_stdout # rubocop:disable Metrics/AbcSize
-          return if runner.stdout.nil? || runner.stdout.empty?
+        def show_captured_stdout
+          stdout = runner.stdout.to_s
+          return if stdout.empty?
 
           runner.output.divider
           runner.output.newline
-          runner.output.unfiltered(runner.stdout)
+          runner.output.unfiltered(stdout)
         end
 
         # If there's a useful stderr value, display it with a divider to visually separate it.
         #
         # @return [void]
-        def show_captured_stderr # rubocop:disable Metrics/AbcSize
-          return if runner.stderr.nil? || runner.stderr.empty?
+        def show_captured_stderr
+          stderr = runner.stderr.to_s
+          return if stderr.empty?
 
-          scrubbed_stderr = Output.scrub(runner.stderr)
+          scrubbed_stderr = Output.scrub(stderr)
 
           runner.output.divider
           runner.output.newline

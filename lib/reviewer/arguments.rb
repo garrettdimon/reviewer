@@ -24,7 +24,7 @@ module Reviewer
 
     # @!attribute options
     #   @return [Slop::Result] the parsed command-line options
-    attr_accessor :options
+    attr_reader :options
 
     attr_reader :output
 

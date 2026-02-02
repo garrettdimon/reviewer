@@ -1,119 +1,156 @@
 # Reek configuration for Reviewer gem
 # https://github.com/troessner/reek/blob/master/docs/defaults.reek.yml
+#
+# Policy: every detector enabled. Exclusions are method- or class-level
+# with justification. New code is always checked against defaults.
 
 detectors:
-  # --- Disabled: conflicts with standard Ruby patterns ---
 
-  # Flags attr_accessor as a writable attribute. Standard Ruby; no value suppressing.
+  # --- Targeted exclusions: writable attributes ---
+
+  # Mutable command type for re-execution and strategy swappable for
+  # test injection / rerun_via_passthrough.
   Attribute:
-    enabled: false
-
-  # Flags keyword arguments like `clear_screen: false`. Idiomatic Ruby.
-  BooleanParameter:
-    enabled: false
-
-  # Flags branching on method arguments. Appropriate for configuration and options.
-  ControlParameter:
-    enabled: false
-
-  # --- Threshold adjustments: defaults are too aggressive ---
-
-  # Default max_calls (1) flags every repeated method call. Raise to 3 so only
-  # genuine duplication is flagged, not incidental reuse.
-  DuplicateMethodCall:
-    max_calls: 3
-
-  # Default max_statements (5) flags nearly every non-trivial method. 10 keeps
-  # the check useful without flagging clear, linear orchestration methods.
-  TooManyStatements:
-    max_statements: 10
-
-  # Default max_methods (15) flags cohesive classes like Tool and Settings.
-  # 25 still catches genuinely bloated classes.
-  TooManyMethods:
-    max_methods: 25
-
-  # Flags nil checks (`nil?`, `!x`). Legitimate for YAML store data, optional
-  # settings, and history lookups where nil is a normal value.
-  NilCheck:
-    enabled: false
-
-  # Flags private methods that don't reference instance state. These methods
-  # logically belong to their class (git keyword delegates, Slop config blocks,
-  # formatters) even without direct instance access.
-  UtilityFunction:
-    enabled: false
-
-  # --- Name exclusions ---
-
-  # RuboCop enforces `e` for rescue variables (Naming/RescuedExceptionsVariableName).
-  # Uppercase Tool() follows Ruby's kernel conversion convention (Integer(), Array()).
-  UncommunicativeMethodName:
     exclude:
-      - 'Reviewer::Tool::Conversions'
+      - 'Reviewer::Command'               # Mutable command type for re-execution
+      - 'Reviewer::Configuration'          # Writable for Reviewer.configure block and tests
+      - 'Reviewer::Runner'                # Strategy swappable for test injection
+      - 'Reviewer::Shell::Result'          # Shell rescue paths set exit_status when no Process::Status exists
 
-  UncommunicativeVariableName:
-    accept:
-      - e
-      - _
+  # --- Targeted exclusions: control parameters ---
 
-  # --- Thresholds: dependency-injection constructors ---
+  # DI fallback patterns (arg || default) and boolean->value mapping.
+  ControlParameter:
+    exclude:
+      - 'Reviewer::Arguments#runner_strategy'                               # Strategy selection from boolean
+      - 'Reviewer::Batch#initialize'                                        # DI: optional strategy override
+      - 'Reviewer::Output::Formatting#status_mark'                          # Boolean -> symbol mapping
+      - 'Reviewer::Output::Formatting#status_style'                         # Boolean -> symbol mapping
+      - 'Reviewer::Doctor::OpportunityCheck#catalog_supports?'              # Type-based capability query
+      - 'Reviewer::Tool::Settings#initialize'                               # DI: optional config hash
+      - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Timed/untimed display
 
-  # Session, Batch, Runner, and ResultBuilder accept injected dependencies.
-  # Default max_params (3) is too low for DI constructors with 6 dependencies.
-  # Reek has a separate default for initialize (5); override both.
+  # --- Targeted exclusions: nil checks ---
+
+  # IO.console genuinely returns nil in non-TTY environments.
+  NilCheck:
+    exclude:
+      - 'Reviewer::Output#console_width'                                    # IO.console returns nil in non-TTY
+
+  # --- Targeted exclusions: utility functions ---
+
+  # Private helpers that logically belong to their class despite not
+  # referencing self. Moving these to separate classes would be
+  # over-engineering for one-use helpers.
+  UtilityFunction:
+    exclude:
+      - 'Reviewer::Arguments#configure_input_options'                       # Slop DSL config block
+      - 'Reviewer::Arguments#configure_output_options'                      # Slop DSL config block
+      - 'Reviewer::Capabilities#tool_data'                                  # Tool -> hash transform
+      - 'Reviewer::Command::String::Env#needs_quotes?'                     # String analysis helper
+      - 'Reviewer::Command::String::Flags#needs_quotes?'                   # String analysis helper
+      - 'Reviewer::Doctor::OpportunityCheck#catalog_supports?'              # Catalog query helper
+      - 'Reviewer::Doctor::ToolInventory#command_summary'                   # Formatting helper
+      - 'Reviewer::Output#console_width'                                    # IO.console query
+      - 'Reviewer::Output::Formatting#format_duration'                      # Number formatting
+      - 'Reviewer::Output::Formatting#pluralize'                            # String formatting
+      - 'Reviewer::Setup::GemfileLock#process_line'                         # Lockfile line parser
+      - 'Reviewer::Setup::ToolBlock#needs_quoting?'                         # YAML string analysis
+      - 'Reviewer::Runner::Strategies::Captured#create_progress_bar'        # Progress bar factory
+      - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Progress bar teardown
+      - 'Reviewer::Runner::Strategies::Captured#update_progress'            # Progress bar update
+      - 'Reviewer::Shell::Timer#record'                                     # Benchmark.realtime wrapper
+
+  # --- Targeted exclusions: feature envy and dispatch ---
+
+  # Methods whose purpose IS to operate on their inputs.
+  FeatureEnvy:
+    exclude:
+      - 'Reviewer::Command::String::Env#env'                               # Key-value formatting
+      - 'Reviewer::Doctor::OpportunityCheck#check_missing_files_config'     # Tool property inspection
+      - 'Reviewer::Doctor::OpportunityCheck#check_missing_format_command'   # Tool property inspection
+      - 'Reviewer::Output::Printer#write_raw'                              # Stream pass-through
+      - 'Reviewer::Session#build_suggestions'                               # each_with_object iteration
+      - 'Reviewer::Session#show_missing_tools'                              # Guard + formatter delegation
+      - 'Reviewer::Setup::ToolBlock#apply_js_runner'                        # String substitution on input
+      - 'Reviewer::Setup::ToolBlock#quote'                                  # YAML quoting on input string
+      - 'Reviewer::Tool::Timing#average_time'                               # Array computation
+
+  # Intentional dynamic dispatch via respond_to?/send.
+  ManualDispatch:
+    exclude:
+      - 'Reviewer::Arguments::Files#from_keywords'                          # Maps keyword strings to git methods
+      - 'Reviewer::Prompt#interactive?'                                     # TTY availability check
+
+  # --- Targeted exclusions: size metrics ---
+
+  # Printer's (style, content) parameters co-travel by design --
+  # "what to display" and "how to display it" are not a missing abstraction.
+  DataClump:
+    exclude:
+      - 'Reviewer::Output::Printer'
+
+  # DI constructors store each dependency as an ivar.
+  TooManyInstanceVariables:
+    exclude:
+      - 'Reviewer::Batch'                                                   # 7: 6 DI deps + @report
+      - 'Reviewer::Command'                                                 # 5: 4 DI deps + memoization
+      - 'Reviewer::Runner'                                                  # 7: 4 DI deps + 3 flags
+      - 'Reviewer::Runner::ResultBuilder'                                   # 6: 6 DI deps
+      - 'Reviewer::Session'                                                 # 6: 6 DI deps for lifecycle orchestrator
+
+  # ANSI escape sequence module -- 6 constants is the natural decomposition.
+  TooManyConstants:
+    exclude:
+      - 'Reviewer::Output::AnsiStyles'
+
+  # Classes with cohesive accessor/query interfaces that exceed default (15).
+  TooManyMethods:
+    exclude:
+      - 'Reviewer::Output'                                                  # 20: delegation hub
+      - 'Reviewer::Runner'                                                  # 21: execution host + queries
+      - 'Reviewer::Session'                                                 # 19: lifecycle orchestrator
+      - 'Reviewer::Tool'                                                    # 18: settings + history + files
+      - 'Reviewer::Tool::Settings'                                          # 22: config accessor layer
+      - 'Reviewer::Tools'                                                   # 16: collection with filters
+
+  # Orchestration methods that exceed default (5) but are clear and linear.
+  TooManyStatements:
+    max_statements: 7
+    exclude:
+      - 'Reviewer::Batch::Formatter#missing_tools'                          # 8: iterate tools with header/footer
+      - 'Reviewer::Doctor::Formatter#print_finding'                         # 8: extract 3 fields + format 3 lines
+      - 'Reviewer::Session#run_text'                                        # 9: lifecycle steps
+      - 'Reviewer::Setup'                                                   # 9: setup orchestrator
+      - 'Reviewer::Shell#direct'                                            # 10: Open3 wrapper + error handling
+
+  # Formatter spacing (output.newline 3x).
+  DuplicateMethodCall:
+    max_calls: 2
+    exclude:
+      - 'Reviewer::Runner::Strategies::Captured#show_captured_stdout'       # runner.output 3x — caching obscures origin
+      - 'Reviewer::Setup::Formatter'                                        # output.newline 3x for visual spacing
+
+  # --- Targeted exclusions: parameter counts ---
+
+  # DI constructors accept injected dependencies. Default max_params (3)
+  # is too low for classes with 5-6 dependencies. Reek has a separate
+  # default for initialize (5); override to accommodate DI constructors.
   LongParameterList:
     max_params: 5
     overrides:
       initialize:
         max_params: 7
 
-  # DI constructors store each dependency as an ivar. Default max (4) is
-  # too low for classes with multiple injected collaborators. 7 matches
-  # the actual DI reality of this codebase.
-  TooManyInstanceVariables:
-    max_instance_variables: 7
+  # --- Name exclusions ---
 
-  # AnsiStyles module defines ANSI escape sequences as constants. 6 constants
-  # (ESC, RESET, WEIGHTS, COLORS, STYLE_DEFS, STYLES) is the natural decomposition.
-  TooManyConstants:
-    max_constants: 7
-
-  # Printer's API is (style, content) — these co-travel because they represent
-  # "what to display" and "how to display it". Not a missing abstraction.
-  DataClump:
+  # Tool() follows Ruby's kernel conversion convention (Integer(), Array()).
+  UncommunicativeMethodName:
     exclude:
-      - 'Reviewer::Output::Printer'
+      - 'Reviewer::Tool::Conversions'
 
-  # --- Targeted exclusions: methods whose purpose IS to operate on inputs ---
-
-  # ManualDispatch: intentional dynamic dispatch via respond_to?/send.
-  # Files#from_keywords maps keyword strings to git methods dynamically.
-  # Prompt#interactive? is a safety check for TTY availability.
-  ManualDispatch:
-    exclude:
-      - 'Reviewer::Arguments::Files#from_keywords'
-      - 'Reviewer::Prompt#interactive?'
-
-  # FeatureEnvy: methods that format, check, or convert their inputs will
-  # naturally reference those inputs more than self. Each exclusion below
-  # is a method whose single responsibility IS to operate on its argument.
-  FeatureEnvy:
-    exclude:
-      # Formats a key-value pair into "KEY=value" — inputs are the work
-      - 'Reviewer::Command::String::Env#env'
-      # Inspector methods that check tool properties by design
-      - 'Reviewer::Doctor::OpportunityCheck#check_missing_files_config'
-      - 'Reviewer::Doctor::OpportunityCheck#check_missing_format_command'
-      # Writes content to stream — pass-through by design
-      - 'Reviewer::Output::Printer#write_raw'
-      # Standard Ruby each_with_object iteration
-      - 'Reviewer::Session#build_suggestions'
-      # Guard + delegation to formatter — 2 report refs is minimal
-      - 'Reviewer::Session#show_missing_tools'
-      # String substitution on command input
-      - 'Reviewer::Setup::ToolBlock#apply_js_runner'
-      # YAML quoting logic — operates entirely on the input string
-      - 'Reviewer::Setup::ToolBlock#quote'
-      # Computes average of retrieved timing entries
-      - 'Reviewer::Tool::Timing#average_time'
+  # RuboCop enforces `e` for rescue variables. `_` is a standard discard.
+  UncommunicativeVariableName:
+    accept:
+      - e
+      - _

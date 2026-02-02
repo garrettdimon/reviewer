@@ -189,12 +189,12 @@ module Reviewer
       end
     end
 
-    def test_clear_screen_when_requested
+    def test_review_without_clear_screen
       tools_collection = Tools.new
       tools_collection.stub(:current, [Tool.new(:list)]) do
         session = build_session(tools: tools_collection)
-        _out, _err = capture_subprocess_io { session.review(clear_screen: true) }
-        # No assertion on clear — just verify it doesn't blow up
+        _out, _err = capture_subprocess_io { session.review }
+        # Verify review runs without error
       end
     end
   end

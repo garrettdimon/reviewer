@@ -67,7 +67,7 @@ module Reviewer
 
       def print_details(result)
         detail = result.detail_summary
-        return if detail.nil?
+        return unless detail
 
         output.printer.print(:muted, "   #{detail}")
       end

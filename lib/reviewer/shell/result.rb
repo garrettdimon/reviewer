@@ -26,7 +26,8 @@ module Reviewer
       #   @return [Process::Status, nil] the process status object
       # @!attribute exit_status
       #   @return [Integer, nil] the exit status code from the command
-      attr_accessor :stdout, :stderr, :status, :exit_status
+      attr_reader :stdout, :stderr, :status
+      attr_accessor :exit_status
 
       # An instance of a result from running a local command. Captures the values for `$stdout`,
       #   `$stderr`, and the exit status of the command to provide a reliable way of interpreting

@@ -10,7 +10,7 @@ module Reviewer
     class Keywords
       RESERVED = %w[staged unstaged modified untracked failed].freeze
 
-      attr_accessor :provided
+      attr_reader :provided
 
       alias raw provided
 

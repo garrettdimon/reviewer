@@ -8,7 +8,7 @@ module Reviewer
       #   @return [Array<String>] tags explicitly provided via -t or --tags flag
       # @!attribute keywords
       #   @return [Array<String>] tags derived from keyword arguments
-      attr_accessor :provided, :keywords
+      attr_reader :provided, :keywords
 
       alias raw provided
 

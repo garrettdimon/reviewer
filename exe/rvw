@@ -4,4 +4,5 @@
 
 require_relative '../lib/reviewer'
 
-Reviewer.review(clear_screen: true)
+Reviewer.output.clear
+Reviewer.review

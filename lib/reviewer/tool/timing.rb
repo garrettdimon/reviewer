@@ -23,9 +23,9 @@ module Reviewer
       #
       # @return [Time, nil] timestamp of when the `prepare` command was last run
       def last_prepared_at
-        date_string = @history.get(@key, :last_prepared_at)
+        date_string = @history.get(@key, :last_prepared_at).to_s
 
-        date_string == '' || date_string.nil? ? nil : DateTime.parse(date_string).to_time
+        date_string.empty? ? nil : DateTime.parse(date_string).to_time
       end
 
       # Sets the timestamp for when the tool last ran its `prepare` command
@@ -60,7 +60,7 @@ module Reviewer
       #
       # @return [void]
       def record_timing(command, time)
-        return if time.nil?
+        return unless time
 
         timing = get_timing(command).take(4) << time.round(2)
 
@@ -71,7 +71,7 @@ module Reviewer
       #
       # @return [Boolean] true if the timestamp is nil or older than six hours
       def stale?
-        last_prepared_at.nil? || last_prepared_at < Time.now - SIX_HOURS_IN_SECONDS
+        !last_prepared_at || last_prepared_at < Time.now - SIX_HOURS_IN_SECONDS
       end
     end
   end

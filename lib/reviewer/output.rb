@@ -18,7 +18,8 @@ module Reviewer
     # @param text [String, nil] the stderr output to clean up
     # @return [String] the cleaned text with rake noise removed
     def self.scrub(text)
-      return '' if text.nil?
+      text = text.to_s
+      return '' if text.empty?
 
       text.include?(RAKE_ABORTED_TEXT) ? text.split(RAKE_ABORTED_TEXT).first : text
     end

@@ -25,10 +25,10 @@ module Reviewer
       #   reviewer.to_a # => ['./file.rb','./directory/file.rb']
       #
       # @return [self]
-      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords, on_git_error: nil)
+      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords, on_git_error: ->(message) { Reviewer.output.git_error(message) })
         @provided = Array(provided)
         @keywords = Array(keywords)
-        @on_git_error = on_git_error || ->(message) { Reviewer.output.git_error(message) }
+        @on_git_error = on_git_error
       end
 
       # Provides the full list of file/path values derived from the command-line arguments

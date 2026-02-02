@@ -36,27 +36,25 @@ module Reviewer
 
     # Runs the `review` command for the specified tools/files. Reviewer expects all configured
     #   commands that are not disabled to have an entry for the `review` command.
-    # @param clear_screen [boolean] clears the screen to reduce noise when true
     #
     # @return [void] Prints output to the console
-    def review(clear_screen: false)
+    def review
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
 
-      exit build_session.review(clear_screen: clear_screen)
+      exit build_session.review
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
-    # @param clear_screen [boolean] clears the screen to reduce noise when true
     #
     # @return [void] Prints output to the console
-    def format(clear_screen: false)
+    def format
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
 
-      exit build_session.format(clear_screen: clear_screen)
+      exit build_session.format
     end
 
     # The collection of arguments that were passed via the command line.

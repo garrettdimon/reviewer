@@ -10,7 +10,7 @@ module Reviewer
       #   @return [Float, nil] the preparation time in seconds
       # @!attribute main
       #   @return [Float, nil] the main execution time in seconds
-      attr_accessor :prep, :main
+      attr_reader :prep, :main
 
       # A timer that tracks preparation and main execution times separately.
       # Times can be passed directly or recorded using `record_prep` and `record_main`.
@@ -58,7 +58,7 @@ module Reviewer
       # Whether both prep and main times have been recorded
       #
       # @return [Boolean] true if both phases were timed
-      def prepped? = !(prep.nil? || main.nil?)
+      def prepped? = [prep, main].all?
 
       # The percentage of total time spent on preparation
       #
