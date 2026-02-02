@@ -30,7 +30,7 @@ module Reviewer
     #
     # @return [Array<Tool>] the full collection of all Tool instances
     def all
-      configured.keys.map { |tool_name| Tool.new(tool_name) }
+      configured.keys.map { |tool_name| Tool.new(tool_name, history: @history) }
     end
     alias to_a all
 
