@@ -42,7 +42,7 @@ module Reviewer
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
-      return if offer_first_run_setup
+      return run_first_time_setup unless configuration.file.exist?
 
       exit build_session.review
     end
@@ -54,7 +54,7 @@ module Reviewer
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
-      return if offer_first_run_setup
+      return run_first_time_setup unless configuration.file.exist?
 
       exit build_session.format
     end
@@ -115,9 +115,7 @@ module Reviewer
       Doctor::Formatter.new(output).print(report)
     end
 
-    def offer_first_run_setup
-      return false if configuration.file.exist?
-
+    def run_first_time_setup
       formatter = Setup::Formatter.new(output)
       formatter.first_run_greeting
       if prompt.yes?('Would you like to set it up now?')
@@ -125,7 +123,6 @@ module Reviewer
       else
         formatter.first_run_skip
       end
-      true
     end
 
     def build_session
