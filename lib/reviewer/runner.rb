@@ -30,7 +30,7 @@ module Reviewer
     # @param command_type [Symbol] the key for the type of command to run
     # @param strategy = Strategies::Captured [Runner::Strategies] how to execute and handle the
     #   results of the command
-    # @param output: Reviewer.output [Review::Output] the output formatter for the results
+    # @param output [Review::Output] the output formatter for the results
     #
     # @return [self]
     def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output, arguments: Reviewer.arguments)

@@ -7,9 +7,9 @@ module Reviewer
       attr_reader :command, :result, :formatter
 
       # Create an instance of guidance for suggesting recovery steps after errors
-      # @param command: [Command] the command that was run and needs recovery guidance
-      # @param result: [Result] the result of the command
-      # @param output: Reviewer.output [Output] the output channel for displaying content
+      # @param command [Command] the command that was run and needs recovery guidance
+      # @param result [Result] the result of the command
+      # @param output [Output] the output channel for displaying content
       #
       # @return [Guidance] the guidance class to suggest relevant recovery steps
       def initialize(command:, result:, output: Reviewer.output)

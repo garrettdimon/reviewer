@@ -15,7 +15,7 @@ module Reviewer
       alias raw provided
 
       # Generates an instance of parsed keywords from the provided arguments
-      # @param *provided [Array<String>] the leftover (non-flag) arguments from the command line
+      # @param provided [Array<String>] the leftover (non-flag) arguments from the command line
       #
       # @return [self]
       def initialize(*provided)

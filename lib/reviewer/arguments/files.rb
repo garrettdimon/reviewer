@@ -12,9 +12,9 @@ module Reviewer
       alias raw provided
 
       # Generates an instance of files from the provided arguments
-      # @param provided: Reviewer.arguments.files.raw [Array, String] file arguments provided
+      # @param provided [Array, String] file arguments provided
       #   directly via the -f or --files flag on the command line.
-      # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
+      # @param keywords [Array, String] keywords that can potentially
       #   be translated to a list of files (ex. 'staged')
       #
       # @example Using the `-f` flag: `rvw -f ./file.rb`

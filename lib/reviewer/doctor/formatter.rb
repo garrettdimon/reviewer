@@ -44,7 +44,7 @@ module Reviewer
       private
 
       def print_section(section, findings)
-        printer.puts(:bold, SECTION_LABELS.fetch(section, section.to_s.capitalize))
+        printer.puts(:bold, SECTION_LABELS.fetch(section) { section.to_s.capitalize })
         findings.each { |finding| print_finding(finding) }
         output.newline
       end
@@ -54,8 +54,8 @@ module Reviewer
         message = finding.message
         detail = finding.detail
 
-        symbol = SYMBOLS.fetch(status, ' ')
-        style = STYLES.fetch(status, :default)
+        symbol = SYMBOLS.fetch(status) { ' ' }
+        style = STYLES.fetch(status) { :default }
 
         printer.print(style, "  #{symbol} ")
         printer.puts(:default, message)

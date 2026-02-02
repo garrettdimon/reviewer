@@ -14,9 +14,9 @@ module Reviewer
 
       # Generates an instace of parsed tags from the provided arguments by merging tag arguments
       #   that were provided via either flags or keywords
-      # @param provided: Reviewer.arguments.tags.raw [Array<String>] tag arguments provided
+      # @param provided [Array<String>] tag arguments provided
       #   directly via the -t or --tags flag on the command line.
-      # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
+      # @param keywords [Array, String] keywords that can potentially
       #   be translated to a list of tags based on the tags used in the configuration file
       #
       # @example Using keywords: `rvw ruby` (assuming a 'ruby' tag is defined)

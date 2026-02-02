@@ -24,13 +24,13 @@ module Reviewer
       end
 
       # Records the execution time for the block and assigns it to the `prep` time
-      # @param &block [Block] the commands to be timed
+      # @param block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the preparation
       def record_prep(&) = @prep = record(&)
 
       # Records the execution time for the block and assigns it to the `main` time
-      # @param &block [Block] the commands to be timed
+      # @param block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the main command
       def record_main(&) = @main = record(&)
