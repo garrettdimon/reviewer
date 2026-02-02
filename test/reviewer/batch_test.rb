@@ -7,14 +7,14 @@ module Reviewer
     def setup
       @report = nil
       @history = Reviewer.history
-      @context = Context.new(arguments: Reviewer.arguments, output: Output.new, history: @history)
+      @context = default_context(history: @history)
     end
 
     def test_running_single_batch
       tools = [Tool.new(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools, context: Context.new).run
+        @report = Batch.new(:review, tools, context: default_context).run
       end
 
       assert_instance_of Report, @report
@@ -27,7 +27,7 @@ module Reviewer
       tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools, context: Context.new).run
+        @report = Batch.new(:review, tools, context: default_context).run
       end
 
       assert_instance_of Report, @report
@@ -40,7 +40,7 @@ module Reviewer
       tools = [Tool.new(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools, context: Context.new).run
+        @report = Batch.new(:review, tools, context: default_context).run
       end
 
       assert_kind_of Float, @report.duration
@@ -160,7 +160,7 @@ module Reviewer
       tools = [Tool.new(:missing_command), Tool.new(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools, context: Context.new).run
+        @report = Batch.new(:review, tools, context: default_context).run
       end
 
       assert_equal 2, @report.results.size
@@ -181,7 +181,7 @@ module Reviewer
       tools = [Tool.new(:missing_command), Tool.new(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools, context: Context.new).run
+        @report = Batch.new(:review, tools, context: default_context).run
       end
 
       assert @report.results.first.missing

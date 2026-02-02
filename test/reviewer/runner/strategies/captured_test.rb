@@ -11,7 +11,7 @@ module Reviewer
         end
 
         def test_captured_runner_implementation
-          captured_runner = Runner.new(:list, :review, @strategy, context: Context.new)
+          captured_runner = Runner.new(:list, :review, @strategy, context: default_context)
 
           result = nil
           capture_subprocess_io { result = captured_runner.run }
@@ -21,7 +21,7 @@ module Reviewer
 
         def test_captured_runner_implementation_with_prep
           History.clear
-          captured_runner = Runner.new(:list, :review, @strategy, context: Context.new)
+          captured_runner = Runner.new(:list, :review, @strategy, context: default_context)
 
           result = nil
           capture_subprocess_io { result = captured_runner.run }
@@ -30,7 +30,7 @@ module Reviewer
         end
 
         # def test_captured_runner_with_usable_stdout_implementation
-        #   captured_runner = Runner.new(:list, :review, @strategy, context: Context.new)
+        #   captured_runner = Runner.new(:list, :review, @strategy, context: default_context)
 
         #   captured_runner.stub(:stdout, 'standard out') do
         #     result = nil
@@ -40,7 +40,7 @@ module Reviewer
         # end
 
         def test_captured_runner_standard_failure_implementation
-          captured_runner = Runner.new(:failing_command, :review, @strategy, context: Context.new)
+          captured_runner = Runner.new(:failing_command, :review, @strategy, context: default_context)
 
           result = nil
           capture_subprocess_io { result = captured_runner.run }
@@ -51,7 +51,7 @@ module Reviewer
         end
 
         def test_captured_runner_total_failure_implementation
-          captured_runner = Runner.new(:missing_command, :review, @strategy, context: Context.new)
+          captured_runner = Runner.new(:missing_command, :review, @strategy, context: default_context)
 
           result = nil
           capture_subprocess_io { result = captured_runner.run }

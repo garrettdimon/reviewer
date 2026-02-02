@@ -28,6 +28,14 @@ MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true) do
   def success? = exitstatus.zero?
 end
 
+class Minitest::Test
+  private
+
+  def default_context(arguments: Reviewer::Arguments.new([]), output: Reviewer::Output.new, history: Reviewer.history)
+    Reviewer::Context.new(arguments: arguments, output: output, history: history)
+  end
+end
+
 # Configure Reviewer to use test fixtures so tests don't depend on a real .reviewer.yml
 Reviewer.reset!
 Reviewer.configure do |config|
