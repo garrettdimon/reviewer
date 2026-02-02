@@ -193,6 +193,70 @@ module Reviewer
           @result.instance_variable_set(:@tool_key, :other)
         end
       end
+
+      def test_executed_when_not_skipped_or_missing
+        assert @result.executed?
+      end
+
+      def test_not_executed_when_skipped
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Tests', command_type: :review,
+          command_string: nil, success: true, exit_status: 0,
+          duration: 0, stdout: nil, stderr: nil, skipped: true
+        )
+
+        refute result.executed?
+      end
+
+      def test_not_executed_when_missing
+        result = Result.new(
+          tool_key: :rubocop, tool_name: 'RuboCop', command_type: :review,
+          command_string: nil, success: false, exit_status: 127,
+          duration: 0, stdout: nil, stderr: nil, skipped: nil, missing: true
+        )
+
+        refute result.executed?
+      end
+
+      def test_detail_summary_for_tests
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: '571 tests with 1290 assertions', stderr: nil, skipped: nil
+        )
+
+        assert_equal '571 tests', result.detail_summary
+      end
+
+      def test_detail_summary_for_rubocop
+        result = Result.new(
+          tool_key: :rubocop, tool_name: 'RuboCop', command_type: :review,
+          command_string: 'rubocop', success: false, exit_status: 1,
+          duration: 1.0, stdout: '115 files inspected, 3 offenses detected', stderr: nil, skipped: nil
+        )
+
+        assert_equal '3 offenses', result.detail_summary
+      end
+
+      def test_detail_summary_returns_nil_for_other_tools
+        result = Result.new(
+          tool_key: :reek, tool_name: 'Reek', command_type: :review,
+          command_string: 'reek', success: true, exit_status: 0,
+          duration: 1.0, stdout: '0 total warnings', stderr: nil, skipped: nil
+        )
+
+        assert_nil result.detail_summary
+      end
+
+      def test_detail_summary_returns_nil_when_no_match
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: nil, stderr: nil, skipped: nil
+        )
+
+        assert_nil result.detail_summary
+      end
     end
   end
 end

@@ -23,6 +23,7 @@ module Reviewer
       def failed? = false
       def for_tool_names = []
       def unrecognized = []
+      def possible = %w[staged unstaged modified untracked failed]
     end
 
     # Keywords stub with failed keyword
@@ -69,6 +70,24 @@ module Reviewer
         return Runner::Strategies::Passthrough if raw?
         return Runner::Strategies::Captured unless streaming?
 
+        multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+      end
+    end
+
+    # Keywords stub with unrecognized keywords
+    StubKeywordsUnrecognized = Struct.new(:provided, :unrecognized) do
+      def failed? = false
+      def for_tool_names = []
+      def possible = %w[staged unstaged modified untracked failed list enabled_tool]
+    end
+
+    # Stub arguments with unrecognized keywords
+    StubArgsWithUnrecognized = Struct.new(:format, :json?, :raw?, :streaming?, :keyword_stub, keyword_init: true) do
+      def files = EmptyFiles.new
+      def keywords = keyword_stub
+      def tags = Arguments::Tags.new(provided: [], keywords: [])
+
+      def runner_strategy(multiple_tools:)
         multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
       end
     end
@@ -195,6 +214,72 @@ module Reviewer
         session = build_session(tools: tools_collection)
         _out, _err = capture_subprocess_io { session.review }
         # Verify review runs without error
+      end
+    end
+
+    def test_warns_about_unrecognized_keywords
+      keyword_stub = StubKeywordsUnrecognized.new(%w[lsit], %w[lsit])
+      stub_args = StubArgsWithUnrecognized.new(
+        format: :streaming, json?: false, raw?: false, streaming?: true,
+        keyword_stub: keyword_stub
+      )
+      tools_collection = Tools.new
+      tools_collection.stub(:current, [Tool.new(:list)]) do
+        session = build_session(arguments: stub_args, tools: tools_collection)
+        out, _err = capture_subprocess_io { session.review }
+        assert_match(/lsit/, out)
+      end
+    end
+
+    def test_json_returns_zero_when_no_matching_tools
+      stub_args = StubArgs.new(format: :json, json?: true, raw?: false, streaming?: false)
+      tools_collection = Tools.new
+      tools_collection.stub(:current, []) do
+        session = build_session(arguments: stub_args, tools: tools_collection)
+        _out, _err = capture_subprocess_io do
+          assert_equal 0, session.review
+        end
+      end
+    end
+
+    def test_failed_with_previous_run_but_no_failures
+      stub_args = StubArgsWithFailed.new(format: :streaming, json?: false, raw?: false, streaming?: true)
+      history = Reviewer.history
+      tools_collection = Tools.new
+
+      # Record a passing status so history exists
+      history.set(:list, :last_status, :passed)
+
+      tools_collection.stub(:failed_from_history, []) do
+        session = build_session(arguments: stub_args, tools: tools_collection, history: history)
+        out, _err = capture_subprocess_io { session.review }
+        assert_match(/no failures/i, out)
+      end
+    ensure
+      history.set(:list, :last_status, nil)
+    end
+
+    def test_failed_with_no_previous_run
+      stub_args = StubArgsWithFailed.new(format: :streaming, json?: false, raw?: false, streaming?: true)
+      history = Reviewer.history
+      tools_collection = Tools.new
+
+      # Clear all statuses so no previous run exists
+      tools_collection.all.each { |tool| history.set(tool.key, :last_status, nil) }
+
+      tools_collection.stub(:failed_from_history, []) do
+        session = build_session(arguments: stub_args, tools: tools_collection, history: history)
+        out, _err = capture_subprocess_io { session.review }
+        assert_match(/no previous run/i, out)
+      end
+    end
+
+    def test_streaming_failure_does_not_show_batch_summary
+      tools_collection = Tools.new
+      tools_collection.stub(:current, [Tool.new(:missing_command)]) do
+        session = build_session(tools: tools_collection)
+        out, _err = capture_subprocess_io { session.review }
+        refute_match(/all passed/i, out)
       end
     end
   end

@@ -75,6 +75,30 @@ module Reviewer
         end
       end
 
+      def test_generating_files_from_unstaged_keyword
+        files = Files.new(provided: [], keywords: %w[unstaged])
+
+        stub_git_success("lib/reviewer.rb\n") do
+          assert_equal ['lib/reviewer.rb'], files.to_a
+        end
+      end
+
+      def test_generating_files_from_modified_keyword
+        files = Files.new(provided: [], keywords: %w[modified])
+
+        stub_git_success("lib/reviewer.rb\nlib/reviewer/output.rb\n") do
+          assert_equal ['lib/reviewer.rb', 'lib/reviewer/output.rb'], files.to_a
+        end
+      end
+
+      def test_generating_files_from_untracked_keyword
+        files = Files.new(provided: [], keywords: %w[untracked])
+
+        stub_git_success("new_file.rb\n") do
+          assert_equal ['new_file.rb'], files.to_a
+        end
+      end
+
       def test_git_error_calls_injected_handler
         captured = []
         handler = ->(message) { captured << message }

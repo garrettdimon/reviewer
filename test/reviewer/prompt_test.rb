@@ -41,6 +41,13 @@ module Reviewer
       refute prompt.yes?('Set up now?')
     end
 
+    def test_eof_returns_false
+      input = tty_input('')
+      prompt = Prompt.new(input: input, output: StringIO.new)
+
+      refute prompt.yes?('Set up now?')
+    end
+
     def test_non_tty_returns_false_without_prompting
       input = StringIO.new("y\n")
       output = StringIO.new
