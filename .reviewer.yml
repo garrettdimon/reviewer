@@ -27,7 +27,7 @@ tests:
     # coverage: false
 
 reek:
-  skip_in_batch: true # Reek provides guidance and is generally run solo
+  # skip_in_batch: true # Reek provides guidance and is generally run solo
   name: Reek
   description: Examine Ruby Classes for Code Smells
   tags: [ruby, quality, dev]
@@ -46,7 +46,7 @@ reek:
     documentation:
 
 flog:
-  skip_in_batch: true # Flog provides guidance and is generally run solo
+  # skip_in_batch: true # Flog provides guidance and is generally run solo
   name: Flog
   description: Reports your most tortured ruby code in an easy to read pain report.
   tags: [ruby, quality, dev]
@@ -62,7 +62,7 @@ flog:
     methods-only:
 
 flay:
-  skip_in_batch: true # Flay provides guidance and is generally run solo
+  # skip_in_batch: true # Flay provides guidance and is generally run solo
   name: Flay
   description: Review ruby code for structural similarities and refactoring opportunities.
   tags: [ruby, quality, dev]
@@ -99,7 +99,7 @@ rubocop:
 # The YARD Parser can also come in handy:
 #   https://yardoc.org/types
 inch:
-  skip_in_batch: true
+  # skip_in_batch: true
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation Quality
@@ -111,7 +111,7 @@ inch:
     review: "bundle exec inch"
 
 yard:
-  skip_in_batch: true
+  # skip_in_batch: true
   tags: [docs, ruby, dev]
   name: Yard
   description: Generates Documentation
@@ -200,7 +200,7 @@ metric_fu:
     review: "bundle exec metric_fu"
 
 yardstick:
-  skip_in_batch: true # Documentation coverage measurement
+  # skip_in_batch: true # Documentation coverage measurement
   name: Yardstick
   description: Measure YARD documentation coverage
   tags: [docs, ruby, dev]

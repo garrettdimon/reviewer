@@ -43,6 +43,12 @@ module Reviewer
       @streaming = arguments.streaming?
     end
 
+    # Display formatter for runner-specific output (tool summary, success, failure, etc.)
+    # Computed rather than stored to avoid exceeding instance variable threshold.
+    #
+    # @return [Runner::Formatter]
+    def formatter = Runner::Formatter.new(output)
+
     # Whether this runner is operating in streaming mode
     #
     # @return [Boolean] true if output should be streamed
@@ -55,12 +61,12 @@ module Reviewer
       # Skip if files were requested but none match this tool's pattern
       if command.skip?
         @skipped = true
-        show_skipped if streaming?
+        show_skipped
         return 0
       end
 
-      # Show which tool is running (only in streaming mode)
-      identify_tool if streaming?
+      # Show which tool is running
+      identify_tool
 
       # Use the provided strategy to run the command
       execute_strategy
@@ -95,7 +101,15 @@ module Reviewer
 
     def failure? = !success?
 
-    # Prints the tool name and description to the console as a frame of reference
+    # Extracts file paths from stdout/stderr for failed-file tracking
+    #
+    # @return [Array<String>] file paths found in the command output
+    def failed_files
+      FailedFiles.new(stdout, stderr).to_a
+    end
+
+    # Prints the tool name and description to the console as a frame of reference.
+    # Only displays in streaming mode; non-streaming strategies handle their own output.
     #
     # @return [void]
     def identify_tool
@@ -103,15 +117,18 @@ module Reviewer
       # be redundant.
       return if result.exists?
 
-      output.tool_summary(tool)
+      stream_output { formatter.tool_summary(tool) }
     end
 
-    # Shows that a tool was skipped due to no matching files
+    # Shows that a tool was skipped due to no matching files.
+    # Only displays in streaming mode; non-streaming modes report skips in the final summary.
     #
     # @return [void]
     def show_skipped
-      output.tool_summary(tool)
-      output.skipped
+      stream_output do
+        formatter.tool_summary(tool)
+        formatter.skipped
+      end
     end
 
     # Runs the relevant strategy to either capture or pass through command output.
@@ -177,12 +194,20 @@ module Reviewer
 
     private
 
+    # Yields the block only when in streaming mode.
+    # Centralizes the streaming guard so display methods don't each check independently.
+    #
+    # @return [void]
+    def stream_output
+      yield if streaming?
+    end
+
     # Marks the tool as missing and shows a skip message
     #
     # @return [Integer] the exit status from the command
     def handle_missing
       @missing = true
-      output.skipped('not installed') if streaming?
+      stream_output { formatter.skipped('not installed') }
       exit_status
     end
 
@@ -190,7 +215,7 @@ module Reviewer
     #
     # @return [Integer] the exit status from the command
     def handle_result
-      guidance.show if failure? && streaming?
+      stream_output { guidance.show } if failure?
       exit_status
     end
   end

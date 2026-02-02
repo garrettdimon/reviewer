@@ -9,7 +9,8 @@ module Reviewer
 
     SEED_SUBSTITUTION_VALUE = '$SEED'
 
-    attr_reader :tool
+    attr_reader :tool, :arguments, :history
+    private :arguments, :history
 
     # @!attribute type
     #   @return [Symbol] the command type (:install, :prepare, :review, :format)
@@ -46,14 +47,14 @@ module Reviewer
     #
     # @return [Integer] a random integer to pass to tools that use seeds
     def seed
-      @seed ||= if @arguments.keywords.failed?
-                  @history.get(tool.key, :last_seed) || Random.rand(100_000)
+      @seed ||= if arguments.keywords.failed?
+                  history.get(tool.key, :last_seed) || Random.rand(100_000)
                 else
                   Random.rand(100_000)
                 end
 
       # Store the seed for reference
-      @history.set(tool.key, :last_seed, @seed)
+      history.set(tool.key, :last_seed, @seed)
 
       @seed
     end
@@ -80,6 +81,15 @@ module Reviewer
       tool.skip_files?(requested_files)
     end
 
+    # Returns a summary hash for run display, or nil if this command should be skipped
+    #
+    # @return [Hash, nil] { name:, files: } or nil if skipped
+    def run_summary
+      return nil if skip?
+
+      { name: tool.name, files: target_files }
+    end
+
     private
 
     # The raw list of files from arguments before resolution.
@@ -89,8 +99,8 @@ module Reviewer
     # @return [Array<String>] files from -f flag, keywords like 'staged', or stored failed files
     def requested_files
       @requested_files ||= begin
-        explicit = @arguments.files.to_a
-        if explicit.empty? && @arguments.keywords.failed?
+        explicit = arguments.files.to_a
+        if explicit.empty? && arguments.keywords.failed?
           stored_failed_files
         else
           explicit
@@ -102,7 +112,7 @@ module Reviewer
     #
     # @return [Array<String>] stored failed file paths, or empty array
     def stored_failed_files
-      @history.get(tool.key, :last_failed_files) || []
+      history.get(tool.key, :last_failed_files) || []
     end
 
     # The version of the command with the SEED_SUBSTITUTION_VALUE replaced

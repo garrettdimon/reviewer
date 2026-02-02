@@ -4,7 +4,7 @@ module Reviewer
   class Runner
     # Handles the logic around what to display after a command has been run
     class Guidance
-      attr_reader :command, :result, :output
+      attr_reader :command, :result, :formatter
 
       # Create an instance of guidance for suggesting recovery steps after errors
       # @param command: [Command] the command that was run and needs recovery guidance
@@ -15,7 +15,7 @@ module Reviewer
       def initialize(command:, result:, output: Reviewer.output)
         @command = command
         @result = result
-        @output = output
+        @formatter = Runner::Formatter.new(output)
       end
 
       # Prints the relevant guidance based on the command and result context
@@ -53,24 +53,24 @@ module Reviewer
         installation_command = Command.new(tool, :install).string if tool.installable?
         install_link = tool.install_link
 
-        output.failure("Missing executable for '#{tool}'", command: command)
-        output.guidance('Try installing the tool:', installation_command)
-        output.guidance('Read the installation guidance:', install_link)
+        formatter.failure("Missing executable for '#{tool}'", command: command)
+        formatter.guidance('Try installing the tool:', installation_command)
+        formatter.guidance('Read the installation guidance:', install_link)
       end
 
       # Shows the recovery guidance for when a command generates an unrecoverable error
       #
       # @return [void] prints unrecoverable error guidance
       def show_unrecoverable_guidance
-        output.unrecoverable(result.stderr)
+        formatter.unrecoverable(result.stderr)
       end
 
       # Shows suggestions for ignoring or disable rules when a command fails after reviewing code
       #
       # @return [void] prints syntax guidance
       def show_syntax_guidance
-        output.guidance('Selectively Ignore a Rule:', command.tool.links[:ignore_syntax])
-        output.guidance('Fully Disable a Rule:', command.tool.links[:disable_syntax])
+        formatter.guidance('Selectively Ignore a Rule:', command.tool.links[:ignore_syntax])
+        formatter.guidance('Fully Disable a Rule:', command.tool.links[:disable_syntax])
       end
     end
   end

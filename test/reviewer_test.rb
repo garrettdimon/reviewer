@@ -58,49 +58,37 @@ module Reviewer
     end
 
     def test_exits_with_guidance_when_config_missing
-      original_file = Reviewer.configuration.file
+      with_missing_config do
+        stub_prompt = Prompt.new(input: StringIO.new, output: StringIO.new)
+        Reviewer.stub(:prompt, stub_prompt) do
+          out, _err = capture_subprocess_io do
+            Reviewer.review
+          rescue SystemExit => e
+            assert_equal 0, e.status
+          end
 
-      Reviewer.configuration.file = Pathname('test/fixtures/files/nonexistent.yml')
-
-      # Non-TTY prompt returns false, so we get the skip message
-      stub_prompt = Prompt.new(input: StringIO.new, output: StringIO.new)
-      Reviewer.stub(:prompt, stub_prompt) do
-        out, _err = capture_subprocess_io do
-          Reviewer.review
-        rescue SystemExit => e
-          assert_equal 0, e.status
+          assert_match(/setting up Reviewer/i, out)
+          assert_match(/rvw init/, out)
         end
-
-        assert_match(/setting up Reviewer/i, out)
-        assert_match(/rvw init/, out)
       end
-    ensure
-      Reviewer.configuration.file = original_file
     end
 
     def test_runs_setup_when_config_missing_and_user_says_yes
-      original_file = Reviewer.configuration.file
-
-      Reviewer.configuration.file = Pathname('test/fixtures/files/nonexistent.yml')
-
-      tty_input = StringIO.new("y\n")
-      tty_input.define_singleton_method(:tty?) { true }
-      stub_prompt = Prompt.new(input: tty_input, output: StringIO.new)
-
-      setup_ran = false
-      Setup.stub(:run, -> { setup_ran = true }) do
-        Reviewer.stub(:prompt, stub_prompt) do
-          capture_subprocess_io do
-            Reviewer.review
-          rescue SystemExit
-            # Expected
+      with_missing_config do
+        stub_prompt = build_tty_prompt("y\n")
+        setup_ran = false
+        Setup.stub(:run, -> { setup_ran = true }) do
+          Reviewer.stub(:prompt, stub_prompt) do
+            capture_subprocess_io do
+              Reviewer.review
+            rescue SystemExit
+              # Expected
+            end
           end
         end
-      end
 
-      assert setup_ran, 'Expected Setup.run to be called when user says yes'
-    ensure
-      Reviewer.configuration.file = original_file
+        assert setup_ran, 'Expected Setup.run to be called when user says yes'
+      end
     end
 
     def test_missing_tools_summary_shown_in_streaming_mode
@@ -194,6 +182,22 @@ module Reviewer
       assert_match(/"keywords"/, out)
     ensure
       ARGV.replace([])
+    end
+
+    private
+
+    def with_missing_config
+      original_file = Reviewer.configuration.file
+      Reviewer.configuration.file = Pathname('test/fixtures/files/nonexistent.yml')
+      yield
+    ensure
+      Reviewer.configuration.file = original_file
+    end
+
+    def build_tty_prompt(input_text)
+      tty_input = StringIO.new(input_text)
+      tty_input.define_singleton_method(:tty?) { true }
+      Prompt.new(input: tty_input, output: StringIO.new)
     end
   end
 end

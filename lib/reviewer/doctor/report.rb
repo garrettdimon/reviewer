@@ -4,7 +4,13 @@ module Reviewer
   module Doctor
     # Structured container for diagnostic findings organized by section
     class Report
-      # A single diagnostic finding with status, message, and optional detail
+      # A single diagnostic finding with status, message, and optional detail.
+      # @!attribute status [rw]
+      #   @return [Symbol] the severity (:ok, :warning, :error, or :info)
+      # @!attribute message [rw]
+      #   @return [String] the finding summary
+      # @!attribute detail [rw]
+      #   @return [String, nil] optional detail or guidance text
       Finding = Struct.new(:status, :message, :detail, keyword_init: true)
 
       # Ordered list of report sections

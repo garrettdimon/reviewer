@@ -8,7 +8,10 @@ module Reviewer
     class EnvironmentCheck
       attr_reader :report
 
+      # Creates an environment checker for Ruby and git availability
       # @param report [Doctor::Report] the report to add findings to
+      #
+      # @return [EnvironmentCheck]
       def initialize(report)
         @report = report
       end

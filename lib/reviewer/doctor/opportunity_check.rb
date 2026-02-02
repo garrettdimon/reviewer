@@ -6,10 +6,13 @@ module Reviewer
     class OpportunityCheck
       attr_reader :report, :project_dir
 
+      # Creates an opportunity checker that scans for unconfigured tools and missing features
       # @param report [Doctor::Report] the report to add findings to
       # @param project_dir [Pathname] the project root for tool detection
       # @param configuration [Configuration] the configuration to check
       # @param tools [Tools] the tools collection to analyze
+      #
+      # @return [OpportunityCheck]
       def initialize(report, project_dir, configuration: Reviewer.configuration, tools: Reviewer.tools)
         @report = report
         @project_dir = project_dir

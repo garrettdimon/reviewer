@@ -30,7 +30,7 @@ module Reviewer
           # Display the exact command syntax that's being run. This can come in handy if there's an
           # issue and the command can be copied/pasted or if the generated command somehow has some
           # incorrect syntax or options that need to be corrected.
-          runner.output.current_command(runner.prepare_command)
+          runner.formatter.current_command(runner.prepare_command)
 
           # Run the command through the shell directly so no output is suppressed
           runner.shell.direct(runner.prepare_command)
@@ -43,7 +43,7 @@ module Reviewer
           # Display the exact command syntax that's being run. This can come in handy if there's an
           # issue and the command can be copied/pasted or if the generated command somehow has some
           # incorrect syntax or options that need to be corrected.
-          runner.output.current_command(runner.command)
+          runner.formatter.current_command(runner.command)
 
           # Run the command through the shell directly so no output is suppressed
           runner.shell.direct(runner.command)

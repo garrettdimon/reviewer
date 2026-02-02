@@ -20,7 +20,7 @@ module Reviewer
         end
 
         def test_captured_runner_implementation_with_prep
-          History.clear!
+          History.clear
           captured_runner = Runner.new(:list, :review, @strategy)
 
           result = nil

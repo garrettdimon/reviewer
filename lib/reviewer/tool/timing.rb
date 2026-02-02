@@ -9,6 +9,11 @@ module Reviewer
     class Timing
       SIX_HOURS_IN_SECONDS = 60 * 60 * 6
 
+      # Creates a timing tracker for a specific tool
+      # @param history [History] the persistence store for timing data
+      # @param key [Symbol] the tool's unique key
+      #
+      # @return [Timing]
       def initialize(history, key)
         @history = history
         @key = key

@@ -101,6 +101,20 @@ module Reviewer
       refute @mvt.formattable?
     end
 
+    def test_matches_tags_returns_true_when_tag_overlaps
+      assert @tool.matches_tags?(%w[ruby])
+      assert @tool.matches_tags?(%w[enabled ruby])
+    end
+
+    def test_matches_tags_returns_false_when_no_overlap
+      refute @tool.matches_tags?(%w[javascript])
+    end
+
+    def test_matches_tags_returns_false_for_skip_in_batch_tools
+      disabled = Tool.new(:disabled_tool)
+      refute disabled.matches_tags?(%w[ruby])
+    end
+
     def test_resolve_files_delegates_to_file_resolver
       tool = Tool.new(:file_pattern_tool)
 

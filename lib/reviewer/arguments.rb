@@ -125,5 +125,16 @@ module Reviewer
     #
     # @return [Boolean] true if in streaming mode
     def streaming? = format == :streaming
+
+    # Determines the appropriate runner strategy based on CLI flags
+    #
+    # @param multiple_tools [Boolean] whether multiple tools are being run
+    # @return [Class] the strategy class (Captured or Passthrough)
+    def runner_strategy(multiple_tools:)
+      return Runner::Strategies::Passthrough if raw?
+      return Runner::Strategies::Captured unless streaming?
+
+      multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+    end
   end
 end

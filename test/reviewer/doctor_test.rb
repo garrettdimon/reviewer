@@ -25,15 +25,20 @@ module Reviewer
     end
 
     def test_report_has_error_when_config_missing
-      original_file = Reviewer.configuration.file
-
-      Dir.mktmpdir do |dir|
-        config_file = Pathname(dir).join('.reviewer.yml')
-        Reviewer.configuration.file = config_file
-
+      with_missing_config do
         report = Doctor.run
         refute report.ok?
         assert(report.errors.any? { |f| f.message =~ /no .reviewer.yml/i })
+      end
+    end
+
+    private
+
+    def with_missing_config
+      original_file = Reviewer.configuration.file
+      Dir.mktmpdir do |dir|
+        Reviewer.configuration.file = Pathname(dir).join('.reviewer.yml')
+        yield
       end
     ensure
       Reviewer.configuration.file = original_file

@@ -22,7 +22,7 @@ module Reviewer
       @history.set(:tool, :key, 'value')
       assert_equal 'value', @history.get(:tool, :key)
 
-      @history.clear!
+      @history.clear
       assert_nil @history.get(:tool, :key)
     end
 
@@ -33,7 +33,7 @@ module Reviewer
       history = History.new(missing_file)
       assert_equal missing_file, history.file
 
-      history.clear!
+      history.clear
     end
   end
 end

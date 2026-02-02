@@ -28,7 +28,7 @@ module Reviewer
         @file = file
         @configuration = configuration_hash
 
-        validate_configuration!
+        validate_configuration
       end
 
       # Whether all configured tools have a review command
@@ -50,12 +50,11 @@ module Reviewer
 
       private
 
-      def validate_configuration!
-        # Any additional guidance for configuration issues will live here
-        require_review_commands!
+      def validate_configuration
+        require_review_commands
       end
 
-      def require_review_commands!
+      def require_review_commands
         return if review_commands_present?
 
         missing = configuration.find { |_key, value| !value[:commands]&.key?(:review) }

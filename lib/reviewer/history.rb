@@ -17,10 +17,10 @@ module Reviewer
   class History
     attr_reader :file, :store
 
-    # Creates an instance of a YAML::Store-backed history file.
-    # @param file = Reviewer.configuration.history_file [Pathname] the history file to store data
+    # Creates an instance of a YAML::Store-backed history file
+    # @param file [Pathname] the history file to store data
     #
-    # @return [History] an instance of history
+    # @return [History]
     def initialize(file = Reviewer.configuration.history_file)
       @file = file
       @store = YAML::Store.new(file)
@@ -33,9 +33,9 @@ module Reviewer
     #
     # @return [Primitive] the value being stored
     def set(group, attribute, value)
-      store.transaction do |transaction|
-        transaction[group] = {} if transaction[group].nil?
-        transaction[group][attribute] = value
+      store.transaction do
+        store[group] ||= {}
+        store[group][attribute] = value
       end
     end
 
@@ -45,15 +45,15 @@ module Reviewer
     #
     # @return [Primitive] the value being stored
     def get(group, attribute)
-      store.transaction do |transaction|
-        transaction[group].nil? ? nil : transaction[group][attribute]
+      store.transaction(true) do
+        store[group]&.[](attribute)
       end
     end
 
     # Removes the existing history file.
     #
     # @return [void]
-    def clear!
+    def clear
       return unless File.exist?(file)
 
       FileUtils.rm(file)
@@ -62,6 +62,6 @@ module Reviewer
     # Convenience class method for removing the history file.
     #
     # @return [void]
-    def self.clear! = new.clear!
+    def self.clear = new.clear
   end
 end

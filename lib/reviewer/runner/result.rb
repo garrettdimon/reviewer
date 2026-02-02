@@ -55,6 +55,21 @@ module Reviewer
       # @return [Boolean] true if the tool was executed
       def executed? = !skipped? && !missing?
 
+      # Extracts a short summary detail from stdout for display purposes.
+      # Each tool type may have its own summary format (test count, offense count, etc.)
+      #
+      # @return [String, nil] a brief summary or nil if no detail can be extracted
+      def detail_summary
+        case tool_key
+        when :tests
+          match = stdout&.match(/(\d+)\s+tests?/i)
+          match ? "#{match[1]} tests" : nil
+        when :rubocop
+          match = stdout&.match(/(\d+)\s+offenses?/i)
+          match ? "#{match[1]} offenses" : nil
+        end
+      end
+
       # Converts the result to a hash suitable for serialization
       #
       # @return [Hash] hash representation with nil values removed

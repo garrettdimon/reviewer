@@ -119,16 +119,16 @@ module Reviewer
         end
       end
 
-      private
-
       MockStatus = Struct.new(:success?, :exitstatus)
 
-      def stub_git_success(stdout, &block)
-        Open3.stub :capture3, [stdout, '', MockStatus.new(true, 0)], &block
+      private
+
+      def stub_git_success(stdout, &)
+        Open3.stub(:capture3, [stdout, '', MockStatus.new(true, 0)], &)
       end
 
-      def stub_git_failure(stderr, exit_code, &block)
-        Open3.stub :capture3, ['', stderr, MockStatus.new(false, exit_code)], &block
+      def stub_git_failure(stderr, exit_code, &)
+        Open3.stub(:capture3, ['', stderr, MockStatus.new(false, exit_code)], &)
       end
     end
   end

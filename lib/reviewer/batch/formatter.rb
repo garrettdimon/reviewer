@@ -8,51 +8,76 @@ module Reviewer
     class Formatter
       include Output::Formatting
 
+      attr_reader :output, :printer
+      private :output, :printer
+
+      # Creates a formatter for batch execution display
+      # @param output [Output] the console output handler
+      #
+      # @return [Formatter]
       def initialize(output)
         @output = output
         @printer = output.printer
       end
 
+      # Displays a one-line success summary with timing and tool count
+      # @param tool_count [Integer] the number of tools that ran
+      # @param seconds [Float] total elapsed time in seconds
+      #
+      # @return [void]
       def batch_summary(tool_count, seconds)
-        @output.newline
-        @printer.print(:success, CHECKMARK)
-        @printer.print(:muted, " ~#{seconds.round(1)} seconds")
-        @printer.print(:muted, " for #{tool_count} tools") if tool_count > 1
-        @output.newline
+        output.newline
+        printer.print(:success, CHECKMARK)
+        printer.print(:muted, " ~#{seconds.round(1)} seconds")
+        printer.print(:muted, " for #{tool_count} tools") if tool_count > 1
+        output.newline
       end
 
+      # Displays a preview of which tools will run and their target files
+      # @param entries [Array<Hash>] each with :name and :files keys
+      #
+      # @return [void]
       def run_summary(entries)
         return if entries.empty?
 
         entries.each { |entry| print_run_entry(entry) }
-        @output.newline
+        output.newline
       end
 
+      # Displays a list of tools whose executables were not found, with install hints
+      # @param tools [Array<Tool>] the tools that were missing
+      #
+      # @return [void]
       def missing_tools(tools)
-        label = pluralize(tools.size, 'not installed', 'not installed')
         label = "#{tools.size} not installed:"
-        @output.newline
-        @printer.puts(:warning, label)
+        output.newline
+        printer.puts(:warning, label)
         tools.each do |tool|
           hint = tool.installable? ? tool.install_command : ''
-          @printer.puts(:muted, "  #{tool.name.ljust(22)}#{hint}")
+          printer.puts(:muted, "  #{tool.name.ljust(22)}#{hint}")
         end
-        @output.newline
+        output.newline
       end
 
+      # Displays a message when `rvw failed` is used but no tools failed in the last run
+      #
+      # @return [void]
       def no_failures_to_retry
-        @printer.puts(:muted, 'No failures to retry')
+        printer.puts(:muted, 'No failures to retry')
       end
 
+      # Displays a message when `rvw failed` is used but no previous run exists in history
+      #
+      # @return [void]
       def no_previous_run
-        @printer.puts(:muted, 'No previous run found')
+        printer.puts(:muted, 'No previous run found')
       end
 
       private
 
       def print_run_entry(entry)
-        @printer.puts(:muted, entry[:name])
-        entry[:files].each { |file| @printer.puts(:muted, "  #{file}") }
+        printer.puts(:muted, entry[:name])
+        entry[:files].each { |file| printer.puts(:muted, "  #{file}") }
       end
     end
   end

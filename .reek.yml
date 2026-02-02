@@ -44,15 +44,76 @@ detectors:
   UtilityFunction:
     enabled: false
 
+  # --- Name exclusions ---
+
   # RuboCop enforces `e` for rescue variables (Naming/RescuedExceptionsVariableName).
-  # Allow `e` to avoid conflicts between the two tools.
-  # Uppercase Tool() follows Ruby's kernel conversion convention (Integer(), Array(), Pathname()).
-  # Renaming would break the convention.
+  # Uppercase Tool() follows Ruby's kernel conversion convention (Integer(), Array()).
   UncommunicativeMethodName:
     exclude:
-      - 'Reviewer::Conversions'
+      - 'Reviewer::Tool::Conversions'
 
   UncommunicativeVariableName:
     accept:
       - e
       - _
+
+  # --- Thresholds: dependency-injection constructors ---
+
+  # Session, Batch, Runner, and ResultBuilder accept injected dependencies.
+  # Default max_params (3) is too low for DI constructors with 6 dependencies.
+  # Reek has a separate default for initialize (5); override both.
+  LongParameterList:
+    max_params: 5
+    overrides:
+      initialize:
+        max_params: 7
+
+  # DI constructors store each dependency as an ivar. Default max (4) is
+  # too low for classes with multiple injected collaborators. 7 matches
+  # the actual DI reality of this codebase.
+  TooManyInstanceVariables:
+    max_instance_variables: 7
+
+  # AnsiStyles module defines ANSI escape sequences as constants. 6 constants
+  # (ESC, RESET, WEIGHTS, COLORS, STYLE_DEFS, STYLES) is the natural decomposition.
+  TooManyConstants:
+    max_constants: 7
+
+  # Printer's API is (style, content) — these co-travel because they represent
+  # "what to display" and "how to display it". Not a missing abstraction.
+  DataClump:
+    exclude:
+      - 'Reviewer::Output::Printer'
+
+  # --- Targeted exclusions: methods whose purpose IS to operate on inputs ---
+
+  # ManualDispatch: intentional dynamic dispatch via respond_to?/send.
+  # Files#from_keywords maps keyword strings to git methods dynamically.
+  # Prompt#interactive? is a safety check for TTY availability.
+  ManualDispatch:
+    exclude:
+      - 'Reviewer::Arguments::Files#from_keywords'
+      - 'Reviewer::Prompt#interactive?'
+
+  # FeatureEnvy: methods that format, check, or convert their inputs will
+  # naturally reference those inputs more than self. Each exclusion below
+  # is a method whose single responsibility IS to operate on its argument.
+  FeatureEnvy:
+    exclude:
+      # Formats a key-value pair into "KEY=value" — inputs are the work
+      - 'Reviewer::Command::String::Env#env'
+      # Inspector methods that check tool properties by design
+      - 'Reviewer::Doctor::OpportunityCheck#check_missing_files_config'
+      - 'Reviewer::Doctor::OpportunityCheck#check_missing_format_command'
+      # Writes content to stream — pass-through by design
+      - 'Reviewer::Output::Printer#write_raw'
+      # Standard Ruby each_with_object iteration
+      - 'Reviewer::Session#build_suggestions'
+      # Guard + delegation to formatter — 2 report refs is minimal
+      - 'Reviewer::Session#show_missing_tools'
+      # String substitution on command input
+      - 'Reviewer::Setup::ToolBlock#apply_js_runner'
+      # YAML quoting logic — operates entirely on the input string
+      - 'Reviewer::Setup::ToolBlock#quote'
+      # Computes average of retrieved timing entries
+      - 'Reviewer::Tool::Timing#average_time'

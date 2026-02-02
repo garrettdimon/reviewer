@@ -30,15 +30,13 @@ module Reviewer
                    :max_exit_status,
                    :supports_files?
 
-    # @!method to_sym
-    #   Returns the tool's key as a symbol
-    #   @return [Symbol] the tool's unique identifier
-    alias to_sym key
+    # Returns the tool's key as a symbol
+    # @return [Symbol] the tool's unique identifier
+    def to_sym = key
 
-    # @!method to_s
-    #   Returns the tool's name as a string
-    #   @return [String] the tool's display name
-    alias to_s name
+    # Returns the tool's name as a string
+    # @return [String] the tool's display name
+    def to_s = name
 
     # Create an instance of a tool
     # @param tool_key [Symbol] the key to the tool from the configuration file
@@ -92,6 +90,14 @@ module Reviewer
     #
     # @return [Boolean] true if there is a non-blank `format` command configured
     def formattable? = command?(:format)
+
+    # Whether this tool matches any of the given tags and is eligible for batch runs
+    #
+    # @param tag_list [Array<String, Symbol>] tags to match against
+    # @return [Boolean] true if the tool is batch-eligible and shares at least one tag
+    def matches_tags?(tag_list)
+      !skip_in_batch? && tag_list.intersect?(tags)
+    end
 
     def_delegators :@timing,
                    :last_prepared_at,

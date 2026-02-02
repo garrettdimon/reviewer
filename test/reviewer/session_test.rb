@@ -38,18 +38,39 @@ module Reviewer
       def files = EmptyFiles.new
       def keywords = StubKeywords.new
       def tags = []
+
+      def runner_strategy(multiple_tools:)
+        return Runner::Strategies::Passthrough if raw?
+        return Runner::Strategies::Captured unless streaming?
+
+        multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+      end
     end
 
     StubArgsWithKeywords = Struct.new(:format, :json?, :raw?, :streaming?, :keyword_values, keyword_init: true) do
       def files = EmptyFiles.new
       def keywords = StubKeywordsWithProvided.new(keyword_values || [])
       def tags = []
+
+      def runner_strategy(multiple_tools:)
+        return Runner::Strategies::Passthrough if raw?
+        return Runner::Strategies::Captured unless streaming?
+
+        multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+      end
     end
 
     StubArgsWithFailed = Struct.new(:format, :json?, :raw?, :streaming?, keyword_init: true) do
       def files = EmptyFiles.new
       def keywords = StubKeywordsFailed.new
       def tags = Arguments::Tags.new(provided: [], keywords: [])
+
+      def runner_strategy(multiple_tools:)
+        return Runner::Strategies::Passthrough if raw?
+        return Runner::Strategies::Captured unless streaming?
+
+        multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+      end
     end
 
     def build_session(arguments: nil, tools: nil, output: nil, history: nil, prompt: nil, configuration: nil)

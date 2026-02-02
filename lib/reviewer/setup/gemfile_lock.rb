@@ -9,7 +9,10 @@ module Reviewer
 
       attr_reader :path
 
+      # Creates a parser for extracting gem names from a Gemfile.lock
       # @param path [Pathname] the path to the Gemfile.lock file
+      #
+      # @return [GemfileLock]
       def initialize(path)
         @path = path
       end

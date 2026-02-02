@@ -66,31 +66,10 @@ module Reviewer
       end
 
       def print_details(result)
-        detail = extract_detail(result)
+        detail = result.detail_summary
         return if detail.nil?
 
         output.printer.print(:muted, "   #{detail}")
-      end
-
-      def extract_detail(result)
-        return extract_test_count(result.stdout) if result.tool_key == :tests
-        return extract_offense_count(result.stdout) if result.tool_key == :rubocop
-
-        nil
-      end
-
-      def extract_test_count(stdout)
-        return nil if stdout.nil?
-
-        match = stdout.match(/(\d+)\s+tests?/i)
-        match ? "#{match[1]} tests" : nil
-      end
-
-      def extract_offense_count(stdout)
-        return nil if stdout.nil?
-
-        match = stdout.match(/(\d+)\s+offenses?/i)
-        match ? "#{match[1]} offenses" : nil
       end
 
       def print_summary
@@ -112,15 +91,15 @@ module Reviewer
         failed_results.each do |result|
           output.newline
           output.printer.puts(:failure, "#{result.tool_name}:")
-          print_failure_output(result)
+          print_truncated_output(result.stdout)
         end
       end
 
-      def print_failure_output(result)
-        stdout = result.stdout
-        return if stdout.nil? || stdout.strip.empty?
+      def print_truncated_output(text)
+        content = text.to_s.strip
+        return if content.empty?
 
-        lines = stdout.strip.lines
+        lines = content.lines
         print_lines(lines.first(10))
         print_truncation_notice(lines.size - 10)
       end
@@ -134,7 +113,6 @@ module Reviewer
 
         output.printer.puts(:muted, "[#{remaining} more lines]")
       end
-
     end
   end
 end

@@ -6,8 +6,11 @@ module Reviewer
     class ConfigCheck
       attr_reader :report
 
+      # Creates a config check that validates the .reviewer.yml file
       # @param report [Doctor::Report] the report to add findings to
       # @param configuration [Configuration] the configuration to validate
+      #
+      # @return [ConfigCheck]
       def initialize(report, configuration: Reviewer.configuration)
         @report = report
         @configuration = configuration

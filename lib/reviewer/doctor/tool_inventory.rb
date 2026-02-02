@@ -6,9 +6,12 @@ module Reviewer
     class ToolInventory
       attr_reader :report
 
+      # Creates a tool inventory check that reports batch/skip status for each tool
       # @param report [Doctor::Report] the report to add findings to
       # @param configuration [Configuration] the configuration to check
       # @param tools [Tools] the tools collection to report on
+      #
+      # @return [ToolInventory]
       def initialize(report, configuration: Reviewer.configuration, tools: Reviewer.tools)
         @report = report
         @configuration = configuration

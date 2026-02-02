@@ -19,6 +19,11 @@ Metrics/CyclomaticComplexity:
 Gemspec/DevelopmentDependencies:
   Enabled: false
 
+# Keyword arguments are self-documenting at call sites, so they don't
+# create the readability problem that long positional lists do.
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
 # 10 is a good goal but a little draconian
 Metrics/MethodLength:
   CountAsOne: ['array', 'hash', 'heredoc']

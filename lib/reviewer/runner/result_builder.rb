@@ -2,8 +2,19 @@
 
 module Reviewer
   class Runner
-    # Builds an immutable Result from runner execution state
+    # Builds an immutable Result from runner execution state.
+    # Translates the mutable Runner into a frozen Result value object
+    # appropriate for the tool's outcome (skipped, missing, or executed).
     class ResultBuilder
+      # Creates a builder from the runner's execution state
+      # @param tool [Tool] the tool that was run
+      # @param command [Command] the command that was executed
+      # @param shell [Shell] the shell with execution results and timing
+      # @param skipped [Boolean] whether the tool was skipped (no matching files)
+      # @param missing [Boolean] whether the tool's executable was not found
+      # @param success [Boolean] whether the tool passed
+      #
+      # @return [ResultBuilder]
       def initialize(tool:, command:, shell:, skipped:, missing:, success:)
         @tool = tool
         @command = command
@@ -13,7 +24,9 @@ module Reviewer
         @success = success
       end
 
-      # @return [Runner::Result]
+      # Builds the appropriate Result variant based on the runner's outcome
+      #
+      # @return [Runner::Result] an immutable result for reporting
       def build
         if @skipped
           skipped_result

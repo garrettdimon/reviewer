@@ -25,8 +25,11 @@ module Reviewer
 
       attr_reader :stdout, :stderr
 
+      # Creates a failed-file extractor from captured tool output
       # @param stdout [String, nil] captured standard output from the tool
       # @param stderr [String, nil] captured standard error from the tool
+      #
+      # @return [FailedFiles]
       def initialize(stdout, stderr)
         @stdout = stdout
         @stderr = stderr

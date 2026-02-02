@@ -8,6 +8,9 @@ module Reviewer
     class Formatter
       include Output::Formatting
 
+      attr_reader :output, :printer
+      private :output, :printer
+
       SYMBOLS = { ok: "\u2713", warning: '!', error: "\u2717", info: "\u00b7", muted: "\u00b7" }.freeze
       STYLES  = { ok: :success, warning: :warning, error: :failure, info: :muted, muted: :muted }.freeze
 
@@ -18,6 +21,10 @@ module Reviewer
         environment: 'Environment'
       }.freeze
 
+      # Creates a formatter for diagnostic report display
+      # @param output [Output] the console output handler
+      #
+      # @return [Formatter]
       def initialize(output)
         @output = output
         @printer = output.printer
@@ -26,7 +33,7 @@ module Reviewer
       # Renders a full diagnostic report
       # @param report [Doctor::Report] the report to display
       def print(report)
-        @output.newline
+        output.newline
         Doctor::Report::SECTIONS.each do |section|
           findings = report.section(section)
           print_section(section, findings) if findings.any?
@@ -37,27 +44,31 @@ module Reviewer
       private
 
       def print_section(section, findings)
-        @printer.puts(:bold, SECTION_LABELS.fetch(section, section.to_s.capitalize))
+        printer.puts(:bold, SECTION_LABELS.fetch(section, section.to_s.capitalize))
         findings.each { |finding| print_finding(finding) }
-        @output.newline
+        output.newline
       end
 
       def print_finding(finding)
-        symbol = SYMBOLS.fetch(finding.status, ' ')
-        style = STYLES.fetch(finding.status, :default)
+        status = finding.status
+        message = finding.message
+        detail = finding.detail
 
-        @printer.print(style, "  #{symbol} ")
-        @printer.puts(:default, finding.message)
-        @printer.puts(:muted, "    #{finding.detail}") if finding.detail
+        symbol = SYMBOLS.fetch(status, ' ')
+        style = STYLES.fetch(status, :default)
+
+        printer.print(style, "  #{symbol} ")
+        printer.puts(:default, message)
+        printer.puts(:muted, "    #{detail}") if detail
       end
 
       def print_summary(report)
         if report.ok?
-          @printer.puts(:success, 'No issues found')
+          printer.puts(:success, 'No issues found')
         else
-          @printer.puts(:failure, pluralize(report.errors.size, 'issue found', 'issues found'))
+          printer.puts(:failure, pluralize(report.errors.size, 'issue found', 'issues found'))
         end
-        @output.newline
+        output.newline
       end
     end
   end

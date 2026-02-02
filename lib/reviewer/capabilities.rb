@@ -11,7 +11,10 @@ module Reviewer
   class Capabilities
     attr_reader :tools
 
+    # Creates a capabilities report for machine-readable tool discovery
     # @param tools [Tools] the tools collection to report on
+    #
+    # @return [Capabilities]
     def initialize(tools: Reviewer.tools)
       @tools = tools
     end

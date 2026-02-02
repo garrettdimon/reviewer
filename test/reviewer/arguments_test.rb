@@ -197,4 +197,28 @@ module Reviewer
       refute_nil arguments
     end
   end
+
+  class ArgumentsRunnerStrategyTest < Minitest::Test
+    def test_returns_passthrough_when_raw
+      arguments = Arguments.new(%w[-r])
+      assert_equal Runner::Strategies::Passthrough, arguments.runner_strategy(multiple_tools: true)
+      assert_equal Runner::Strategies::Passthrough, arguments.runner_strategy(multiple_tools: false)
+    end
+
+    def test_returns_captured_for_non_streaming_format
+      arguments = Arguments.new(%w[--format summary])
+      assert_equal Runner::Strategies::Captured, arguments.runner_strategy(multiple_tools: true)
+      assert_equal Runner::Strategies::Captured, arguments.runner_strategy(multiple_tools: false)
+    end
+
+    def test_returns_captured_for_streaming_with_multiple_tools
+      arguments = Arguments.new([])
+      assert_equal Runner::Strategies::Captured, arguments.runner_strategy(multiple_tools: true)
+    end
+
+    def test_returns_passthrough_for_streaming_with_single_tool
+      arguments = Arguments.new([])
+      assert_equal Runner::Strategies::Passthrough, arguments.runner_strategy(multiple_tools: false)
+    end
+  end
 end

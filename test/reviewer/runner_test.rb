@@ -110,6 +110,29 @@ module Reviewer
       refute runner.success?
     end
 
+    def test_failed_files_extracts_paths_from_output
+      runner = Runner.new(:enabled_tool, :review)
+      mock_shell_result = Shell::Result.new(
+        "lib/reviewer/batch.rb:10: warning\nlib/reviewer/command.rb:20: error",
+        '',
+        MockProcessStatus.new(exitstatus: 1)
+      )
+
+      runner.shell.stub(:result, mock_shell_result) do
+        files = runner.failed_files
+        assert_kind_of Array, files
+      end
+    end
+
+    def test_failed_files_returns_empty_for_no_output
+      runner = Runner.new(:enabled_tool, :review)
+      mock_shell_result = Shell::Result.new('', '', MockProcessStatus.new(exitstatus: 0))
+
+      runner.shell.stub(:result, mock_shell_result) do
+        assert_empty runner.failed_files
+      end
+    end
+
     private
 
     def with_mock_shell_result

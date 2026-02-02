@@ -253,5 +253,23 @@ module Reviewer
         end
       end
     end
+
+    def test_run_summary_returns_hash_when_not_skipped
+      arguments = Arguments.new([])
+      command = Reviewer::Command.new(:enabled_tool, :review, arguments: arguments)
+
+      summary = command.run_summary
+
+      assert_kind_of Hash, summary
+      assert_equal 'Enabled Test Tool', summary[:name]
+      assert_kind_of Array, summary[:files]
+    end
+
+    def test_run_summary_returns_nil_when_skipped
+      arguments = Arguments.new(%w[-f lib/foo.js])
+      command = Reviewer::Command.new(:file_pattern_tool, :review, arguments: arguments)
+
+      assert_nil command.run_summary
+    end
   end
 end
