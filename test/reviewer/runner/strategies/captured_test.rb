@@ -71,6 +71,21 @@ module Reviewer
           assert_equal @strategy, captured_runner.strategy
         end
 
+        def test_prepare_erases_progress_bar_before_run
+          Reviewer.history.clear
+          stream = StringIO.new
+          stream.define_singleton_method(:tty?) { true }
+          printer = Output::Printer.new(stream)
+          output = Output.new(printer)
+          context = default_context(output: output)
+          runner = Runner.new(build_tool(:list), :review, @strategy, context: context)
+          runner.run
+
+          # In TTY mode, the prep progress bar should be erased (via \r\e[2K) before
+          # the run bar starts. The tool succeeds, so this erase can only come from prep cleanup.
+          assert_includes stream.string, "\r\e[2K"
+        end
+
         def test_progress_bar_writes_to_output_stream
           stream = StringIO.new
           printer = Output::Printer.new(stream)

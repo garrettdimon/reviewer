@@ -1,0 +1,17 @@
+# Fixture with intentional naming conflicts for Doctor::NamingCheck tests
+
+# Tool name collides with reserved keyword 'staged'
+staged:
+  commands:
+    review: 'ls'
+
+# Tag 'failed' collides with reserved keyword
+linter:
+  tags: [ruby, failed]
+  commands:
+    review: 'ls'
+
+# Tool name 'ruby' collides with tag 'ruby' on linter above
+ruby:
+  commands:
+    review: 'ls'

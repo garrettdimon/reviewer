@@ -128,6 +128,15 @@ module Reviewer
         assert_equal [], keywords.configured_tool_names
       end
 
+      def test_recognizes_tool_name_when_tools_wired_after_construction
+        keywords = Keywords.new('list')
+        assert_includes keywords.unrecognized, 'list'
+
+        keywords.tools = tools_collection
+        refute_includes keywords.unrecognized, 'list'
+        assert_includes keywords.for_tool_names, 'list'
+      end
+
       private
 
       def tools_collection

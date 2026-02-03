@@ -36,6 +36,7 @@ module Reviewer
       def current_command(command)
         printer.print(:default, ' ↳ ')
         printer.puts(:muted, String(command))
+        output.newline
       end
 
       # Displays a success message with timing breakdown

@@ -60,6 +60,16 @@ module Reviewer
         end
       end
 
+      # Displays a message when file-scoping keywords resolved to no files
+      # @param keywords [Array<String>] the file keywords that were requested (e.g. ['staged'])
+      #
+      # @return [void]
+      def no_reviewable_files(keywords:)
+        output.newline
+        printer.puts(:muted, "No reviewable #{keywords.join(', ')} files found")
+        output.newline
+      end
+
       # Displays a warning when no configured tools match the requested names or tags
       # @param requested [Array<String>] tool names or tags the user asked for
       # @param available [Array<String>] all configured tool keys

@@ -12,6 +12,11 @@ module Reviewer
 
       attr_reader :provided
 
+      # Sets the tools collection after initialization when tools become available
+      # @param value [Tools] the configured tools collection
+      # @return [Tools] the tools collection
+      attr_writer :tools
+
       alias raw provided
 
       # Generates an instance of parsed keywords from the provided arguments

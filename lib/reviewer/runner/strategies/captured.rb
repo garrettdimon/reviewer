@@ -36,6 +36,9 @@ module Reviewer
 
           display_progress(command) { runner.shell.capture_prep(command) }
 
+          # Erase the prep progress bar — the run step will show its own
+          stream.print(ERASE_LINE) if style_enabled? && runner.streaming?
+
           # Running the prepare command, so make sure the timestamp is updated
           runner.update_last_prepared_at
         end
