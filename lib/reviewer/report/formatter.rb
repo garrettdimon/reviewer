@@ -16,6 +16,7 @@ module Reviewer
       def initialize(report, output: Output.new)
         @report = report
         @output = output
+        @name_width = 0
       end
 
       # Prints the formatted report to the console
@@ -35,6 +36,7 @@ module Reviewer
       private
 
       def print_tool_lines
+        @name_width = max_name_width
         report.results.each { |result| print_tool_line(result) }
       end
 
@@ -49,20 +51,24 @@ module Reviewer
       end
 
       def print_missing_tool(result)
-        output.printer.print(:warning, "- #{result.tool_name}")
+        output.printer.print(:warning, "- #{result.tool_name.ljust(@name_width)}")
         output.printer.print(:muted, '    not installed')
       end
 
       def print_executed_tool(result)
         style = status_style(result.success?)
         mark = status_mark(result.success?)
-        output.printer.print(style, "#{mark} #{result.tool_name}")
+        output.printer.print(style, "#{mark} #{result.tool_name.ljust(@name_width)}")
         print_timing(result)
         print_details(result)
       end
 
       def print_timing(result)
-        output.printer.print(:muted, "    #{format_duration(result.duration)}")
+        output.printer.print(:muted, "    #{format_duration(result.duration).rjust(6)}")
+      end
+
+      def max_name_width
+        report.results.map { |result| result.tool_name.length }.max || 0
       end
 
       def print_details(result)

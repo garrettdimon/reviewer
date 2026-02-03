@@ -138,6 +138,19 @@ module Reviewer
         assert_match(/all passed/i, out)
       end
 
+      def test_aligns_tool_names_and_durations_across_varied_lengths
+        @report.add(build_result(tool_key: :bundle_audit, tool_name: 'Bundle Audit', success: true, duration: 0.16))
+        @report.add(build_result(tool_key: :tests, tool_name: 'Minitest', success: true, duration: 5.07))
+        @report.add(build_result(tool_key: :flog, tool_name: 'Flog', success: true, duration: 0.22))
+        @report.record_duration(5.45)
+
+        formatter = Formatter.new(@report)
+        out, _err = capture_subprocess_io { formatter.print }
+
+        positions = duration_column_positions(out, 'Bundle Audit', 'Minitest', 'Flog')
+        assert_equal 1, positions.uniq.size, "Duration columns misaligned: #{positions}"
+      end
+
       def test_mixed_missing_and_failed_shows_only_real_failures
         @report.add(build_result(
                       tool_key: :tests,
@@ -158,6 +171,11 @@ module Reviewer
       end
 
       private
+
+      def duration_column_positions(output, *tool_names)
+        lines = output.lines.map(&:chomp)
+        tool_names.map { |name| lines.find { |l| l.include?(name) }.index(/\d+\.\d+s/) }
+      end
 
       def build_result(tool_key:, success:, **options)
         Runner::Result.new(
