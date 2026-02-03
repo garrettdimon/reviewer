@@ -30,6 +30,14 @@ detectors:
       - 'Reviewer::Tool::Settings#initialize'                               # DI: optional config hash
       - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Timed/untimed display
 
+  # --- Targeted exclusions: repeated conditionals ---
+
+  # TTY guard checks are inherent to progress bar styling — each method
+  # independently decides whether to emit ANSI codes.
+  RepeatedConditional:
+    exclude:
+      - 'Reviewer::Runner::Strategies::Captured'                              # style_enabled? TTY guard
+
   # --- Targeted exclusions: nil checks ---
 
   # IO.console genuinely returns nil in non-TTY environments.
@@ -56,8 +64,6 @@ detectors:
       - 'Reviewer::Output::Formatting#pluralize'                            # String formatting
       - 'Reviewer::Setup::GemfileLock#process_line'                         # Lockfile line parser
       - 'Reviewer::Setup::ToolBlock#needs_quoting?'                         # YAML string analysis
-      - 'Reviewer::Runner::Strategies::Captured#create_progress_bar'        # Progress bar factory
-      - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Progress bar teardown
       - 'Reviewer::Runner::Strategies::Captured#update_progress'            # Progress bar update
       - 'Reviewer::Shell::Timer#record'                                     # Benchmark.realtime wrapper
 
@@ -75,6 +81,7 @@ detectors:
       - 'Reviewer::Setup::ToolBlock#apply_js_runner'                        # String substitution on input
       - 'Reviewer::Setup::ToolBlock#quote'                                  # YAML quoting on input string
       - 'Reviewer::Tool::Timing#average_time'                               # Array computation
+      - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Operates on bar parameter
 
 
   # Intentional dynamic dispatch via respond_to?/send.
@@ -124,6 +131,7 @@ detectors:
       - 'Reviewer::Session#run_text'                                        # 9: lifecycle steps
       - 'Reviewer::Setup'                                                   # 9: setup orchestrator
       - 'Reviewer::Shell#direct'                                            # 10: Open3 wrapper + error handling
+      - 'Reviewer::Runner::Strategies::Captured#create_progress_bar'        # 9: timed/untimed bar with TTY format
 
   # Formatter spacing (output.newline 3x).
   DuplicateMethodCall:

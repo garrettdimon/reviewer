@@ -34,7 +34,7 @@ module Reviewer
     def initialize(tool, command_type, strategy = Strategies::Captured, context:)
       @command = Command.new(tool, command_type, context: context)
       @strategy = strategy
-      @shell = Shell.new
+      @shell = Shell.new(stream: context.output.printer.stream)
       @context = context
       @skipped = false
       @missing = false

@@ -10,6 +10,12 @@ module Reviewer
       # @attr_reader runner [Runner] the instance of the runner that will be executed with this strategy
       # @attr_reader start_time [Time] the start time for the strategy_for timing purposes
       class Captured
+        # 256-color ANSI codes for progress bar styling (not in AnsiStyles' 16-color palette)
+        PROGRESS_GRAY      = "\e[38;5;245m"
+        PROGRESS_DARK_GRAY = "\e[38;5;240m"
+        ANSI_RESET         = "\e[0m"
+        ERASE_LINE         = "\r\e[2K"
+
         attr_reader :runner, :start_time
 
         # Create an instance of the captured strategy for a command runner so that any output is
@@ -86,7 +92,7 @@ module Reviewer
 
           # Erase the progress bar line if the executable wasn't found
           if runner.shell.result.executable_not_found?
-            $stdout.print "\r\e[2K"
+            stream.print(ERASE_LINE) if style_enabled?
             return
           end
 
@@ -95,7 +101,7 @@ module Reviewer
 
         def finish_progress_bar(bar, timed)
           if timed
-            bar.format = "\e[38;5;245m%b\e[38;5;240m%i %p%%\e[0m"
+            bar.format = style_enabled? ? "#{PROGRESS_GRAY}%b#{PROGRESS_DARK_GRAY}%i %p%%#{ANSI_RESET}" : '%b%i %p%%'
             bar.finish
           else
             bar.stop
@@ -104,7 +110,7 @@ module Reviewer
 
         def create_progress_bar(average_time)
           shared = {
-            output: $stdout,
+            output: stream,
             title: '',
             progress_mark: "\u2501",
             remainder_mark: "\u2500"
@@ -112,13 +118,11 @@ module Reviewer
 
           if average_time.positive?
             eta = average_time >= 3 ? ' %e' : ''
-            ProgressBar.create(
-              **shared,
-              total: 100,
-              format: "\e[38;5;245m%b\e[38;5;240m%i %p%%#{eta}\e[0m"
-            )
+            format = style_enabled? ? "#{PROGRESS_GRAY}%b#{PROGRESS_DARK_GRAY}%i %p%%#{eta}#{ANSI_RESET}" : "%b%i %p%%#{eta}"
+            ProgressBar.create(**shared, total: 100, format: format)
           else
-            ProgressBar.create(**shared, total: nil, format: "\e[38;5;245m%B\e[0m")
+            format = style_enabled? ? "#{PROGRESS_GRAY}%B#{ANSI_RESET}" : '%B'
+            ProgressBar.create(**shared, total: nil, format: format)
           end
         end
 
@@ -131,6 +135,14 @@ module Reviewer
             bar.increment
           end
         end
+
+        # The output stream from the runner's printer
+        # @return [IO]
+        def stream = runner.output.printer.stream
+
+        # Whether ANSI styling is enabled on the output stream
+        # @return [Boolean]
+        def style_enabled? = runner.output.printer.style_enabled?
 
         # Determines if stdout or stderr captured any useful output that can be displayed in order
         #   to more rapidly display output when a command fails. As long as both aren't nil or

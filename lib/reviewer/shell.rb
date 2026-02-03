@@ -16,9 +16,11 @@ module Reviewer
     def_delegators :@result, :exit_status
 
     # Initializes a Reviewer shell for running and benchmarking commands, and capturing output
+    # @param stream [IO] the output stream for direct (passthrough) output
     #
     # @return [Shell] a shell instance for running and benchmarking commands
-    def initialize
+    def initialize(stream: $stdout)
+      @stream = stream
       @timer = Timer.new
       @result = Result.new
       @captured_results = nil
@@ -37,7 +39,7 @@ module Reviewer
       reader, _writer, pid = PTY.spawn(command)
       begin
         reader.each_line do |line|
-          $stdout.print line
+          @stream.print line
           buffer << line
         end
       rescue Errno::EIO

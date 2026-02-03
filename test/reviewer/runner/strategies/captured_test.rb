@@ -70,6 +70,34 @@ module Reviewer
           assert_equal 127, result
           assert_equal @strategy, captured_runner.strategy
         end
+
+        def test_progress_bar_writes_to_output_stream
+          stream = StringIO.new
+          printer = Output::Printer.new(stream)
+          output = Output.new(printer)
+          context = default_context(output: output)
+          runner = Runner.new(build_tool(:list), :review, @strategy, context: context)
+
+          # Ensure nothing leaks to real $stdout
+          old_stdout = $stdout
+          leak = StringIO.new
+          $stdout = leak
+          runner.run
+          $stdout = old_stdout
+
+          assert_empty leak.string, 'Progress bar should not write to $stdout'
+          refute_empty stream.string
+        end
+
+        def test_progress_bar_omits_ansi_when_not_tty
+          stream = StringIO.new
+          printer = Output::Printer.new(stream)
+          output = Output.new(printer)
+          context = default_context(output: output)
+          runner = Runner.new(build_tool(:list), :review, @strategy, context: context)
+          runner.run
+          refute_match(/\e\[/, stream.string)
+        end
       end
     end
   end

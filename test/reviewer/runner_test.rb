@@ -133,6 +133,16 @@ module Reviewer
       end
     end
 
+    def test_shell_uses_output_stream
+      stream = StringIO.new
+      printer = Output::Printer.new(stream)
+      output = Output.new(printer)
+      context = default_context(output: output)
+      runner = Runner.new(build_tool(:list), :review, context: context)
+      runner.shell.direct('echo wired')
+      assert_includes stream.string, 'wired'
+    end
+
     private
 
     def with_mock_shell_result

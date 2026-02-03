@@ -86,5 +86,12 @@ module Reviewer
       assert_equal 127, @shell.exit_status
       assert @shell.result.executable_not_found?
     end
+
+    def test_direct_writes_to_injected_stream
+      stream = StringIO.new
+      shell = Shell.new(stream: stream)
+      shell.direct('echo hello')
+      assert_includes stream.string, 'hello'
+    end
   end
 end
