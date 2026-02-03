@@ -28,7 +28,7 @@ module Reviewer
 
       def test_skips_when_config_missing
         Dir.mktmpdir do |dir|
-          with_config_file(Pathname(dir).join('.reviewer.yml')) do
+          with_swapped_config(Pathname(dir).join('.reviewer.yml')) do
             report = Report.new
             KeywordCheck.new(report, configuration: configuration, tools: Reviewer.tools).check
             assert_empty report.section(:configuration)
@@ -46,18 +46,10 @@ module Reviewer
         Pathname('test/fixtures/files/naming_conflicts.yml')
       end
 
-      def with_config_file(config_file)
-        original = configuration.file
-        configuration.file = config_file
-        yield
-      ensure
-        configuration.file = original
-      end
-
       def run_check_with(config_file)
         tools = Tools.new(config_file: config_file)
         report = Report.new
-        with_config_file(config_file) do
+        with_swapped_config(config_file) do
           KeywordCheck.new(report, configuration: configuration, tools: tools).check
         end
         report
