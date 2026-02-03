@@ -66,6 +66,17 @@ module Reviewer
       assert_equal 'Tagged', @tools.current.first.name
     end
 
+    def test_all_uses_injected_history
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+
+      @tools = Tools.new(history: history, config_file: config_file)
+      tool = @tools.all.find { |t| t.key == :enabled_tool }
+      assert_equal :failed, history.get(tool.key, :last_status)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+    end
+
     def test_failed_from_history_returns_tools_with_failed_status
       history = Reviewer.history
       clear_all_last_statuses(history)

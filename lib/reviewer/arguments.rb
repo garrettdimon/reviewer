@@ -28,9 +28,8 @@ module Reviewer
 
     attr_reader :output
 
-    # A catch all for aguments passed to reviewer via the command-line so they can be interpreted
-    #   and made available via the relevant classes.
-    # @param options = ARGV [Hash] options to parse and extract the relevant values for a run
+    # Parses command-line arguments and makes them available as tags, files, and keywords.
+    # @param options [Array<String>] the command-line arguments to parse (defaults to ARGV)
     # @param output [Output] the console output handler for displaying messages
     #
     # @example Using all options: `rvw keyword_one keyword_two --files ./example.rb,./example_test.rb --tags syntax`
@@ -88,12 +87,12 @@ module Reviewer
 
     # The tag arguments collected from the command line via the `-t` or `--tags` flag
     #
-    # @return [Arguments::Tags] an colelction of the tag arguments collected from the command-line
+    # @return [Arguments::Tags] a collection of the tag arguments collected from the command-line
     def tags = @tags ||= Arguments::Tags.new(provided: options[:tags])
 
     # The file arguments collected from the command line via the `-f` or `--files` flag
     #
-    # @return [Arguments::Files] an collection of the file arguments collected from the command-line
+    # @return [Arguments::Files] a collection of the file arguments collected from the command-line
     def files
       @files ||= Arguments::Files.new(
         provided: options[:files],
@@ -105,7 +104,7 @@ module Reviewer
 
     # The leftover arguments collected from the command line without being associated with a flag
     #
-    # @return [Arguments::Keywords] an collection of the leftover arguments as keywords
+    # @return [Arguments::Keywords] a collection of the leftover arguments as keywords
     def keywords = @keywords ||= Arguments::Keywords.new(options.arguments)
 
     # Whether to force raw/passthrough output regardless of tool count

@@ -24,15 +24,15 @@ module Reviewer
         @tools = tools
       end
 
-      # Proves the full list of raw keyword arguments explicitly passed via command-line as an array
+      # Provides the full list of raw keyword arguments explicitly passed via command-line as an array
       #
-      # @return [Array] full collection of the provided keyword arguments as a string
+      # @return [Array<String>] full collection of the provided keyword arguments
       def to_a = provided
 
       # Provides the full list of raw keyword arguments explicitly passed via command-line as a
       #   comma-separated string
       #
-      # @return [String] comma-separated list of the file arguments as a string
+      # @return [String] comma-separated list of the keyword arguments as a string
       def to_s = to_a.join(',')
 
       # Summary of the state of keyword arguments based on how Reviewer parsed them
@@ -83,7 +83,7 @@ module Reviewer
 
       # Provides the complete list of all recognized keywords based on configuration
       #
-      # @return [Array<String>] all keywords that Reviewer can recognized
+      # @return [Array<String>] all keywords that Reviewer can recognize
       def possible = (RESERVED + configured_tags + configured_tool_names).uniq.sort
 
       # Provides the complete list of all configured tags for enabled tools

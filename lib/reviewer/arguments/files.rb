@@ -12,10 +12,13 @@ module Reviewer
       alias raw provided
 
       # Generates an instance of files from the provided arguments
-      # @param provided [Array, String] file arguments provided
-      #   directly via the -f or --files flag on the command line.
-      # @param keywords [Array, String] keywords that can potentially
-      #   be translated to a list of files (ex. 'staged')
+      # @param provided [Array<String>] file arguments provided
+      #   directly via the -f or --files flag on the command line
+      # @param keywords [Array<String>] reserved keywords that can potentially
+      #   be translated to a list of files (e.g. 'staged', 'modified')
+      # @param output [Output] the console output handler
+      # @param on_git_error [Proc, nil] callback invoked with the error message
+      #   when a git command fails (nil silently swallows the error)
       #
       # @example Using the `-f` flag: `rvw -f ./file.rb`
       #   reviewer = Reviewer::Arguments::Files.new(provided: ['./file.rb'], keywords: [])
@@ -39,7 +42,7 @@ module Reviewer
 
       # Provides the full list of file/path values derived from the command-line arguments
       #
-      # @return [String] comma-separated string of the derived tag values
+      # @return [String] comma-separated string of the derived file values
       def to_s = to_a.join(',')
 
       # Summary of the state of the file arguments

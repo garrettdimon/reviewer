@@ -50,8 +50,8 @@ module Reviewer
       @timing = Timing.new(history, key)
     end
 
-    # For determining if the tool should run it's prepration command. It will only be run both if
-    # the tool has a preparation command, and the command hasn't been run 6 hours
+    # For determining if the tool should run its preparation command. It will only be run if
+    # the tool has a preparation command and it hasn't been run in the last 6 hours
     #
     # @return [Boolean] true if the tool has a configured `prepare` command that hasn't been run in
     #   the last 6 hours

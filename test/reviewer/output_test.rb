@@ -36,6 +36,14 @@ module Reviewer
       assert_empty out
     end
 
+    def test_clear_skips_when_not_tty
+      stream = StringIO.new
+      printer = Output::Printer.new(stream)
+      output = Output.new(printer)
+      output.clear
+      assert_empty stream.string
+    end
+
     def test_help_prints_message
       out, _err = capture_subprocess_io { @output.help('Usage: rvw') }
       assert_match(/Usage: rvw/, out)

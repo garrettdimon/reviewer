@@ -11,7 +11,5 @@ module Reviewer
   #   @return [Output] the output channel for displaying content
   # @!attribute [rw] history
   #   @return [History] the YAML store for timing data and prepare timestamps
-  # Bundles the shared runtime dependencies that flow through the review/format lifecycle.
-  # All parameters are required — no global defaults.
   Context = Struct.new(:arguments, :output, :history, keyword_init: true)
 end

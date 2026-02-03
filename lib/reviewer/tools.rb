@@ -11,6 +11,7 @@ module Reviewer
     # @param tool_names [Array<String>] the explicitly provided tool names to filter tools for a run
     # @param arguments [Arguments] the parsed CLI arguments
     # @param history [History] the history store for status persistence
+    # @param config_file [Pathname, nil] path to the .reviewer.yml configuration file
     #
     # @return [Reviewer::Tools] collection of tools based on the current run context
     def initialize(tags: nil, tool_names: nil, arguments: nil, history: nil, config_file: nil)

@@ -38,6 +38,13 @@ module Reviewer
         end
       end
 
+      def test_accepts_string_io_stream
+        stream = StringIO.new
+        printer = Printer.new(stream)
+        printer.print(:default, 'hello')
+        assert_equal 'hello', stream.string
+      end
+
       def test_prints_styled_text_when_able
         @printer.stub(:style_enabled?, true) do
           out, _err = capture_subprocess_io { @printer.print(:error, 'colorized error') }

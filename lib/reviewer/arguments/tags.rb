@@ -12,7 +12,7 @@ module Reviewer
 
       alias raw provided
 
-      # Generates an instace of parsed tags from the provided arguments by merging tag arguments
+      # Generates an instance of parsed tags from the provided arguments by merging tag arguments
       #   that were provided via either flags or keywords
       # @param provided [Array<String>] tag arguments provided
       #   directly via the -t or --tags flag on the command line.

@@ -35,9 +35,11 @@ module Reviewer
 
     # === Primitives ===
 
-    # Clears the terminal screen
+    # Clears the terminal screen (no-op when output is not a TTY)
     # @return [void]
-    def clear = system('clear')
+    def clear
+      system('clear') if printer.tty?
+    end
 
     # Prints a blank line
     # @return [void]
