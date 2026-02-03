@@ -5,7 +5,7 @@ require 'test_helper'
 module Reviewer
   class HistoryTest < Minitest::Test
     def setup
-      @history = History.new
+      @history = History.new(file: Reviewer.configuration.history_file)
     end
 
     def test_initializes_yaml_store
@@ -22,7 +22,7 @@ module Reviewer
       @history.set(:tool, :key, 'value')
       assert_equal 'value', @history.get(:tool, :key)
 
-      @history.clear!
+      @history.clear
       assert_nil @history.get(:tool, :key)
     end
 
@@ -30,10 +30,10 @@ module Reviewer
       missing_file = 'very_nonexistent_history_file.yml'
       refute File.exist?(missing_file)
 
-      history = History.new(missing_file)
+      history = History.new(file: missing_file)
       assert_equal missing_file, history.file
 
-      history.clear!
+      history.clear
     end
   end
 end

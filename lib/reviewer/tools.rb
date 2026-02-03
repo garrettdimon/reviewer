@@ -7,13 +7,19 @@ module Reviewer
     include Enumerable
 
     # Provides an instance to work with for knowing which tools to run in a given context.
-    # @param tags: nil [Array] the tags to use to filter tools for a run
-    # @param tool_names: nil [type] the explicitly provided tool names to filter tools for a run
+    # @param tags [Array] the tags to use to filter tools for a run
+    # @param tool_names [Array<String>] the explicitly provided tool names to filter tools for a run
+    # @param arguments [Arguments] the parsed CLI arguments
+    # @param history [History] the history store for status persistence
+    # @param config_file [Pathname, nil] path to the .reviewer.yml configuration file
     #
     # @return [Reviewer::Tools] collection of tools based on the current run context
-    def initialize(tags: nil, tool_names: nil)
-      @tags       = tags
-      @tool_names = tool_names
+    def initialize(tags: nil, tool_names: nil, arguments: nil, history: nil, config_file: nil)
+      @tags        = tags
+      @tool_names  = tool_names
+      @arguments   = arguments
+      @history     = history
+      @config_file = config_file
     end
 
     # The current state of all available configured tools regardless of whether they are disabled
@@ -26,7 +32,7 @@ module Reviewer
     #
     # @return [Array<Tool>] the full collection of all Tool instances
     def all
-      configured.keys.map { |tool_name| Tool.new(tool_name) }
+      configured.map { |tool_name, config| Tool.new(tool_name, config: config, history: @history) }
     end
     alias to_a all
 
@@ -65,7 +71,7 @@ module Reviewer
     #
     # @return [Array<Tool>] tools with :last_status of :failed in history
     def failed_from_history
-      all.select { |tool| Reviewer.history.get(tool.key, :last_status) == :failed }
+      all.select { |tool| @history.get(tool.key, :last_status) == :failed }
     end
 
     private
@@ -83,12 +89,23 @@ module Reviewer
       failed_from_history
     end
 
-    def failed_keyword? = Reviewer.arguments.keywords.failed?
+    def failed_keyword? = @arguments&.keywords&.failed? || false
 
-    def configured = @configured ||= Loader.configuration
-    def tags = Array(@tags || Reviewer.arguments.tags)
-    def tool_names = Array(@tool_names || Reviewer.arguments.keywords.for_tool_names)
-    def tagged?(tool) = !tool.skip_in_batch? && tags.intersect?(tool.tags)
+    def configured = @configured ||= Configuration::Loader.configuration(file: @config_file)
+    def tags = Array(@tags || matching_tags)
+    def tool_names = Array(@tool_names || matching_tool_names)
+    def tagged?(tool) = tool.matches_tags?(tags)
     def named?(tool) = tool_names.map(&:to_s).include?(tool.key.to_s)
+
+    def matching_tool_names
+      provided = @arguments&.keywords&.provided || []
+      provided & configured.keys.map(&:to_s)
+    end
+
+    def matching_tags
+      provided = @arguments&.keywords&.provided || []
+      all_tags = enabled.flat_map(&:tags).uniq
+      (provided & all_tags) + Array(@arguments&.tags&.raw)
+    end
   end
 end

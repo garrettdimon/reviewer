@@ -10,27 +10,34 @@ module Reviewer
     class Keywords
       RESERVED = %w[staged unstaged modified untracked failed].freeze
 
-      attr_accessor :provided
+      attr_reader :provided
+
+      # Sets the tools collection after initialization when tools become available
+      # @param value [Tools] the configured tools collection
+      # @return [Tools] the tools collection
+      attr_writer :tools
 
       alias raw provided
 
       # Generates an instance of parsed keywords from the provided arguments
-      # @param *provided [Array<String>] the leftover (non-flag) arguments from the command line
+      # @param provided [Array<String>] the leftover (non-flag) arguments from the command line
+      # @param tools [Tools] the collection of configured tools for keyword recognition
       #
       # @return [self]
-      def initialize(*provided)
+      def initialize(*provided, tools: nil)
         @provided = Array(provided.flatten)
+        @tools = tools
       end
 
-      # Proves the full list of raw keyword arguments explicitly passed via command-line as an array
+      # Provides the full list of raw keyword arguments explicitly passed via command-line as an array
       #
-      # @return [Array] full collection of the provided keyword arguments as a string
+      # @return [Array<String>] full collection of the provided keyword arguments
       def to_a = provided
 
       # Provides the full list of raw keyword arguments explicitly passed via command-line as a
       #   comma-separated string
       #
-      # @return [String] comma-separated list of the file arguments as a string
+      # @return [String] comma-separated list of the keyword arguments as a string
       def to_s = to_a.join(',')
 
       # Summary of the state of keyword arguments based on how Reviewer parsed them
@@ -81,18 +88,24 @@ module Reviewer
 
       # Provides the complete list of all recognized keywords based on configuration
       #
-      # @return [Array<String>] all keywords that Reviewer can recognized
+      # @return [Array<String>] all keywords that Reviewer can recognize
       def possible = (RESERVED + configured_tags + configured_tool_names).uniq.sort
 
       # Provides the complete list of all configured tags for enabled tools
       #
       # @return [Array<String>] all unique configured tags
-      def configured_tags = tools.enabled.map(&:tags).flatten.uniq.sort
+      def configured_tags
+        return [] unless tools
+
+        tools.enabled.map(&:tags).flatten.uniq.sort
+      end
 
       # Provides the complete list of all configured tool names for enabled tools
       #
       # @return [Array<String>] all unique configured tools
       def configured_tool_names
+        return [] unless tools
+
         # We explicitly don't sort the tool names list because Reviewer uses the configuration order
         # to determine the execution order. So not sorting maintains the predicted order it will run
         # in and leaves the option to sort to the consuming code if needed
@@ -101,10 +114,7 @@ module Reviewer
 
       private
 
-      # Provides a collection of enabled Tools for convenient access
-      #
-      # @return [Array<Reviewer::Tool>] collection of all currently enabled tools
-      def tools = @tools ||= Reviewer.tools
+      attr_reader :tools
 
       # Syntactic sugar for finding intersections with valid keywords
       # @param values [Array<String>] the collection to use for finding intersecting values

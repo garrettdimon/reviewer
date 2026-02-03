@@ -24,13 +24,13 @@ module Reviewer
 
     # @!attribute options
     #   @return [Slop::Result] the parsed command-line options
-    attr_accessor :options
+    attr_reader :options
 
     attr_reader :output
 
-    # A catch all for aguments passed to reviewer via the command-line so they can be interpreted
-    #   and made available via the relevant classes.
-    # @param options = ARGV [Hash] options to parse and extract the relevant values for a run
+    # Parses command-line arguments and makes them available as tags, files, and keywords.
+    # @param options [Array<String>] the command-line arguments to parse (defaults to ARGV)
+    # @param output [Output] the console output handler for displaying messages
     #
     # @example Using all options: `rvw keyword_one keyword_two --files ./example.rb,./example_test.rb --tags syntax`
     #   reviewer = Reviewer::Arguments.new
@@ -39,8 +39,8 @@ module Reviewer
     #   reviewer.keywords.to_a # => ['keyword_one', 'keyword_two']
     #
     # @return [self]
-    def initialize(options = ARGV)
-      @output = Output.new
+    def initialize(options = ARGV, output: Output.new)
+      @output = output
       @options = Slop.parse(options) { |opts| configure_options(opts) }
     end
 
@@ -64,13 +64,12 @@ module Reviewer
     end
 
     def configure_info_options(opts)
-      opts.on('-v', '--version', 'print the version') { @output.help(VERSION) && exit }
-      opts.on('-h', '--help', 'print the help') { @output.help(opts) && exit }
-      opts.on('-c', '--capabilities', 'output capabilities as JSON') do
-        puts Capabilities.new.to_json
-        exit
-      end
+      opts.on('-v', '--version', 'print the version')
+      opts.on('-h', '--help', 'print the help')
+      opts.on('-c', '--capabilities', 'output capabilities as JSON')
     end
+
+    def session_formatter = @session_formatter ||= Session::Formatter.new(output)
 
     public
 
@@ -88,18 +87,35 @@ module Reviewer
 
     # The tag arguments collected from the command line via the `-t` or `--tags` flag
     #
-    # @return [Arguments::Tags] an colelction of the tag arguments collected from the command-line
+    # @return [Arguments::Tags] a collection of the tag arguments collected from the command-line
     def tags = @tags ||= Arguments::Tags.new(provided: options[:tags])
 
     # The file arguments collected from the command line via the `-f` or `--files` flag
     #
-    # @return [Arguments::Files] an collection of the file arguments collected from the command-line
-    def files = @files ||= Arguments::Files.new(provided: options[:files])
+    # @return [Arguments::Files] a collection of the file arguments collected from the command-line
+    def files
+      @files ||= Arguments::Files.new(
+        provided: options[:files],
+        keywords: keywords.reserved,
+        output: output,
+        on_git_error: session_formatter.method(:git_error)
+      )
+    end
 
     # The leftover arguments collected from the command line without being associated with a flag
     #
-    # @return [Arguments::Keywords] an collection of the leftover arguments as keywords
+    # @return [Arguments::Keywords] a collection of the leftover arguments as keywords
     def keywords = @keywords ||= Arguments::Keywords.new(options.arguments)
+
+    # Whether the --help flag was passed
+    #
+    # @return [Boolean] true if help was requested
+    def help? = options[:help]
+
+    # Whether the --version flag was passed
+    #
+    # @return [Boolean] true if version was requested
+    def version? = options[:version]
 
     # Whether to force raw/passthrough output regardless of tool count
     #
@@ -120,7 +136,7 @@ module Reviewer
       value = options[:format].to_sym
       return value if KNOWN_FORMATS.include?(value)
 
-      output.invalid_format(options[:format], KNOWN_FORMATS)
+      session_formatter.invalid_format(options[:format], KNOWN_FORMATS)
       :streaming
     end
 
@@ -128,5 +144,16 @@ module Reviewer
     #
     # @return [Boolean] true if in streaming mode
     def streaming? = format == :streaming
+
+    # Determines the appropriate runner strategy based on CLI flags
+    #
+    # @param multiple_tools [Boolean] whether multiple tools are being run
+    # @return [Class] the strategy class (Captured or Passthrough)
+    def runner_strategy(multiple_tools:)
+      return Runner::Strategies::Passthrough if raw?
+      return Runner::Strategies::Captured unless streaming?
+
+      multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+    end
   end
 end

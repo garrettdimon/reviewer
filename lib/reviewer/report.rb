@@ -57,6 +57,13 @@ module Reviewer
       missing_results.any?
     end
 
+    # Returns data for missing tools (name and key)
+    #
+    # @return [Array<Runner::Result>] the missing results with tool info
+    def missing_tools
+      missing_results
+    end
+
     # Converts the report to a hash suitable for serialization
     #
     # @return [Hash] structured hash with summary and tool results

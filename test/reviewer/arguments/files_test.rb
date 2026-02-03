@@ -15,6 +15,12 @@ module Reviewer
         assert_equal '*.css,*.rb', Files.new(provided: ['*.rb', '*.css'], keywords: []).to_s
       end
 
+      def test_accepts_output_parameter
+        output = Output.new
+        files = Files.new(provided: [], keywords: [], output: output)
+        assert_equal [], files.to_a
+      end
+
       def test_raw_aliases_provided
         files = Files.new
         assert_equal files.provided, files.raw
@@ -54,7 +60,7 @@ module Reviewer
           keywords: keywords_array
         )
 
-        ::Reviewer::Keywords::Git.stub :staged, staged_files do
+        stub_git_success("lib/reviewer.rb\n") do
           assert_equal staged_files, files.to_a
         end
       end
@@ -70,39 +76,74 @@ module Reviewer
           keywords: keywords_array
         )
 
-        ::Reviewer::Keywords::Git.stub :staged, staged_files do
+        stub_git_success("lib/reviewer.rb\n") do
           assert_equal full_files_array.sort, files.to_a
         end
       end
 
-      def test_git_error_returns_empty_and_warns
-        keywords_array = %w[staged]
-        files = Files.new(
-          provided: [],
-          keywords: keywords_array
-        )
+      def test_generating_files_from_unstaged_keyword
+        files = Files.new(provided: [], keywords: %w[unstaged])
 
-        error = SystemCallError.new('fatal: not a git repository', 128)
-        ::Reviewer::Keywords::Git.stub :staged, -> { raise error } do
-          out, _err = capture_subprocess_io { files.to_a }
+        stub_git_success("lib/reviewer.rb\n") do
+          assert_equal ['lib/reviewer.rb'], files.to_a
+        end
+      end
+
+      def test_generating_files_from_modified_keyword
+        files = Files.new(provided: [], keywords: %w[modified])
+
+        stub_git_success("lib/reviewer.rb\nlib/reviewer/output.rb\n") do
+          assert_equal ['lib/reviewer.rb', 'lib/reviewer/output.rb'], files.to_a
+        end
+      end
+
+      def test_generating_files_from_untracked_keyword
+        files = Files.new(provided: [], keywords: %w[untracked])
+
+        stub_git_success("new_file.rb\n") do
+          assert_equal ['new_file.rb'], files.to_a
+        end
+      end
+
+      def test_git_error_calls_callback_and_returns_empty
+        errors = []
+        files = Files.new(provided: [], keywords: %w[staged], on_git_error: ->(msg) { errors << msg })
+
+        stub_git_failure('fatal: not a git repository', 128) do
           assert_empty files.to_a
-          assert_match(/not a git repository/i, out)
+          assert_equal 1, errors.size
+          assert_match(/not a git repository/i, errors.first)
         end
       end
 
       def test_git_error_continues_with_provided_files
-        keywords_array = %w[staged]
-        files = Files.new(
-          provided: ['app/models/user.rb'],
-          keywords: keywords_array
-        )
+        errors = []
+        files = Files.new(provided: ['app/models/user.rb'], keywords: %w[staged], on_git_error: ->(msg) { errors << msg })
 
-        error = SystemCallError.new('git error', 1)
-        ::Reviewer::Keywords::Git.stub :staged, -> { raise error } do
-          _out, _err = capture_subprocess_io do
-            assert_equal ['app/models/user.rb'], files.to_a
-          end
+        stub_git_failure('git error', 1) do
+          assert_equal ['app/models/user.rb'], files.to_a
+          assert_equal 1, errors.size
         end
+      end
+
+      def test_git_error_without_callback_returns_empty_silently
+        files = Files.new(provided: [], keywords: %w[staged])
+
+        stub_git_failure('fatal: not a git repository', 128) do
+          assert_empty files.to_a
+        end
+      end
+
+      MockStatus = Struct.new(:success?, :exitstatus)
+
+      private
+
+      def stub_git_success(stdout, &)
+        Open3.stub(:capture3, [stdout, '', MockStatus.new(true, 0)], &)
+      end
+
+      def stub_git_failure(stderr, exit_code, &)
+        Open3.stub(:capture3, ['', stderr, MockStatus.new(false, exit_code)], &)
       end
     end
   end

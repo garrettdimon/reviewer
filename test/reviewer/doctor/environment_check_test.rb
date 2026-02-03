@@ -44,10 +44,31 @@ module Reviewer
         assert repo_finding
       end
 
+      def test_reports_warning_when_not_in_git_repo
+        report = run_with_git_but_no_repo
+
+        not_repo = find_env(report, 'Not inside a git repository')
+        assert not_repo
+        assert_equal :warning, not_repo.status
+      end
+
       private
 
       def find_env(report, text)
         report.section(:environment).find { |f| f.message.include?(text) }
+      end
+
+      def run_with_git_but_no_repo
+        report = Report.new
+        check = EnvironmentCheck.new(report)
+        git_ok = MockProcessStatus.new(exitstatus: 0, pid: 1)
+        repo_fail = MockProcessStatus.new(exitstatus: 128, pid: 2)
+
+        Open3.stub(:capture3, lambda { |cmd|
+          cmd.include?('--version') ? ['git version 2.40.0', '', git_ok] : ['', 'fatal', repo_fail]
+        }) { check.check }
+
+        report
       end
 
       def run_with_failed_git

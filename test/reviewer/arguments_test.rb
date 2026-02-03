@@ -16,26 +16,14 @@ module Reviewer
       assert_equal %w[ruby], arguments.tags.raw
     end
 
-    def test_prints_version_information
-      args = %w[-v]
-      # rubocop:disable Lint/SuppressedException
-      out, _err = capture_subprocess_io do
-        Arguments.new(args)
-      rescue SystemExit
-      end
-      # rubocop:enable Lint/SuppressedException
-      assert_match(/#{Reviewer::VERSION}/i, out)
+    def test_version_flag_sets_version_predicate
+      arguments = Arguments.new(%w[-v])
+      assert arguments.version?
     end
 
-    def test_prints_help_information
-      args = %w[-h]
-      # rubocop:disable Lint/SuppressedException
-      out, _err = capture_subprocess_io do
-        Arguments.new(args)
-      rescue SystemExit
-      end
-      # rubocop:enable Lint/SuppressedException
-      assert_match(/a list of comma/i, out)
+    def test_help_flag_sets_help_predicate
+      arguments = Arguments.new(%w[-h])
+      assert arguments.help?
     end
 
     def test_parses_multiple_tags_from_command_line
@@ -80,6 +68,11 @@ module Reviewer
       assert_equal %w[staged], arguments.keywords.raw
       assert_equal %w[ruby css], arguments.tags.raw
       assert_equal ['./app/**/*.rb', './test/**/*.rb'], arguments.files.raw
+    end
+
+    def test_passes_reserved_keywords_to_files
+      arguments = Arguments.new(%w[staged])
+      assert_includes arguments.files.keywords, 'staged'
     end
 
     def test_defines_custom_inspect
@@ -191,20 +184,34 @@ module Reviewer
       refute_match(/Unknown format/, out)
     end
 
-    def test_prints_capabilities_json_with_short_flag
-      out, _err = capture_subprocess_io do
-        assert_raises(SystemExit) { Arguments.new(%w[-c]) }
-      end
-      assert_match(/"version"/, out)
-      assert_match(/"tools"/, out)
+    def test_capabilities_flag_accepted_without_error
+      # --capabilities is handled by Reviewer before Arguments, so it's a no-op here
+      arguments = Arguments.new(%w[-c])
+      refute_nil arguments
+    end
+  end
+
+  class ArgumentsRunnerStrategyTest < Minitest::Test
+    def test_returns_passthrough_when_raw
+      arguments = Arguments.new(%w[-r])
+      assert_equal Runner::Strategies::Passthrough, arguments.runner_strategy(multiple_tools: true)
+      assert_equal Runner::Strategies::Passthrough, arguments.runner_strategy(multiple_tools: false)
     end
 
-    def test_prints_capabilities_json_with_long_flag
-      out, _err = capture_subprocess_io do
-        assert_raises(SystemExit) { Arguments.new(%w[--capabilities]) }
-      end
-      assert_match(/"version"/, out)
-      assert_match(/"keywords"/, out)
+    def test_returns_captured_for_non_streaming_format
+      arguments = Arguments.new(%w[--format summary])
+      assert_equal Runner::Strategies::Captured, arguments.runner_strategy(multiple_tools: true)
+      assert_equal Runner::Strategies::Captured, arguments.runner_strategy(multiple_tools: false)
+    end
+
+    def test_returns_captured_for_streaming_with_multiple_tools
+      arguments = Arguments.new([])
+      assert_equal Runner::Strategies::Captured, arguments.runner_strategy(multiple_tools: true)
+    end
+
+    def test_returns_passthrough_for_streaming_with_single_tool
+      arguments = Arguments.new([])
+      assert_equal Runner::Strategies::Passthrough, arguments.runner_strategy(multiple_tools: false)
     end
   end
 end

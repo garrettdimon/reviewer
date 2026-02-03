@@ -8,12 +8,7 @@ module Reviewer
       @output = Output.new
     end
 
-    def test_tool_summary
-      tool = Tool.new(:enabled_tool)
-      out, _err = capture_subprocess_io { @output.tool_summary(tool) }
-      assert_match(/#{tool.name}/i, out)
-      assert_match(/#{tool.description}/i, out)
-    end
+    # === Primitives ===
 
     def test_newline
       out, _err = capture_subprocess_io { @output.newline }
@@ -23,41 +18,6 @@ module Reviewer
     def test_divider
       out, _err = capture_subprocess_io { @output.divider }
       assert_match(/#{Output::DIVIDER}/i, out)
-    end
-
-    def test_current_command
-      command_string = 'ls -la'
-      out, _err = capture_subprocess_io { @output.current_command(command_string) }
-      assert_match(/#{command_string}/, out)
-      refute_match(/Running:/i, out)
-    end
-
-    def test_success_without_prep
-      timer = Shell::Timer.new(main: 1.2345)
-      out, _err = capture_subprocess_io { @output.success(timer) }
-      assert_match(/Success/i, out)
-      refute_match(/prep/i, out)
-    end
-
-    def test_success_with_prep
-      timer = Shell::Timer.new(prep: 0.2345, main: 1.2345)
-      out, _err = capture_subprocess_io { @output.success(timer) }
-      assert_match(/Success/i, out)
-      assert_match(/prep/i, out)
-    end
-
-    def test_failure
-      details = 'Result Details'
-      out, _err = capture_subprocess_io { @output.failure(details) }
-      assert_match(/Failure/i, out)
-      assert_match(/#{details}/i, out)
-    end
-
-    def test_unrecoverable
-      details = 'Unrecoverable Failure 12345'
-      out, _err = capture_subprocess_io { @output.unrecoverable(details) }
-      assert_match(/Unrecoverable Error/i, out)
-      assert_match(/#{details}/i, out)
     end
 
     def test_unfiltered
@@ -76,179 +36,55 @@ module Reviewer
       assert_empty out
     end
 
-    def test_guidance
-      summary = 'Summary'
-      details = 'Details'
-      out, _err = capture_subprocess_io { @output.guidance(summary, details) }
-      assert_match(/#{summary}/i, out)
-      assert_match(/#{details}/i, out)
+    def test_clear_skips_when_not_tty
+      stream = StringIO.new
+      printer = Output::Printer.new(stream)
+      output = Output.new(printer)
+      output.clear
+      assert_empty stream.string
     end
 
-    def test_skips_guidance_when_details_nil
-      out, _err = capture_subprocess_io { @output.guidance('Test', nil) }
-      assert out.strip.empty?
+    def test_help_prints_message
+      out, _err = capture_subprocess_io { @output.help('Usage: rvw') }
+      assert_match(/Usage: rvw/, out)
     end
 
-    def test_no_failures_to_retry
-      out, _err = capture_subprocess_io { @output.no_failures_to_retry }
-      assert_match(/No failures to retry/i, out)
-    end
-
-    def test_no_previous_run
-      out, _err = capture_subprocess_io { @output.no_previous_run }
-      assert_match(/No previous run found/i, out)
-    end
-
-    def test_run_summary_shows_tool_names
-      entries = [
-        { name: 'Rubocop', files: [] },
-        { name: 'Reek', files: [] }
-      ]
-      out, _err = capture_subprocess_io { @output.run_summary(entries) }
-      assert_match(/Rubocop/, out)
-      assert_match(/Reek/, out)
-    end
-
-    def test_run_summary_shows_files_under_tool
-      entries = [
-        { name: 'Rubocop', files: ['lib/reviewer/batch.rb', 'lib/reviewer/command.rb'] }
-      ]
-      out, _err = capture_subprocess_io { @output.run_summary(entries) }
-      assert_match(/Rubocop/, out)
-      assert_match(%r{lib/reviewer/batch.rb}, out)
-      assert_match(%r{lib/reviewer/command.rb}, out)
-    end
-
-    def test_run_summary_omits_files_when_empty
-      entries = [
-        { name: 'Rubocop', files: [] }
-      ]
-      out, _err = capture_subprocess_io { @output.run_summary(entries) }
-      assert_match(/Rubocop/, out)
-      refute_match(%r{lib/}, out)
-    end
-
-    def test_run_summary_skips_output_when_empty
-      out, _err = capture_subprocess_io { @output.run_summary([]) }
-      assert_empty out
-    end
-
-    def test_batch_summary_shows_checkmark_and_timing
-      out, _err = capture_subprocess_io { @output.batch_summary(3, 1.5) }
-      assert_match(/✓/, out)
-      assert_match(/~1.5 seconds/, out)
-      assert_match(/3 tools/, out)
-    end
-
-    def test_first_run_greeting_shows_message
-      out, _err = capture_subprocess_io { @output.first_run_greeting }
-      assert_match(/setting up Reviewer/i, out)
-    end
-
-    def test_first_run_greeting_explains_what_init_does
-      out, _err = capture_subprocess_io { @output.first_run_greeting }
-      assert_match(/auto-detect/i, out)
-    end
-
-    def test_first_run_skip_shows_rvw_init
-      out, _err = capture_subprocess_io { @output.first_run_skip }
-      assert_match(/rvw init/, out)
-    end
-
-    def test_setup_already_exists
-      file = Pathname('/tmp/project/.reviewer.yml')
-      out, _err = capture_subprocess_io { @output.setup_already_exists(file) }
-      assert_match(/already exists/i, out)
-      assert_match(/rvw init/, out)
-    end
-
-    def test_setup_no_tools_detected
-      out, _err = capture_subprocess_io { @output.setup_no_tools_detected }
-      assert_match(/no supported tools detected/i, out)
-      assert_match(%r{github\.com/garrettdimon/reviewer}, out)
-    end
-
-    def test_setup_success
-      results = [
-        Reviewer::Setup::Detector::Result.new(key: :rubocop, reasons: ['rubocop in Gemfile.lock'])
-      ]
-      out, _err = capture_subprocess_io { @output.setup_success(results) }
-      assert_match(/created \.reviewer\.yml/i, out)
-      assert_match(/RuboCop/, out)
-      assert_match(/Gemfile\.lock/, out)
-    end
-
-    def test_missing_tools_shows_count
-      tools = [Tool.new(:missing_with_install)]
-      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
-      assert_match(/1 not installed/i, out)
-    end
-
-    def test_missing_tools_shows_tool_name
-      tools = [Tool.new(:missing_with_install)]
-      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
-      assert_match(/Missing With Install/i, out)
-    end
-
-    def test_missing_tools_shows_install_hint
-      tools = [Tool.new(:missing_with_install)]
-      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
-      assert_match(/gem install missing-tool/, out)
-    end
-
-    def test_missing_tools_pluralizes_for_multiple
-      tools = [Tool.new(:missing_with_install), Tool.new(:missing_command)]
-      out, _err = capture_subprocess_io { @output.missing_tools(tools) }
-      assert_match(/2 not installed/i, out)
-    end
-
-    def test_unrecognized_keywords_shows_warning
-      out, _err = capture_subprocess_io do
-        @output.unrecognized_keywords(['rubocp'], { 'rubocp' => 'rubocop' })
+    def test_console_width_returns_default_when_io_console_nil
+      IO.stub(:console, nil) do
+        output = Output.new
+        assert_equal Output::DEFAULT_CONSOLE_WIDTH, output.send(:console_width)
       end
-      assert_match(/Unrecognized: rubocp/, out)
-      assert_match(/did you mean 'rubocop'/, out)
     end
 
-    def test_unrecognized_keywords_without_suggestion
-      out, _err = capture_subprocess_io do
-        @output.unrecognized_keywords(['zzzzz'], {})
+    def test_console_width_returns_default_when_winsize_zero
+      fake_console = Object.new
+      fake_console.define_singleton_method(:winsize) { [0, 0] }
+      IO.stub(:console, fake_console) do
+        output = Output.new
+        assert_equal Output::DEFAULT_CONSOLE_WIDTH, output.send(:console_width)
       end
-      assert_match(/Unrecognized: zzzzz/, out)
-      refute_match(/did you mean/, out)
     end
 
-    def test_no_matching_tools
-      out, _err = capture_subprocess_io do
-        @output.no_matching_tools(requested: ['rubocp'], available: %w[rubocop tests reek])
+    def test_console_width_returns_actual_width_when_positive
+      fake_console = Object.new
+      fake_console.define_singleton_method(:winsize) { [24, 120] }
+      IO.stub(:console, fake_console) do
+        output = Output.new
+        assert_equal 120, output.send(:console_width)
       end
-      assert_match(/No matching tools found/, out)
-      assert_match(/Requested: rubocp/, out)
-      assert_match(/Available: rubocop, tests, reek/, out)
     end
 
-    def test_invalid_format
-      out, _err = capture_subprocess_io do
-        @output.invalid_format('verbose', %i[streaming summary json])
-      end
-      assert_match(/Unknown format 'verbose'/, out)
-      assert_match(/Valid formats:/, out)
+    def test_scrub_removes_rake_aborted_text
+      text = "some error\nrake aborted!\nmore text"
+      assert_equal "some error\n", Output.scrub(text)
     end
 
-    def test_git_error_for_not_a_repo
-      out, _err = capture_subprocess_io do
-        @output.git_error('fatal: not a git repository')
-      end
-      assert_match(/Not a git repository/, out)
-      assert_match(/Git keywords/, out)
+    def test_scrub_returns_empty_for_nil
+      assert_equal '', Output.scrub(nil)
     end
 
-    def test_git_error_for_other_errors
-      out, _err = capture_subprocess_io do
-        @output.git_error('some other git failure')
-      end
-      assert_match(/Git command failed/, out)
-      assert_match(/Continuing without file filtering/, out)
+    def test_scrub_returns_original_when_no_rake_text
+      assert_equal 'clean output', Output.scrub('clean output')
     end
   end
 end

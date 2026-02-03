@@ -6,30 +6,35 @@ module Reviewer
     class ToolInventory
       attr_reader :report
 
+      # Creates a tool inventory check that reports batch/skip status for each tool
       # @param report [Doctor::Report] the report to add findings to
-      def initialize(report)
+      # @param configuration [Configuration] the configuration to check
+      # @param tools [Tools] the tools collection to report on
+      #
+      # @return [ToolInventory]
+      def initialize(report, configuration:, tools:)
         @report = report
+        @configuration = configuration
+        @tools = tools
       end
 
       # Reports batch/skip status and available commands for each configured tool
       def check
-        return unless Reviewer.configuration.file.exist?
+        return unless @configuration.file.exist?
 
-        Reviewer.tools.all.each do |tool|
+        @tools.all.each do |tool|
           skipped = tool.skip_in_batch?
 
           report.add(:tools,
                      status: skipped ? :muted : :ok,
-                     message: "#{tool.name}: #{skipped ? 'skip in batch' : 'runs in batch'}",
-                     detail: command_summary(tool))
+                     message: "#{tool.name} (#{tool.key}) — #{command_summary(tool)}")
         end
       end
 
       private
 
       def command_summary(tool)
-        available = %i[review format install prepare].select { |cmd| tool.command?(cmd) }
-        "Commands: #{available.join(', ')}"
+        %i[review format install prepare].select { |cmd| tool.command?(cmd) }.join(', ')
       end
     end
   end

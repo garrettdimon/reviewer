@@ -6,16 +6,23 @@ module Reviewer
     class OpportunityCheck
       attr_reader :report, :project_dir
 
+      # Creates an opportunity checker that scans for unconfigured tools and missing features
       # @param report [Doctor::Report] the report to add findings to
       # @param project_dir [Pathname] the project root for tool detection
-      def initialize(report, project_dir)
+      # @param configuration [Configuration] the configuration to check
+      # @param tools [Tools] the tools collection to analyze
+      #
+      # @return [OpportunityCheck]
+      def initialize(report, project_dir, configuration:, tools:)
         @report = report
         @project_dir = project_dir
+        @configuration = configuration
+        @tools = tools
       end
 
       # Checks for unconfigured tools, missing file targeting, and missing format commands
       def check
-        return unless Reviewer.configuration.file.exist?
+        return unless @configuration.file.exist?
 
         check_unconfigured_tools
         check_missing_files_config
@@ -26,7 +33,7 @@ module Reviewer
 
       def check_unconfigured_tools
         detected = Setup::Detector.new(project_dir).detect
-        configured_keys = Reviewer.tools.all.map(&:key)
+        configured_keys = @tools.all.map(&:key)
 
         detected.each do |result|
           next if configured_keys.include?(result.key)
@@ -38,7 +45,7 @@ module Reviewer
       end
 
       def check_missing_files_config
-        Reviewer.tools.all.each do |tool|
+        @tools.all.each do |tool|
           next if tool.skip_in_batch?
           next if tool.supports_files?
           next unless catalog_supports?(tool.key, :files)
@@ -50,7 +57,7 @@ module Reviewer
       end
 
       def check_missing_format_command
-        Reviewer.tools.all.each do |tool|
+        @tools.all.each do |tool|
           next if tool.skip_in_batch?
           next if tool.formattable?
           next unless catalog_supports?(tool.key, :format)

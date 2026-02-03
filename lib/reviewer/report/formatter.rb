@@ -4,8 +4,7 @@ module Reviewer
   class Report
     # Formats a Report for summary output to the console
     class Formatter
-      CHECKMARK = '✓'
-      XMARK = '✗'
+      include Output::Formatting
 
       attr_reader :report, :output
 
@@ -17,6 +16,7 @@ module Reviewer
       def initialize(report, output: Output.new)
         @report = report
         @output = output
+        @name_width = 0
       end
 
       # Prints the formatted report to the console
@@ -36,6 +36,7 @@ module Reviewer
       private
 
       def print_tool_lines
+        @name_width = max_name_width
         report.results.each { |result| print_tool_line(result) }
       end
 
@@ -50,48 +51,31 @@ module Reviewer
       end
 
       def print_missing_tool(result)
-        output.printer.print(:warning, "- #{result.tool_name}")
+        output.printer.print(:warning, "- #{result.tool_name.ljust(@name_width)}")
         output.printer.print(:muted, '    not installed')
       end
 
       def print_executed_tool(result)
-        style = result.success? ? :success : :failure
-        mark = result.success? ? CHECKMARK : XMARK
-        output.printer.print(style, "#{mark} #{result.tool_name}")
+        style = status_style(result.success?)
+        mark = status_mark(result.success?)
+        output.printer.print(style, "#{mark} #{result.tool_name.ljust(@name_width)}")
         print_timing(result)
         print_details(result)
       end
 
       def print_timing(result)
-        output.printer.print(:muted, "    #{format_duration(result.duration)}")
+        output.printer.print(:muted, "    #{format_duration(result.duration).rjust(6)}")
+      end
+
+      def max_name_width
+        report.results.map { |result| result.tool_name.length }.max || 0
       end
 
       def print_details(result)
-        detail = extract_detail(result)
-        return if detail.nil?
+        detail = result.detail_summary
+        return unless detail
 
         output.printer.print(:muted, "   #{detail}")
-      end
-
-      def extract_detail(result)
-        return extract_test_count(result.stdout) if result.tool_key == :tests
-        return extract_offense_count(result.stdout) if result.tool_key == :rubocop
-
-        nil
-      end
-
-      def extract_test_count(stdout)
-        return nil if stdout.nil?
-
-        match = stdout.match(/(\d+)\s+tests?/i)
-        match ? "#{match[1]} tests" : nil
-      end
-
-      def extract_offense_count(stdout)
-        return nil if stdout.nil?
-
-        match = stdout.match(/(\d+)\s+offenses?/i)
-        match ? "#{match[1]} offenses" : nil
       end
 
       def print_summary
@@ -113,15 +97,15 @@ module Reviewer
         failed_results.each do |result|
           output.newline
           output.printer.puts(:failure, "#{result.tool_name}:")
-          print_failure_output(result)
+          print_truncated_output(result.stdout)
         end
       end
 
-      def print_failure_output(result)
-        stdout = result.stdout
-        return if stdout.nil? || stdout.strip.empty?
+      def print_truncated_output(text)
+        content = text.to_s.strip
+        return if content.empty?
 
-        lines = stdout.strip.lines
+        lines = content.lines
         print_lines(lines.first(10))
         print_truncation_notice(lines.size - 10)
       end
@@ -134,12 +118,6 @@ module Reviewer
         return unless remaining.positive?
 
         output.printer.puts(:muted, "[#{remaining} more lines]")
-      end
-
-      def format_duration(seconds)
-        return '0.0s' if seconds.nil?
-
-        "#{seconds.round(2)}s"
       end
     end
   end

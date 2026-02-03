@@ -4,21 +4,11 @@ require 'test_helper'
 
 module Reviewer
   class ConversionsTest < Minitest::Test
-    include Conversions
+    include Tool::Conversions
 
     def test_tool_from_tool_instance
-      tool = Tool.new(:enabled_tool)
+      tool = build_tool(:enabled_tool)
       assert_equal tool, Tool(tool)
-    end
-
-    def test_tool_from_symbol
-      tool = Tool.new(:enabled_tool)
-      assert_equal tool, Tool(:enabled_tool)
-    end
-
-    def test_tool_from_string
-      tool = Tool.new(:enabled_tool)
-      assert_equal tool, Tool('enabled_tool')
     end
 
     def test_tool_from_unrecognized

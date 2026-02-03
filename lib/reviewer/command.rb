@@ -5,11 +5,12 @@ require_relative 'command/string'
 module Reviewer
   # The core funtionality to translate a tool, command type, and verbosity into a runnable command
   class Command
-    include Conversions
+    include Tool::Conversions
 
     SEED_SUBSTITUTION_VALUE = '$SEED'
 
-    attr_reader :tool
+    attr_reader :tool, :arguments, :history
+    private :arguments, :history
 
     # @!attribute type
     #   @return [Symbol] the command type (:install, :prepare, :review, :format)
@@ -19,12 +20,15 @@ module Reviewer
     # command type, and verbosity.
     # @param tool [Tool, Symbol] a tool or tool key to use to look up the command and options
     # @param type [Symbol] the desired command type (:install, :prepare, :review, :format)
+    # @param context [Context] the shared runtime dependencies (arguments, output, history)
     #
     # @return [Command] the intersection of a tool, command type, and verbosity
-    def initialize(tool, type)
+    def initialize(tool, type, context:)
       @tool = Tool(tool)
       @type = type.to_sym
       @seed = nil
+      @arguments = context.arguments
+      @history = context.history
     end
 
     # The final command string with all of the conditions appled
@@ -42,14 +46,14 @@ module Reviewer
     #
     # @return [Integer] a random integer to pass to tools that use seeds
     def seed
-      @seed ||= if Reviewer.arguments.keywords.failed?
-                  Reviewer.history.get(tool.key, :last_seed) || Random.rand(100_000)
+      @seed ||= if arguments.keywords.failed?
+                  history.get(tool.key, :last_seed) || Random.rand(100_000)
                 else
                   Random.rand(100_000)
                 end
 
       # Store the seed for reference
-      Reviewer.history.set(tool.key, :last_seed, @seed)
+      history.set(tool.key, :last_seed, @seed)
 
       @seed
     end
@@ -76,6 +80,15 @@ module Reviewer
       tool.skip_files?(requested_files)
     end
 
+    # Returns a summary hash for run display, or nil if this command should be skipped
+    #
+    # @return [Hash, nil] { name:, files: } or nil if skipped
+    def run_summary
+      return nil if skip?
+
+      { name: tool.name, files: target_files }
+    end
+
     private
 
     # The raw list of files from arguments before resolution.
@@ -85,8 +98,8 @@ module Reviewer
     # @return [Array<String>] files from -f flag, keywords like 'staged', or stored failed files
     def requested_files
       @requested_files ||= begin
-        explicit = Reviewer.arguments.files.to_a
-        if explicit.empty? && Reviewer.arguments.keywords.failed?
+        explicit = arguments.files.to_a
+        if explicit.empty? && arguments.keywords.failed?
           stored_failed_files
         else
           explicit
@@ -98,7 +111,7 @@ module Reviewer
     #
     # @return [Array<String>] stored failed file paths, or empty array
     def stored_failed_files
-      Reviewer.history.get(tool.key, :last_failed_files) || []
+      history.get(tool.key, :last_failed_files) || []
     end
 
     # The version of the command with the SEED_SUBSTITUTION_VALUE replaced

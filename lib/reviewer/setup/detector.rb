@@ -5,8 +5,11 @@ module Reviewer
     # Scans a project directory to detect which review tools are applicable
     # based on Gemfile.lock contents, config files, and directory structure.
     class Detector
-      # Value object for a single detection result
-      # Value object for a single detection result
+      # Value object for a single detection result (tool key + evidence).
+      # @!attribute key [rw]
+      #   @return [Symbol] the tool identifier from the catalog
+      # @!attribute reasons [rw]
+      #   @return [Array<String>] evidence strings explaining why the tool was detected
       Result = Struct.new(:key, :reasons, keyword_init: true) do
         # @return [String] human-readable tool name from the catalog, or the key as fallback
         def name = Catalog.config_for(key)&.dig(:name) || key.to_s
@@ -16,7 +19,10 @@ module Reviewer
 
       attr_reader :project_dir
 
+      # Creates a detector for scanning a project directory for supported tools
       # @param project_dir [Pathname, String] the project root to scan
+      #
+      # @return [Detector]
       def initialize(project_dir = Pathname.pwd)
         @project_dir = Pathname(project_dir)
       end

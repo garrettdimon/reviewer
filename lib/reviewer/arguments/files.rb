@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'open3'
+
 module Reviewer
   class Arguments
     # Generates a Ruby-friendly list (Array) of files to run the command against from the provided
@@ -10,10 +12,13 @@ module Reviewer
       alias raw provided
 
       # Generates an instance of files from the provided arguments
-      # @param provided: Reviewer.arguments.files.raw [Array, String] file arguments provided
-      #   directly via the -f or --files flag on the command line.
-      # @param keywords: Reviewer.arguments.keywords [Array, String] keywords that can potentially
-      #   be translated to a list of files (ex. 'staged')
+      # @param provided [Array<String>] file arguments provided
+      #   directly via the -f or --files flag on the command line
+      # @param keywords [Array<String>] reserved keywords that can potentially
+      #   be translated to a list of files (e.g. 'staged', 'modified')
+      # @param output [Output] the console output handler
+      # @param on_git_error [Proc, nil] callback invoked with the error message
+      #   when a git command fails (nil silently swallows the error)
       #
       # @example Using the `-f` flag: `rvw -f ./file.rb`
       #   reviewer = Reviewer::Arguments::Files.new(provided: ['./file.rb'], keywords: [])
@@ -23,9 +28,11 @@ module Reviewer
       #   reviewer.to_a # => ['./file.rb','./directory/file.rb']
       #
       # @return [self]
-      def initialize(provided: Reviewer.arguments.files.raw, keywords: Reviewer.arguments.keywords)
+      def initialize(provided: [], keywords: [], output: Output.new, on_git_error: nil)
         @provided = Array(provided)
         @keywords = Array(keywords)
+        @output = output
+        @on_git_error = on_git_error
       end
 
       # Provides the full list of file/path values derived from the command-line arguments
@@ -35,7 +42,7 @@ module Reviewer
 
       # Provides the full list of file/path values derived from the command-line arguments
       #
-      # @return [String] comma-separated string of the derived tag values
+      # @return [String] comma-separated string of the derived file values
       def to_s = to_a.join(',')
 
       # Summary of the state of the file arguments
@@ -79,30 +86,34 @@ module Reviewer
       end
 
       def staged
-        ::Reviewer::Keywords::Git.staged
-      rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
-        []
+        git_files(%w[diff --staged --name-only])
       end
 
       def unstaged
-        ::Reviewer::Keywords::Git.unstaged
-      rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
-        []
+        git_files(%w[diff --name-only])
       end
 
       def modified
-        ::Reviewer::Keywords::Git.modified
-      rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
-        []
+        git_files(%w[diff --name-only HEAD])
       end
 
       def untracked
-        ::Reviewer::Keywords::Git.untracked
+        git_files(%w[ls-files --others --exclude-standard])
+      end
+
+      # Executes a git command and returns the output as an array of file paths
+      # @param options [Array<String>] the git command options
+      #
+      # @return [Array<String>] the output lines from the command
+      def git_files(options)
+        command = (%w[git --no-pager] + options).join(' ')
+        stdout, stderr, status = Open3.capture3(command)
+
+        return stdout.split("\n").reject(&:empty?) if status.success?
+
+        raise SystemCallError.new("Git Error: #{stderr} (#{command})", status.exitstatus.to_i)
       rescue SystemCallError => e
-        Reviewer.output.git_error(e.message)
+        @on_git_error&.call(e.message)
         []
       end
     end

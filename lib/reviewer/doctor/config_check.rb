@@ -2,18 +2,23 @@
 
 module Reviewer
   module Doctor
-    # Validates the configuration file by delegating to Loader
+    # Validates the configuration file by delegating to Configuration::Loader
     class ConfigCheck
       attr_reader :report
 
+      # Creates a config check that validates the .reviewer.yml file
       # @param report [Doctor::Report] the report to add findings to
-      def initialize(report)
+      # @param configuration [Configuration] the configuration to validate
+      #
+      # @return [ConfigCheck]
+      def initialize(report, configuration:)
         @report = report
+        @configuration = configuration
       end
 
       # Checks for .reviewer.yml existence and validity
       def check
-        config_file = Reviewer.configuration.file
+        config_file = @configuration.file
 
         unless config_file.exist?
           report.add(:configuration, status: :error,
@@ -27,13 +32,13 @@ module Reviewer
 
       private
 
-      # Exercises the full Loader pipeline (parse + validate) to surface config errors
+      # Exercises the full Configuration::Loader pipeline (parse + validate) to surface config errors
       def validate_via_loader
-        Loader.configuration
+        Configuration::Loader.configuration(file: @configuration.file)
         report.add(:configuration, status: :ok, message: 'Configuration is valid')
-      rescue Loader::InvalidConfigurationError => e
+      rescue Configuration::Loader::InvalidConfigurationError => e
         report.add(:configuration, status: :error, message: 'YAML syntax error', detail: e.message)
-      rescue Loader::MissingReviewCommandError => e
+      rescue Configuration::Loader::MissingReviewCommandError => e
         report.add(:configuration, status: :error, message: 'Missing review command', detail: e.message)
       end
     end

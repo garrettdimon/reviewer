@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require_relative 'runner/failed_files'
+require_relative 'runner/formatter'
+require_relative 'runner/guidance'
 require_relative 'runner/result'
 require_relative 'runner/strategies/captured'
 require_relative 'runner/strategies/passthrough'
@@ -13,36 +16,45 @@ module Reviewer
     #   @return [Class] the strategy class for running the command (Captured or Passthrough)
     attr_accessor :strategy
 
-    attr_reader :command, :shell, :output
+    attr_reader :command, :shell
 
     def_delegators :@command, :tool
     def_delegators :@shell, :result, :timer
     def_delegators :result, :exit_status, :stdout, :stderr, :rerunnable?
 
-    # Creates a wrapper for running commansd through Reviewer in order to provide a more accessible
+    # Creates a wrapper for running commands through Reviewer in order to provide a more accessible
     #   API for recording execution time and interpreting the results of a command in a more
-    #   generous way so that non-zero exit statuses can still potentiall be passing.
+    #   generous way so that non-zero exit statuses can still potentially be passing.
     # @param tool [Symbol] the key for the desired tool to run
     # @param command_type [Symbol] the key for the type of command to run
-    # @param strategy = Strategies::Captured [Runner::Strategies] how to execute and handle the
-    #   results of the command
-    # @param output: Reviewer.output [Review::Output] the output formatter for the results
+    # @param strategy [Runner::Strategies] how to execute and handle the results of the command
+    # @param context [Context] the shared runtime dependencies (arguments, output, history)
     #
     # @return [self]
-    def initialize(tool, command_type, strategy = Strategies::Captured, output: Reviewer.output)
-      @command = Command.new(tool, command_type)
+    def initialize(tool, command_type, strategy = Strategies::Captured, context:)
+      @command = Command.new(tool, command_type, context: context)
       @strategy = strategy
-      @shell = Shell.new
-      @output = output
+      @shell = Shell.new(stream: context.output.printer.stream)
+      @context = context
       @skipped = false
       @missing = false
-      @streaming = Reviewer.arguments.streaming?
     end
+
+    # The output channel for displaying content, delegated from context.
+    #
+    # @return [Output]
+    def output = @context.output
+
+    # Display formatter for runner-specific output (tool summary, success, failure, etc.)
+    # Computed rather than stored to avoid exceeding instance variable threshold.
+    #
+    # @return [Runner::Formatter]
+    def formatter = @formatter ||= Runner::Formatter.new(output)
 
     # Whether this runner is operating in streaming mode
     #
     # @return [Boolean] true if output should be streamed
-    def streaming? = @streaming
+    def streaming? = @context.arguments.streaming?
 
     # Executes the command and returns the exit status
     #
@@ -51,12 +63,12 @@ module Reviewer
       # Skip if files were requested but none match this tool's pattern
       if command.skip?
         @skipped = true
-        show_skipped if streaming?
+        show_skipped
         return 0
       end
 
-      # Show which tool is running (only in streaming mode)
-      identify_tool if streaming?
+      # Show which tool is running
+      identify_tool
 
       # Use the provided strategy to run the command
       execute_strategy
@@ -91,7 +103,15 @@ module Reviewer
 
     def failure? = !success?
 
-    # Prints the tool name and description to the console as a frame of reference
+    # Extracts file paths from stdout/stderr for failed-file tracking
+    #
+    # @return [Array<String>] file paths found in the command output
+    def failed_files
+      FailedFiles.new(stdout, stderr).to_a
+    end
+
+    # Prints the tool name and description to the console as a frame of reference.
+    # Only displays in streaming mode; non-streaming strategies handle their own output.
     #
     # @return [void]
     def identify_tool
@@ -99,15 +119,18 @@ module Reviewer
       # be redundant.
       return if result.exists?
 
-      output.tool_summary(tool)
+      stream_output { formatter.tool_summary(tool) }
     end
 
-    # Shows that a tool was skipped due to no matching files
+    # Shows that a tool was skipped due to no matching files.
+    # Only displays in streaming mode; non-streaming modes report skips in the final summary.
     #
     # @return [void]
     def show_skipped
-      output.tool_summary(tool)
-      output.skipped
+      stream_output do
+        formatter.tool_summary(tool)
+        formatter.skipped
+      end
     end
 
     # Runs the relevant strategy to either capture or pass through command output.
@@ -131,7 +154,7 @@ module Reviewer
     # Creates_an instance of the prepare command for a tool
     #
     # @return [Comman] the current tool's prepare command
-    def prepare_command = @prepare_command ||= Command.new(tool, :prepare)
+    def prepare_command = @prepare_command ||= Command.new(tool, :prepare, context: @context)
 
     # Updates the 'last prepared at' timestamp that Reviewer uses to know if a tool's preparation
     #   step is stale and needs to be run again.
@@ -155,29 +178,31 @@ module Reviewer
     #   get back on track in the event of an unsuccessful run.
     #
     # @return [Guidance] the relevant guidance based on the result of the runner
-    def guidance = @guidance ||= Reviewer::Guidance.new(command: command, result: result, output: output)
+    def guidance = @guidance ||= Guidance.new(command: command, result: result, context: @context)
 
     # Builds an immutable Result object from the current runner state
     #
     # @return [Runner::Result] the result of running this tool
     def to_result
-      if skipped?
-        skipped_result
-      elsif missing?
-        missing_result
-      else
-        executed_result
-      end
+      Result.from_runner(self)
     end
 
     private
+
+    # Yields the block only when in streaming mode.
+    # Centralizes the streaming guard so display methods don't each check independently.
+    #
+    # @return [void]
+    def stream_output
+      yield if streaming?
+    end
 
     # Marks the tool as missing and shows a skip message
     #
     # @return [Integer] the exit status from the command
     def handle_missing
       @missing = true
-      output.skipped('not installed') if streaming?
+      stream_output { formatter.skipped('not installed') }
       exit_status
     end
 
@@ -185,63 +210,8 @@ module Reviewer
     #
     # @return [Integer] the exit status from the command
     def handle_result
-      guidance.show if failure? && streaming?
+      stream_output { guidance.show } if failure?
       exit_status
-    end
-
-    # Result for a tool that was skipped due to no matching files
-    #
-    # @return [Runner::Result]
-    def skipped_result
-      Result.new(
-        tool_key: tool.key,
-        tool_name: tool.name,
-        command_type: command.type,
-        command_string: nil,
-        success: true,
-        exit_status: 0,
-        duration: 0,
-        stdout: nil,
-        stderr: nil,
-        skipped: true
-      )
-    end
-
-    # Result for a tool whose executable was not found
-    #
-    # @return [Runner::Result]
-    def missing_result
-      Result.new(
-        tool_key: tool.key,
-        tool_name: tool.name,
-        command_type: command.type,
-        command_string: command.string,
-        success: false,
-        exit_status: exit_status,
-        duration: 0,
-        stdout: nil,
-        stderr: nil,
-        skipped: nil,
-        missing: true
-      )
-    end
-
-    # Result for a tool that was actually executed
-    #
-    # @return [Runner::Result]
-    def executed_result
-      Result.new(
-        tool_key: tool.key,
-        tool_name: tool.name,
-        command_type: command.type,
-        command_string: command.string,
-        success: success?,
-        exit_status: exit_status,
-        duration: timer.total_seconds,
-        stdout: stdout,
-        stderr: stderr,
-        skipped: nil
-      )
     end
   end
 end

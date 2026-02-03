@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'date'
-
+require_relative 'tool/conversions'
 require_relative 'tool/file_resolver'
 require_relative 'tool/settings'
 require_relative 'tool/test_file_mapper'
+require_relative 'tool/timing'
 
 module Reviewer
   # Provides an instance of a specific tool for accessing its settings and run history
@@ -12,14 +12,9 @@ module Reviewer
     extend Forwardable
     include Comparable
 
-    # In general, Reviewer tries to save time where it can. In the case of the "prepare" command
-    # used by some tools to retrieve data, it only runs it occasionally in order to save time.
-    # This is the default window that it uses to determine if the tool's preparation step should be
-    # considered stale and needs to be rerun. Frequent enough that it shouldn't get stale, but
-    # infrequent enough that it's not cumbersome.
-    SIX_HOURS_IN_SECONDS = 60 * 60 * 6
+    SIX_HOURS_IN_SECONDS = Timing::SIX_HOURS_IN_SECONDS
 
-    attr_reader :settings, :history
+    attr_reader :settings
 
     def_delegators :@settings,
                    :key,
@@ -35,26 +30,28 @@ module Reviewer
                    :max_exit_status,
                    :supports_files?
 
-    # @!method to_sym
-    #   Returns the tool's key as a symbol
-    #   @return [Symbol] the tool's unique identifier
-    alias to_sym key
+    # Returns the tool's key as a symbol
+    # @return [Symbol] the tool's unique identifier
+    def to_sym = key
 
-    # @!method to_s
-    #   Returns the tool's name as a string
-    #   @return [String] the tool's display name
-    alias to_s name
+    # Returns the tool's name as a string
+    # @return [String] the tool's display name
+    def to_s = name
 
     # Create an instance of a tool
     # @param tool_key [Symbol] the key to the tool from the configuration file
+    # @param config [Hash] the tool's configuration hash
+    # @param history [History] the history store for timing and state persistence
     #
     # @return [Tool] an instance of tool for accessing settings information and facts about the tool
-    def initialize(tool_key)
-      @settings = Settings.new(tool_key)
+    def initialize(tool_key, config:, history:)
+      @settings = Settings.new(tool_key, config: config)
+      @history = history
+      @timing = Timing.new(history, key)
     end
 
-    # For determining if the tool should run it's prepration command. It will only be run both if
-    # the tool has a preparation command, and the command hasn't been run 6 hours
+    # For determining if the tool should run its preparation command. It will only be run if
+    # the tool has a preparation command and it hasn't been run in the last 6 hours
     #
     # @return [Boolean] true if the tool has a configured `prepare` command that hasn't been run in
     #   the last 6 hours
@@ -65,7 +62,7 @@ module Reviewer
     #
     # @return [Boolean] true if the command type is configured and not blank
     def command?(command_type)
-      commands.key?(command_type) && !commands[command_type].nil?
+      commands.key?(command_type) && commands[command_type]
     end
 
     # Determines if the tool can run a `install` command
@@ -95,53 +92,20 @@ module Reviewer
     # @return [Boolean] true if there is a non-blank `format` command configured
     def formattable? = command?(:format)
 
-    # Specifies when the tool last had it's `prepare` command run
+    # Whether this tool matches any of the given tags and is eligible for batch runs
     #
-    # @return [Time] timestamp of when the `prepare` command was last run
-    def last_prepared_at
-      date_string = Reviewer.history.get(key, :last_prepared_at)
-
-      date_string == '' || date_string.nil? ? nil : DateTime.parse(date_string).to_time
+    # @param tag_list [Array<String, Symbol>] tags to match against
+    # @return [Boolean] true if the tool is batch-eligible and shares at least one tag
+    def matches_tags?(tag_list)
+      !skip_in_batch? && tag_list.intersect?(tags)
     end
 
-    # Sets the timestamp for when the tool last ran its `prepare` command
-    # @param last_prepared_at [DateTime] the value to record for when the `prepare` command last ran
-    #
-    # @return [DateTime] timestamp of when the `prepare` command was last run
-    def last_prepared_at=(last_prepared_at)
-      Reviewer.history.set(key, :last_prepared_at, last_prepared_at.to_s)
-    end
-
-    # Calculates the average execution time for a command
-    # @param command [Command] the command to get timing for
-    #
-    # @return [Float] the average time in seconds or 0 if no history
-    def average_time(command)
-      times = get_timing(command)
-
-      times.any? ? times.sum / times.size : 0
-    end
-
-    # Retrieves historical timing data for a command
-    # @param command [Command] the command to look up
-    #
-    # @return [Array<Float>] the last few recorded execution times
-    def get_timing(command)
-      Reviewer.history.get(key, command.raw_string) || []
-    end
-
-    # Records the execution time for a command to calculate running averages
-    # @param command [Command] the command that was run
-    # @param time [Float, nil] the execution time in seconds
-    #
-    # @return [void]
-    def record_timing(command, time)
-      return if time.nil?
-
-      timing = get_timing(command).take(4) << time.round(2)
-
-      Reviewer.history.set(key, command.raw_string, timing)
-    end
+    def_delegators :@timing,
+                   :last_prepared_at,
+                   :last_prepared_at=,
+                   :average_time,
+                   :get_timing,
+                   :record_timing
 
     # Determines whether the `prepare` command was run recently enough
     #
@@ -150,13 +114,13 @@ module Reviewer
     def stale?
       return false unless preparable?
 
-      last_prepared_at.nil? || last_prepared_at < Time.now - SIX_HOURS_IN_SECONDS
+      @timing.stale?
     end
 
     # Convenience method for determining if a tool has a configured install link
     #
     # @return [Boolean] true if there is an `install` key under links and the value isn't blank
-    def install_link? = links.key?(:install) && !links[:install].nil?
+    def install_link? = links.key?(:install) && !!links[:install]
 
     # Returns the text for the install link if available
     #
@@ -171,6 +135,22 @@ module Reviewer
       settings == other.settings
     end
     alias :== eql?
+
+    # Records the pass/fail status and failed files from a result into history
+    # @param result [Runner::Result] the result of running this tool
+    #
+    # @return [void]
+    def record_run(result)
+      status = result.success? ? :passed : :failed
+      @history.set(key, :last_status, status)
+
+      if result.success?
+        @history.set(key, :last_failed_files, nil)
+      else
+        files = Runner::FailedFiles.new(result.stdout, result.stderr).to_a
+        @history.set(key, :last_failed_files, files) if files.any?
+      end
+    end
 
     # Resolves which files this tool should process
     # @param files [Array<String>] the input files to resolve

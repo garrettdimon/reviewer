@@ -10,28 +10,27 @@ module Reviewer
       #   @return [Float, nil] the preparation time in seconds
       # @!attribute main
       #   @return [Float, nil] the main execution time in seconds
-      attr_accessor :prep, :main
+      attr_reader :prep, :main
 
-      # A 'Smart' timer that understands preparation time and main time and can easily do the math
-      #   to help determine what percentage of time was prep. The times can be passed in directly or
-      #   recorded using the `record_prep` and `record_main` methods
-      # @param prep: nil [Float] the amount of time in seconds the preparation command ran
-      # @param main: nil [Float] the amount of time in seconds the primary command ran
+      # A timer that tracks preparation and main execution times separately.
+      # Times can be passed directly or recorded using `record_prep` and `record_main`.
+      # @param prep [Float, nil] the preparation time in seconds
+      # @param main [Float, nil] the main execution time in seconds
       #
-      # @return [self]
+      # @return [Timer]
       def initialize(prep: nil, main: nil)
         @prep = prep
         @main = main
       end
 
       # Records the execution time for the block and assigns it to the `prep` time
-      # @param &block [Block] the commands to be timed
+      # @param block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the preparation
       def record_prep(&) = @prep = record(&)
 
       # Records the execution time for the block and assigns it to the `main` time
-      # @param &block [Block] the commands to be timed
+      # @param block [Block] the commands to be timed
       #
       # @return [Float] the execution time for the main command
       def record_main(&) = @main = record(&)
@@ -56,7 +55,10 @@ module Reviewer
       # @return [Float] total time in seconds
       def total = [prep, main].compact.sum
 
-      def prepped? = !(prep.nil? || main.nil?)
+      # Whether both prep and main times have been recorded
+      #
+      # @return [Boolean] true if both phases were timed
+      def prepped? = [prep, main].all?
 
       # The percentage of total time spent on preparation
       #

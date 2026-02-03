@@ -7,8 +7,6 @@ module Reviewer
   class Command
     # Assembles tool tool_settings into a usable command string for the command type
     class String
-      include Conversions
-
       attr_reader :command_type, :tool_settings, :files
 
       # Creates a command string builder for a tool

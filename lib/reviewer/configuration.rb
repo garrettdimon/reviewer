@@ -23,7 +23,8 @@ module Reviewer
     DEFAULT_CONFIG_LOCATION = "#{DEFAULT_PATH}/#{DEFAULT_CONFIG_FILE_NAME}".freeze
     DEFAULT_HISTORY_LOCATION = "#{DEFAULT_PATH}/#{DEFAULT_HISTORY_FILE_NAME}".freeze
 
-    attr_accessor :file, :history_file, :printer
+    attr_accessor :file, :history_file
+    attr_reader :printer
 
     def initialize
       @file = Pathname(DEFAULT_CONFIG_LOCATION)

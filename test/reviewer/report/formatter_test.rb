@@ -54,7 +54,9 @@ module Reviewer
                       tool_key: :tests,
                       tool_name: 'Minitest',
                       success: true,
-                      stdout: '0.19s · 209 tests (1102.02/s) with 419 assertions'
+                      stdout: '0.19s · 209 tests (1102.02/s) with 419 assertions',
+                      summary_pattern: '(\d+)\s+tests?',
+                      summary_label: '\1 tests'
                     ))
         @report.record_duration(0.5)
 
@@ -71,7 +73,9 @@ module Reviewer
                       tool_name: 'RuboCop',
                       success: false,
                       exit_status: 1,
-                      stdout: '70 files inspected, 3 offenses detected'
+                      stdout: '70 files inspected, 3 offenses detected',
+                      summary_pattern: '(\d+)\s+offenses?',
+                      summary_label: '\1 offenses'
                     ))
         @report.record_duration(0.8)
 
@@ -134,6 +138,19 @@ module Reviewer
         assert_match(/all passed/i, out)
       end
 
+      def test_aligns_tool_names_and_durations_across_varied_lengths
+        @report.add(build_result(tool_key: :bundle_audit, tool_name: 'Bundle Audit', success: true, duration: 0.16))
+        @report.add(build_result(tool_key: :tests, tool_name: 'Minitest', success: true, duration: 5.07))
+        @report.add(build_result(tool_key: :flog, tool_name: 'Flog', success: true, duration: 0.22))
+        @report.record_duration(5.45)
+
+        formatter = Formatter.new(@report)
+        out, _err = capture_subprocess_io { formatter.print }
+
+        positions = duration_column_positions(out, 'Bundle Audit', 'Minitest', 'Flog')
+        assert_equal 1, positions.uniq.size, "Duration columns misaligned: #{positions}"
+      end
+
       def test_mixed_missing_and_failed_shows_only_real_failures
         @report.add(build_result(
                       tool_key: :tests,
@@ -155,6 +172,11 @@ module Reviewer
 
       private
 
+      def duration_column_positions(output, *tool_names)
+        lines = output.lines.map(&:chomp)
+        tool_names.map { |name| lines.find { |l| l.include?(name) }.index(/\d+\.\d+s/) }
+      end
+
       def build_result(tool_key:, success:, **options)
         Runner::Result.new(
           tool_key: tool_key,
@@ -167,7 +189,9 @@ module Reviewer
           stdout: options[:stdout],
           stderr: options[:stderr],
           skipped: nil,
-          missing: nil
+          missing: nil,
+          summary_pattern: options[:summary_pattern],
+          summary_label: options[:summary_label]
         )
       end
 

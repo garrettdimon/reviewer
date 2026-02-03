@@ -6,13 +6,15 @@ module Reviewer
   class BatchTest < Minitest::Test
     def setup
       @report = nil
+      @history = Reviewer.history
+      @context = default_context(history: @history)
     end
 
     def test_running_single_batch
-      tools = [Tool.new(:list)]
+      tools = [build_tool(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools).run
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: default_context).run
       end
 
       assert_instance_of Report, @report
@@ -22,10 +24,10 @@ module Reviewer
     end
 
     def test_running_multiple_batch
-      tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
+      tools = [build_tool(:list), build_tool(:minimum_viable_tool)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools).run
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: default_context).run
       end
 
       assert_instance_of Report, @report
@@ -35,10 +37,10 @@ module Reviewer
     end
 
     def test_records_duration
-      tools = [Tool.new(:list)]
+      tools = [build_tool(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools).run
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: default_context).run
       end
 
       assert_kind_of Float, @report.duration
@@ -46,137 +48,117 @@ module Reviewer
     end
 
     def test_records_passed_status_in_history
-      tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
+      tools = [build_tool(:list), build_tool(:minimum_viable_tool)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      assert_equal :passed, Reviewer.history.get(:list, :last_status)
-      assert_equal :passed, Reviewer.history.get(:minimum_viable_tool, :last_status)
+      assert_equal :passed, @history.get(:list, :last_status)
+      assert_equal :passed, @history.get(:minimum_viable_tool, :last_status)
     end
 
     def test_records_failed_status_in_history
-      tools = [Tool.new(:failing_command)]
+      tools = [build_tool(:failing_command)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      assert_equal :failed, Reviewer.history.get(:failing_command, :last_status)
+      assert_equal :failed, @history.get(:failing_command, :last_status)
     end
 
     def test_clears_status_for_tools_that_did_not_run
-      # Pre-populate a stale failed status
-      Reviewer.history.set(:minimum_viable_tool, :last_status, :failed)
+      @history.set(:minimum_viable_tool, :last_status, :failed)
 
-      # Run a batch where the first tool fails, so minimum_viable_tool never runs
-      tools = [Tool.new(:failing_command), Tool.new(:minimum_viable_tool)]
+      tools = [build_tool(:failing_command), build_tool(:minimum_viable_tool)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      assert_equal :failed, Reviewer.history.get(:failing_command, :last_status)
-      assert_nil Reviewer.history.get(:minimum_viable_tool, :last_status)
+      assert_equal :failed, @history.get(:failing_command, :last_status)
+      assert_nil @history.get(:minimum_viable_tool, :last_status)
     end
 
     def test_stores_failed_files_on_failure
-      # Two tools so Captured strategy is used
-      tools = [Tool.new(:failing_with_output), Tool.new(:list)]
+      tools = [build_tool(:failing_with_output), build_tool(:list)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      failed_files = Reviewer.history.get(:failing_with_output, :last_failed_files)
+      failed_files = @history.get(:failing_with_output, :last_failed_files)
       assert_includes failed_files, 'lib/reviewer/batch.rb'
       assert_includes failed_files, 'lib/reviewer/command.rb'
     end
 
     def test_stores_failed_files_on_single_tool_failure
-      # Single tool uses Passthrough strategy — PTY capture enables file extraction
-      tools = [Tool.new(:failing_with_output)]
+      tools = [build_tool(:failing_with_output)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      failed_files = Reviewer.history.get(:failing_with_output, :last_failed_files)
+      failed_files = @history.get(:failing_with_output, :last_failed_files)
       assert_includes failed_files, 'lib/reviewer/batch.rb'
       assert_includes failed_files, 'lib/reviewer/command.rb'
     end
 
     def test_clears_failed_files_for_passing_tool
-      # Pre-populate stale failed files
-      Reviewer.history.set(:list, :last_failed_files, ['lib/reviewer/batch.rb'])
+      @history.set(:list, :last_failed_files, ['lib/reviewer/batch.rb'])
 
-      tools = [Tool.new(:list)]
+      tools = [build_tool(:list)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      assert_nil Reviewer.history.get(:list, :last_failed_files)
+      assert_nil @history.get(:list, :last_failed_files)
     end
 
     def test_preserves_failed_files_for_tools_that_did_not_run
-      # Pre-populate stale failed files
-      Reviewer.history.set(:minimum_viable_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      @history.set(:minimum_viable_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
 
-      # First tool fails, so minimum_viable_tool never runs
-      tools = [Tool.new(:failing_command), Tool.new(:minimum_viable_tool)]
+      tools = [build_tool(:failing_command), build_tool(:minimum_viable_tool)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      # Failed files persist until the tool actually runs and passes
       assert_equal ['lib/reviewer/batch.rb'],
-                   Reviewer.history.get(:minimum_viable_tool, :last_failed_files)
+                   @history.get(:minimum_viable_tool, :last_failed_files)
     end
 
     def test_command_includes_stored_failed_files
-      # Pre-populate failed files for a file-targeting tool
-      Reviewer.history.set(:file_targeting_list, :last_failed_files, ['lib/reviewer/batch.rb'])
-      Reviewer.history.set(:file_targeting_list, :last_status, :failed)
+      @history.set(:file_targeting_list, :last_failed_files, ['lib/reviewer/batch.rb'])
+      @history.set(:file_targeting_list, :last_status, :failed)
 
-      # Stub arguments to simulate `rvw failed`
-      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[failed]))
-
-      tools = [Tool.new(:file_targeting_list)]
+      arguments = Arguments.new(%w[failed])
+      context = Context.new(arguments: arguments, output: Output.new, history: @history)
+      tools = [build_tool(:file_targeting_list)]
       report = nil
 
       capture_subprocess_io do
-        report = Batch.new(:review, tools).run
+        report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: context).run
       end
 
-      # The command string should include the stored file
       command_string = report.results.first.command_string
       assert_includes command_string, 'lib/reviewer/batch.rb'
-    ensure
-      Reviewer.reset!
-      ensure_test_configuration!
     end
 
-    def test_uses_passthrough_strategy_when_raw_flag_set
-      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-r]))
-
-      tools = [Tool.new(:list), Tool.new(:minimum_viable_tool)]
-      batch = Batch.new(:review, tools)
+    def test_uses_injected_strategy
+      tools = [build_tool(:list)]
+      batch = Batch.new(:review, tools, strategy: Runner::Strategies::Passthrough, context: default_context)
 
       assert_equal Runner::Strategies::Passthrough, batch.send(:strategy)
-    ensure
-      Reviewer.reset!
-      ensure_test_configuration!
     end
 
     def test_continues_past_missing_tools
-      # missing_command exits 127, list should still run
-      tools = [Tool.new(:missing_command), Tool.new(:list)]
+      tools = [build_tool(:missing_command), build_tool(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools).run
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: default_context).run
       end
 
       assert_equal 2, @report.results.size
@@ -184,26 +166,23 @@ module Reviewer
     end
 
     def test_does_not_record_run_for_missing_tools
-      tools = [Tool.new(:missing_command)]
+      tools = [build_tool(:missing_command)]
 
       capture_subprocess_io do
-        Batch.new(:review, tools).run
+        Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      assert_nil Reviewer.history.get(:missing_command, :last_status)
+      assert_nil @history.get(:missing_command, :last_status)
     end
 
     def test_missing_tool_followed_by_passing_tool
-      tools = [Tool.new(:missing_command), Tool.new(:list)]
+      tools = [build_tool(:missing_command), build_tool(:list)]
 
       capture_subprocess_io do
-        @report = Batch.new(:review, tools).run
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: default_context).run
       end
 
-      # The missing tool result should be marked missing
       assert @report.results.first.missing
-
-      # The passing tool should succeed
       assert @report.results.last.success
     end
   end

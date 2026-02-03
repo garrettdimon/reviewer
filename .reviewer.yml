@@ -14,10 +14,19 @@ tests:
   name: Minitest
   description: Unit Tests & Coverage
   tags: [ruby, tests, dev]
+  summary:
+    pattern: '(\d+)\s+tests?'
+    label: '\1 tests'
   links:
     home:
   commands:
     review: "bundle exec rake"
+  files:
+    review: "bundle exec ruby -Itest"
+    flag: ""
+    separator: " "
+    pattern: "*_test.rb"
+    map_to_tests: "minitest"
   reports:
     open_on_fail: true
     local_file: coverage/index.html
@@ -27,7 +36,7 @@ tests:
     # coverage: false
 
 reek:
-  skip_in_batch: true # Reek provides guidance and is generally run solo
+  # skip_in_batch: true # Reek provides guidance and is generally run solo
   name: Reek
   description: Examine Ruby Classes for Code Smells
   tags: [ruby, quality, dev]
@@ -46,7 +55,7 @@ reek:
     documentation:
 
 flog:
-  skip_in_batch: true # Flog provides guidance and is generally run solo
+  # skip_in_batch: true # Flog provides guidance and is generally run solo
   name: Flog
   description: Reports your most tortured ruby code in an easy to read pain report.
   tags: [ruby, quality, dev]
@@ -62,7 +71,7 @@ flog:
     methods-only:
 
 flay:
-  skip_in_batch: true # Flay provides guidance and is generally run solo
+  # skip_in_batch: true # Flay provides guidance and is generally run solo
   name: Flay
   description: Review ruby code for structural similarities and refactoring opportunities.
   tags: [ruby, quality, dev]
@@ -80,6 +89,9 @@ rubocop:
   name: Rubocop
   description: Review Ruby Syntax & Formatting for Consistency
   tags: [ruby, syntax, dev]
+  summary:
+    pattern: '(\d+)\s+offenses?'
+    label: '\1 offenses'
   links:
     home: https://rubocop.org
     install: https://docs.rubocop.org/rubocop/1.13/installation.html
@@ -99,7 +111,7 @@ rubocop:
 # The YARD Parser can also come in handy:
 #   https://yardoc.org/types
 inch:
-  skip_in_batch: true
+  # skip_in_batch: true
   tags: [docs, ruby, dev]
   name: Inch
   description: Review Ruby Documentation Quality
@@ -111,7 +123,7 @@ inch:
     review: "bundle exec inch"
 
 yard:
-  skip_in_batch: true
+  # skip_in_batch: true
   tags: [docs, ruby, dev]
   name: Yard
   description: Generates Documentation
@@ -200,7 +212,7 @@ metric_fu:
     review: "bundle exec metric_fu"
 
 yardstick:
-  skip_in_batch: true # Documentation coverage measurement
+  # skip_in_batch: true # Documentation coverage measurement
   name: Yardstick
   description: Measure YARD documentation coverage
   tags: [docs, ruby, dev]

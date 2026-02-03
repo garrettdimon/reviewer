@@ -8,14 +8,14 @@ module Reviewer
 
       alias key tool_key
 
-      # Creates an instance of settings for retrieving values from the configuration file.
+      # Creates an instance of settings for retrieving values from the configuration file
       # @param tool_key [Symbol] the unique identifier for the tool in the config file
-      # @param config: nil [Hash] the configuration values to examine for the settings
+      # @param config [Hash] the configuration values to examine for the settings
       #
-      # @return [self]
-      def initialize(tool_key, config: nil)
+      # @return [Settings]
+      def initialize(tool_key, config:)
         @tool_key = tool_key.to_sym
-        @config = config || load_config
+        @config = config
       end
 
       # Returns a hash code for comparing settings instances
@@ -23,6 +23,9 @@ module Reviewer
       # @return [Integer] hash code based on configuration state
       def hash = state.hash
 
+      # Compares two settings instances for equality based on their configuration
+      # @param other [Settings] the settings to compare against
+      # @return [Boolean] true if both have the same configuration
       def eql?(other)
         self.class == other.class &&
           state == other.state
@@ -92,6 +95,16 @@ module Reviewer
 
       def supports_files? = config.key?(:files)
 
+      # The regex pattern for extracting a summary detail from tool output
+      #
+      # @return [String, nil] the configured pattern or nil
+      def summary_pattern = config.dig(:summary, :pattern)
+
+      # The label template for displaying the extracted summary detail
+      #
+      # @return [String, nil] the configured label or nil
+      def summary_label = config.dig(:summary, :label)
+
       # Returns the file-scoped command override for a given command type.
       # When configured, this command replaces the standard command when files are passed.
       #
@@ -111,9 +124,9 @@ module Reviewer
 
       protected
 
+      # Returns the configuration as a plain hash for comparison
+      # @return [Hash] the configuration state
       def state = config.to_hash
-
-      def load_config = Reviewer.tools.to_h.fetch(key) { {} }
     end
   end
 end

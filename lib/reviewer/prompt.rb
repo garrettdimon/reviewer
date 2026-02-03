@@ -6,8 +6,11 @@ module Reviewer
   class Prompt
     attr_reader :input, :output
 
+    # Creates an interactive prompt for yes/no questions
     # @param input [IO] the input stream (defaults to $stdin)
     # @param output [IO] the output stream (defaults to $stdout)
+    #
+    # @return [Prompt]
     def initialize(input: $stdin, output: $stdout)
       @input = input
       @output = output

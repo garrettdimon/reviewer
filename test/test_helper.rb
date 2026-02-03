@@ -28,17 +28,40 @@ MockProcessStatus = Struct.new(:exitstatus, :pid, keyword_init: true) do
   def success? = exitstatus.zero?
 end
 
-# Ensure it's using the test configuration file since some tests intentionally
-# change it to test how it recovers when misconfigured
-def ensure_test_configuration!
-  Reviewer.reset!
-  Reviewer.configure do |config|
-    # Use the test configuration file that has predictable example coverage
-    config.file = Pathname('test/fixtures/files/test_commands.yml')
+module Minitest
+  class Test
+    private
 
-    # Use a test location for the history file so it doesn't overwrite the primary history file
-    config.history_file = Pathname(Reviewer::Configuration::DEFAULT_HISTORY_LOCATION.sub('.yml', '_test.yml'))
+    def default_context(arguments: Reviewer::Arguments.new([]), output: Reviewer::Output.new, history: Reviewer.history)
+      Reviewer::Context.new(arguments: arguments, output: output, history: history)
+    end
+
+    def build_tool(key, history: Reviewer.history)
+      config = test_fixture_config.fetch(key.to_sym) { {} }
+      Reviewer::Tool.new(key, config: config, history: history)
+    end
+
+    def test_fixture_config
+      @test_fixture_config ||= Reviewer::Configuration::Loader.configuration(file: Reviewer.configuration.file)
+    end
+
+    # Temporarily swaps the Reviewer config file and clears memoized tools.
+    # Use for tests that need a missing or alternate config.
+    def with_swapped_config(file)
+      original_file = Reviewer.configuration.file
+      Reviewer.instance_variable_set(:@tools, nil)
+      Reviewer.configuration.file = file
+      yield
+    ensure
+      Reviewer.configuration.file = original_file
+      Reviewer.instance_variable_set(:@tools, nil)
+    end
   end
 end
 
-ensure_test_configuration!
+# Configure Reviewer to use test fixtures so tests don't depend on a real .reviewer.yml
+Reviewer.reset!
+Reviewer.configure do |config|
+  config.file = Pathname('test/fixtures/files/test_commands.yml')
+  config.history_file = Pathname(Reviewer::Configuration::DEFAULT_HISTORY_LOCATION.sub('.yml', '_test.yml'))
+end

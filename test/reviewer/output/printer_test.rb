@@ -9,9 +9,16 @@ module Reviewer
         @printer = Printer.new
       end
 
-      def test_builds_style_tokens
-        token = Token.new(:success, 'success')
-        assert_equal "\e[0;32msuccess\e[0m", token.to_s
+      def test_styles_constant_maps_all_known_styles
+        expected = %i[success_bold success success_light error failure warning warning_light source bold default muted]
+        assert_equal expected.sort, Printer::STYLES.keys.sort
+      end
+
+      def test_produces_ansi_styled_output
+        @printer.stub(:style_enabled?, true) do
+          out, _err = capture_subprocess_io { @printer.print(:success, 'success') }
+          assert_equal "\e[0;32msuccess\e[0m", out
+        end
       end
 
       def test_exposes_print
@@ -29,6 +36,13 @@ module Reviewer
           out, _err = capture_subprocess_io { @printer.print(:error, 'error') }
           assert_equal 'error', out
         end
+      end
+
+      def test_accepts_string_io_stream
+        stream = StringIO.new
+        printer = Printer.new(stream)
+        printer.print(:default, 'hello')
+        assert_equal 'hello', stream.string
       end
 
       def test_prints_styled_text_when_able

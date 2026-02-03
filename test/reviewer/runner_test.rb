@@ -35,7 +35,7 @@ module Reviewer
     end
 
     def test_determines_success_based_on_configured_max_exit_status_for_review
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(build_tool(:enabled_tool), :review, context: default_context)
       max_exit_status = 3
       assert_equal max_exit_status, runner.tool.max_exit_status
       runner.stub(:exit_status, max_exit_status) do
@@ -47,7 +47,7 @@ module Reviewer
     end
 
     def test_ignores_max_exit_status_for_non_review_commands
-      runner = Runner.new(:enabled_tool, :format)
+      runner = Runner.new(build_tool(:enabled_tool), :format, context: default_context)
       runner.stub(:exit_status, 0) do
         assert runner.success?
       end
@@ -57,11 +57,9 @@ module Reviewer
     end
 
     def test_skips_when_files_requested_but_none_match_pattern
-      # Set up arguments with only JS files
-      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f lib/foo.js]))
+      context = default_context(arguments: Arguments.new(%w[-f lib/foo.js]))
+      runner = Runner.new(build_tool(:file_pattern_tool), :review, context: context)
 
-      # Tool with *.rb pattern should skip
-      runner = Runner.new(:file_pattern_tool, :review)
       capture_subprocess_io do
         exit_status = runner.run
         assert_equal 0, exit_status
@@ -70,29 +68,22 @@ module Reviewer
 
       assert result.success
       assert result.skipped
-    ensure
-      ensure_test_configuration!
     end
 
     def test_does_not_skip_when_files_match_pattern
-      # Set up arguments with Ruby files
-      Reviewer.instance_variable_set(:@arguments, Arguments.new(%w[-f lib/foo.rb]))
-
-      # Tool with *.rb pattern should not skip
-      runner = Runner.new(:file_pattern_tool, :review)
+      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb]))
+      runner = Runner.new(build_tool(:file_pattern_tool), :review, context: context)
 
       refute runner.command.skip?
-    ensure
-      ensure_test_configuration!
     end
 
     def test_missing_returns_false_by_default
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(build_tool(:enabled_tool), :review, context: default_context)
       refute runner.missing?
     end
 
     def test_missing_returns_true_after_executable_not_found
-      runner = Runner.new(:missing_command, :review)
+      runner = Runner.new(build_tool(:missing_command), :review, context: default_context)
 
       capture_subprocess_io { runner.run }
 
@@ -100,7 +91,7 @@ module Reviewer
     end
 
     def test_to_result_returns_missing_result_for_executable_not_found
-      runner = Runner.new(:missing_command, :review)
+      runner = Runner.new(build_tool(:missing_command), :review, context: default_context)
 
       capture_subprocess_io { runner.run }
 
@@ -112,17 +103,50 @@ module Reviewer
     end
 
     def test_missing_tool_is_not_successful
-      runner = Runner.new(:missing_command, :review)
+      runner = Runner.new(build_tool(:missing_command), :review, context: default_context)
 
       capture_subprocess_io { runner.run }
 
       refute runner.success?
     end
 
+    def test_failed_files_extracts_paths_from_output
+      runner = Runner.new(build_tool(:enabled_tool), :review, context: default_context)
+      mock_shell_result = Shell::Result.new(
+        "lib/reviewer/batch.rb:10: warning\nlib/reviewer/command.rb:20: error",
+        '',
+        MockProcessStatus.new(exitstatus: 1)
+      )
+
+      runner.shell.stub(:result, mock_shell_result) do
+        files = runner.failed_files
+        assert_kind_of Array, files
+      end
+    end
+
+    def test_failed_files_returns_empty_for_no_output
+      runner = Runner.new(build_tool(:enabled_tool), :review, context: default_context)
+      mock_shell_result = Shell::Result.new('', '', MockProcessStatus.new(exitstatus: 0))
+
+      runner.shell.stub(:result, mock_shell_result) do
+        assert_empty runner.failed_files
+      end
+    end
+
+    def test_shell_uses_output_stream
+      stream = StringIO.new
+      printer = Output::Printer.new(stream)
+      output = Output.new(printer)
+      context = default_context(output: output)
+      runner = Runner.new(build_tool(:list), :review, context: context)
+      runner.shell.direct('echo wired')
+      assert_includes stream.string, 'wired'
+    end
+
     private
 
     def with_mock_shell_result
-      runner = Runner.new(:enabled_tool, :review)
+      runner = Runner.new(build_tool(:enabled_tool), :review, context: default_context)
       mock_timer = Shell::Timer.new(prep: 1.0, main: 2.5)
       mock_shell_result = Shell::Result.new('stdout content', 'stderr content', MockProcessStatus.new(exitstatus: 0))
 

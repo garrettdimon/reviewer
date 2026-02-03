@@ -9,6 +9,16 @@ module Reviewer
   # @example
   #   puts Reviewer::Capabilities.new.to_json
   class Capabilities
+    attr_reader :tools
+
+    # Creates a capabilities report for machine-readable tool discovery
+    # @param tools [Tools] the tools collection to report on
+    #
+    # @return [Capabilities]
+    def initialize(tools:)
+      @tools = tools
+    end
+
     KEYWORDS = {
       staged: 'Files staged for commit',
       unstaged: 'Files with unstaged changes',
@@ -47,7 +57,7 @@ module Reviewer
     #
     # @return [Array<Hash>] array of tool capability hashes
     def tools_data
-      Reviewer.tools.all.map { |tool| tool_data(tool) }
+      tools.all.map { |tool| tool_data(tool) }
     end
 
     # Build capability data for a single tool
