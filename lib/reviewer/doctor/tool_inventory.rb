@@ -27,16 +27,14 @@ module Reviewer
 
           report.add(:tools,
                      status: skipped ? :muted : :ok,
-                     message: "#{tool.name}: #{skipped ? 'skip in batch' : 'runs in batch'}",
-                     detail: command_summary(tool))
+                     message: "#{tool.name} (#{tool.key}) — #{command_summary(tool)}")
         end
       end
 
       private
 
       def command_summary(tool)
-        available = %i[review format install prepare].select { |cmd| tool.command?(cmd) }
-        "Commands: #{available.join(', ')}"
+        %i[review format install prepare].select { |cmd| tool.command?(cmd) }.join(', ')
       end
     end
   end
