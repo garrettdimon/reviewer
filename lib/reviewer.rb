@@ -40,6 +40,8 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def review
+      return show_help if arguments.help?
+      return show_version if arguments.version?
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
@@ -52,6 +54,8 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def format
+      return show_help if arguments.help?
+      return show_version if arguments.version?
       return Setup.run if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
@@ -106,6 +110,14 @@ module Reviewer
 
     def subcommand?(name) = ARGV.first == name.to_s
     def capabilities_flag? = ARGV.include?('--capabilities') || ARGV.include?('-c')
+
+    def show_help
+      output.help(arguments.options)
+    end
+
+    def show_version
+      output.help(VERSION)
+    end
 
     def run_capabilities
       puts Capabilities.new(tools: tools).to_json

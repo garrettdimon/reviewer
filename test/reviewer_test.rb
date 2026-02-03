@@ -166,6 +166,36 @@ module Reviewer
       assert_same config, yielded
     end
 
+    def test_review_prints_help_and_exits_early
+      with_argv('--help') do
+        out, _err = capture_subprocess_io { Reviewer.review }
+        assert_match(/--help/, out)
+        assert_match(/--version/, out)
+      end
+    end
+
+    def test_review_prints_version_and_exits_early
+      with_argv('--version') do
+        out, _err = capture_subprocess_io { Reviewer.review }
+        assert_match(/#{Reviewer::VERSION}/, out)
+      end
+    end
+
+    def test_format_prints_help_and_exits_early
+      with_argv('--help') do
+        out, _err = capture_subprocess_io { Reviewer.format }
+        assert_match(/--help/, out)
+        assert_match(/--version/, out)
+      end
+    end
+
+    def test_format_prints_version_and_exits_early
+      with_argv('--version') do
+        out, _err = capture_subprocess_io { Reviewer.format }
+        assert_match(/#{Reviewer::VERSION}/, out)
+      end
+    end
+
     def test_review_dispatches_to_capabilities_with_long_flag
       ARGV.replace(['--capabilities'])
       out, _err = capture_subprocess_io { Reviewer.review }
@@ -185,6 +215,15 @@ module Reviewer
     end
 
     private
+
+    def with_argv(*args)
+      ARGV.replace(args)
+      Reviewer.instance_variable_set(:@arguments, nil)
+      yield
+    ensure
+      ARGV.replace([])
+      Reviewer.instance_variable_set(:@arguments, nil)
+    end
 
     def with_missing_config
       original_file = Reviewer.configuration.file

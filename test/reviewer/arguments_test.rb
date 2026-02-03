@@ -16,26 +16,14 @@ module Reviewer
       assert_equal %w[ruby], arguments.tags.raw
     end
 
-    def test_prints_version_information
-      args = %w[-v]
-      # rubocop:disable Lint/SuppressedException
-      out, _err = capture_subprocess_io do
-        Arguments.new(args)
-      rescue SystemExit
-      end
-      # rubocop:enable Lint/SuppressedException
-      assert_match(/#{Reviewer::VERSION}/i, out)
+    def test_version_flag_sets_version_predicate
+      arguments = Arguments.new(%w[-v])
+      assert arguments.version?
     end
 
-    def test_prints_help_information
-      args = %w[-h]
-      # rubocop:disable Lint/SuppressedException
-      out, _err = capture_subprocess_io do
-        Arguments.new(args)
-      rescue SystemExit
-      end
-      # rubocop:enable Lint/SuppressedException
-      assert_match(/a list of comma/i, out)
+    def test_help_flag_sets_help_predicate
+      arguments = Arguments.new(%w[-h])
+      assert arguments.help?
     end
 
     def test_parses_multiple_tags_from_command_line

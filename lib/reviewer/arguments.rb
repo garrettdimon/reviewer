@@ -64,8 +64,8 @@ module Reviewer
     end
 
     def configure_info_options(opts)
-      opts.on('-v', '--version', 'print the version') { @output.help(VERSION) && exit }
-      opts.on('-h', '--help', 'print the help') { @output.help(opts) && exit }
+      opts.on('-v', '--version', 'print the version')
+      opts.on('-h', '--help', 'print the help')
       opts.on('-c', '--capabilities', 'output capabilities as JSON')
     end
 
@@ -106,6 +106,16 @@ module Reviewer
     #
     # @return [Arguments::Keywords] a collection of the leftover arguments as keywords
     def keywords = @keywords ||= Arguments::Keywords.new(options.arguments)
+
+    # Whether the --help flag was passed
+    #
+    # @return [Boolean] true if help was requested
+    def help? = options[:help]
+
+    # Whether the --version flag was passed
+    #
+    # @return [Boolean] true if version was requested
+    def version? = options[:version]
 
     # Whether to force raw/passthrough output regardless of tool count
     #
