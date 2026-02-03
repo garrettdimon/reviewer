@@ -132,17 +132,15 @@ module Reviewer
       private
 
       def run_with_missing_config
-        original_file = Reviewer.configuration.file
         Dir.mktmpdir do |dir|
-          Reviewer.configuration.file = Pathname(dir).join('.reviewer.yml')
-          report = Report.new
-          OpportunityCheck.new(report, FIXTURES.join('ruby_project'),
-                               configuration: Reviewer.configuration,
-                               tools: Reviewer.tools).check
-          report
+          with_swapped_config(Pathname(dir).join('.reviewer.yml')) do
+            report = Report.new
+            OpportunityCheck.new(report, FIXTURES.join('ruby_project'),
+                                 configuration: Reviewer.configuration,
+                                 tools: Reviewer.tools).check
+            report
+          end
         end
-      ensure
-        Reviewer.configuration.file = original_file
       end
 
       def stub_tools(all:)

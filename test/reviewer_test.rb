@@ -226,11 +226,7 @@ module Reviewer
     end
 
     def with_missing_config
-      original_file = Reviewer.configuration.file
-      Reviewer.configuration.file = Pathname('test/fixtures/files/nonexistent.yml')
-      yield
-    ensure
-      Reviewer.configuration.file = original_file
+      with_swapped_config(Pathname('test/fixtures/files/nonexistent.yml')) { yield }
     end
 
     def build_tty_prompt(input_text)

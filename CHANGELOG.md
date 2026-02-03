@@ -1,29 +1,45 @@
 ## [Unreleased]
 
 ### Added
-- Add `--capabilities` / `-c` flag for agent discovery (outputs JSON describing tools, keywords, scenarios)
-- Add `--raw` / `-r` flag to force passthrough output (useful for CI/agent contexts)
-- Add git keywords: `staged`, `unstaged`, `modified`, `untracked` for targeting files by git status
-- Add `failed` keyword to re-run only tools that failed in the previous run, scoped to their failed files
-- Add keyword resolution summary showing which tools and files will run before execution
-- Add PTY-based streaming capture for passthrough runs, enabling failed file extraction from single-tool runs
-- Add pattern-based file filtering via `files.pattern` config
-- Add source-to-test file mapping via `files.map_to_tests` config
-- Add expanded code review tools: fasterer, license_finder, notes (enabled); debride, brakeman, rubycritic, metric_fu, yardstick, standard, rufo (disabled)
-- Add license_finder configuration with approved open source licenses
+- Git-aware file targeting: `staged`, `unstaged`, `modified`, `untracked` keywords resolve files from git status and pass only relevant files to each tool
+- `failed` keyword: re-run only tools that failed in the previous run, scoped to their failed files
+- `--json` / `-j` flag for structured JSON output (CI, scripting, agent integration)
+- `--raw` / `-r` flag to force passthrough output (bypasses capturing)
+- `--format` flag with streaming, summary, and json modes
+- `--capabilities` / `-c` flag for agent discovery (outputs JSON describing tools, keywords, scenarios)
+- `skip_in_batch` config option: exclude tools from `rvw` while keeping them available via `rvw tool_name`
+- `files.pattern` config: glob pattern to filter which files are passed to each tool
+- `files.map_to_tests` config: map source files to test files (`minitest` or `rspec` conventions)
+- `files.review` / `files.format` config: alternative commands when files are scoped
+- First-run experience: interactive setup when no `.reviewer.yml` exists
+- `rvw init` command: auto-detect tools from Gemfile.lock and generate `.reviewer.yml`
+- `rvw doctor` command: diagnostics for configuration, tools, keywords, and environment
+- Keyword resolution summary: preview which tools and files will run before execution
+- Spell-check suggestions for mistyped keywords
+- Auto-detection catalog: bundler-audit, rubocop, standard, reek, flog, flay, brakeman, fasterer, minitest, rspec, eslint, prettier, stylelint, typescript, biome
+- Progress bar for captured output with timing estimates
+- PTY-based streaming capture for failed file extraction from single-tool runs
 
 ### Fixed
-- Restore MIT license in LICENSE.txt to match gemspec declaration
-- Fix `rvw failed` crash when `Arguments::Tags` object received `.empty?` instead of `.to_a.empty?`
-- Fix `console_width` returning 0 in piped/CI contexts, falling back to default width
+- Console width returns default in piped/CI contexts instead of 0
+- `rvw failed` no longer crashes on empty tag objects
+- MIT license restored in LICENSE.txt
+- `--help` and `--version` exit immediately instead of running tool suite
+- Valid JSON emitted for early exits (no matching tools, no files)
 
 ### Changed
-- Confirm Ruby support for 3.2, 3.3, 3.4, and 4.0
-- Upgrade CI Bundler from 2.6 to 2.7 to eliminate constant redefinition warnings on Ruby 3.4+
-- Redesign passthrough output: replace "Now Running:" header and dividers with compact `↳ command` format
-- Replace bold timing summary with `✓ ~Xs` checkmark format
-- Rewrite README with installation, usage, and configuration documentation
-- Apply fasterer performance suggestions (yield over block.call, fetch with block)
+- **Ruby 3.2+ required** (supports 3.2, 3.3, 3.4, and 4.0)
+- Architecture refactor: full dependency injection, no global state in business logic
+- Output decomposed into domain formatters (Runner, Batch, Session, Doctor, Setup, Report)
+- Session class owns run lifecycle; Reviewer module is pure wiring
+- Context struct threads shared dependencies through the call stack
+- Tool timing extracted to Tool::Timing collaborator with injected history
+- Result interpretation separated from Runner execution (Result.from_runner)
+- Tests no longer depend on global state or require reset between runs
+- Redesigned output: compact `↳ command` format, `✓ ~Xs` checkmark summaries
+- ANSI color output guarded for TTY (clean output in CI and pipes)
+- README rewritten with installation, usage, configuration, and workflow documentation
+- `disabled` config key deprecated in favor of `skip_in_batch`
 
 ## [0.1.4] - 2021-07-08
 

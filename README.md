@@ -214,7 +214,7 @@ rubocop:
 | `name` | Display name |
 | `description` | What the tool does |
 | `tags` | Categories for filtering (`[ruby, security]`) |
-| `disabled` | Set `true` to skip this tool |
+| `skip_in_batch` | Set `true` to exclude from `rvw` but still run with `rvw tool_name` |
 | `commands.review` | Command to run for `rvw` **(required)** |
 | `commands.format` | Command to run for `fmt` |
 | `commands.install` | Command to install the tool |
@@ -279,6 +279,8 @@ Full review with JSON output for parsing:
 ```bash
 rvw --json
 ```
+
+Reviewer exits `0` when all tools pass, or with the highest exit status from any failing tool. Skipped and missing tools don't affect the exit code. This means `rvw` works directly as a CI gate — no wrapper script needed.
 
 ### Development
 

@@ -35,13 +35,9 @@ module Reviewer
     private
 
     def with_missing_config
-      original_file = Reviewer.configuration.file
       Dir.mktmpdir do |dir|
-        Reviewer.configuration.file = Pathname(dir).join('.reviewer.yml')
-        yield
+        with_swapped_config(Pathname(dir).join('.reviewer.yml')) { yield }
       end
-    ensure
-      Reviewer.configuration.file = original_file
     end
   end
 end

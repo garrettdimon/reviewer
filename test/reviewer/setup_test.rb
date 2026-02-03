@@ -57,17 +57,12 @@ module Reviewer
     # Sets up a temporary config file, yields it, and restores configuration.
     # @param existing [Boolean] if true, writes content to the config file before yielding
     def with_temp_config(existing: false)
-      original_file = Reviewer.configuration.file
-
       Dir.mktmpdir do |dir|
         config_file = Pathname(dir).join('.reviewer.yml')
         config_file.write('existing: config') if existing
 
-        Reviewer.configuration.file = config_file
-        yield config_file
+        with_swapped_config(config_file) { yield config_file }
       end
-    ensure
-      Reviewer.configuration.file = original_file
     end
   end
 end

@@ -24,6 +24,11 @@ Gemspec/DevelopmentDependencies:
 Metrics/ParameterLists:
   CountKeywordArgs: false
 
+# The CLI entry point is a routing method with one guard clause per line.
+# Each branch is a single method call — the structure is as clear as it gets.
+Metrics/AbcSize:
+  AllowedMethods: ['handle_early_exits']
+
 # 10 is a good goal but a little draconian
 Metrics/MethodLength:
   CountAsOne: ['array', 'hash', 'heredoc']

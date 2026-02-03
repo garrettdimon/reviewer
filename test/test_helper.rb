@@ -44,6 +44,18 @@ module Minitest
     def test_fixture_config
       @test_fixture_config ||= Reviewer::Configuration::Loader.configuration(file: Reviewer.configuration.file)
     end
+
+    # Temporarily swaps the Reviewer config file and clears memoized tools.
+    # Use for tests that need a missing or alternate config.
+    def with_swapped_config(file)
+      original_file = Reviewer.configuration.file
+      Reviewer.instance_variable_set(:@tools, nil)
+      Reviewer.configuration.file = file
+      yield
+    ensure
+      Reviewer.configuration.file = original_file
+      Reviewer.instance_variable_set(:@tools, nil)
+    end
   end
 end
 

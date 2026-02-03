@@ -40,28 +40,14 @@ module Reviewer
     #
     # @return [void] Prints output to the console
     def review
-      return show_help if arguments.help?
-      return show_version if arguments.version?
-      return Setup.run if subcommand?(:init)
-      return run_doctor if subcommand?(:doctor)
-      return run_capabilities if capabilities_flag?
-      return run_first_time_setup unless configuration.file.exist?
-
-      exit build_session.review
+      handle_early_exits { exit build_session.review }
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
     #
     # @return [void] Prints output to the console
     def format
-      return show_help if arguments.help?
-      return show_version if arguments.version?
-      return Setup.run if subcommand?(:init)
-      return run_doctor if subcommand?(:doctor)
-      return run_capabilities if capabilities_flag?
-      return run_first_time_setup unless configuration.file.exist?
-
-      exit build_session.format
+      handle_early_exits { exit build_session.format }
     end
 
     # The collection of arguments that were passed via the command line.
@@ -108,11 +94,59 @@ module Reviewer
 
     private
 
+    def handle_early_exits
+      return show_help if arguments.help?
+      return show_version if arguments.version?
+      return Setup.run if subcommand?(:init)
+      return run_doctor if subcommand?(:doctor)
+      return run_capabilities if capabilities_flag?
+      return run_first_time_setup unless configuration.file.exist?
+
+      yield
+    end
+
     def subcommand?(name) = ARGV.first == name.to_s
     def capabilities_flag? = ARGV.include?('--capabilities') || ARGV.include?('-c')
 
     def show_help
-      output.help(arguments.options)
+      output.help(help_text)
+    end
+
+    def help_text
+      <<~HELP
+        Usage: rvw [tool or tag ...] [keyword ...] [options]
+               fmt [tool or tag ...] [keyword ...] [options]
+
+        Commands:
+            rvw                          Run all enabled tools
+            rvw <tool>                   Run a single tool by its config key
+            rvw <tag>                    Run tools matching a tag
+            fmt                          Auto-fix with format commands
+            rvw init                     Generate .reviewer.yml from Gemfile.lock
+            rvw doctor                   Check configuration and tool health
+
+        Keywords:
+            staged                       Files staged for commit
+            unstaged                     Files with unstaged changes
+            modified                     All changed files (staged + unstaged)
+            untracked                    New files not yet tracked by git
+            failed                       Re-run only tools that failed last time
+
+        Options:
+        #{slop_options}
+
+        Examples:
+            rvw rubocop                  Run RuboCop only
+            rvw staged                   Review staged files across all tools
+            rvw -t security modified     Run security-tagged tools on changed files
+            rvw tests -f test/user_test.rb   Run tests on a specific file
+            rvw failed                   Re-run what failed last time
+            fmt rubocop                  Auto-fix with RuboCop
+      HELP
+    end
+
+    def slop_options
+      arguments.options.to_s.lines.drop(1).join.rstrip
     end
 
     def show_version

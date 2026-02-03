@@ -8,8 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Garrett Dimon']
   spec.email         = ['email@garrettdimon.com']
 
-  spec.summary       = 'Provides a unified approach to managing automated code quality tools.'
-  spec.description   = 'Provides a unified approach to managing automated code quality tools.'
+  spec.summary       = 'Frictionless code quality. One command for all your review tools.'
+  spec.description   = 'Run tests, linters, security audits, and formatters with a single command. ' \
+                       'Reviewer wraps your code quality tools into a consistent interface with ' \
+                       'git-aware file targeting, auto-detection, and multiple output formats.'
   spec.homepage      = 'https://github.com/garrettdimon/reviewer'
   spec.license       = 'MIT'
   spec.required_ruby_version = Gem::Requirement.new('>= 3.2')
