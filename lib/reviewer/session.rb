@@ -17,6 +17,7 @@ module Reviewer
     def initialize(context:, tools:)
       @context = context
       @tools = tools
+      context.arguments.keywords.tools = tools
     end
 
     # Runs the review command for the current set of tools
@@ -40,8 +41,6 @@ module Reviewer
     def history = context.history
 
     def run_tools(command_type)
-      return 0 if handle_failed_with_nothing_to_run?
-
       if json_output?
         run_json(command_type)
       else
@@ -50,6 +49,9 @@ module Reviewer
     end
 
     def run_json(command_type)
+      message = json_early_exit_message
+      return emit_json_early_exit(message) if message
+
       current_tools = tools.current
       return 0 if current_tools.empty?
 
@@ -60,6 +62,9 @@ module Reviewer
     end
 
     def run_text(command_type)
+      return 0 if handle_failed_with_nothing_to_run?
+      return 0 if handle_file_scoping_with_no_files?
+
       warn_unrecognized_keywords
 
       current_tools = tools.current
@@ -85,6 +90,24 @@ module Reviewer
 
     def json_output?
       arguments.format == :json
+    end
+
+    def json_early_exit_message
+      if failed_with_nothing_to_run?
+        'No failures to retry'
+      elsif file_scoping_with_no_files?
+        "No reviewable #{arguments.files.keywords.join(', ')} files found"
+      end
+    end
+
+    def emit_json_early_exit(message)
+      puts JSON.pretty_generate(
+        success: true,
+        message: message,
+        summary: { total: 0, passed: 0, failed: 0, missing: 0, duration: 0 },
+        tools: []
+      )
+      0
     end
 
     def warn_unrecognized_keywords
@@ -118,7 +141,20 @@ module Reviewer
       keywords.failed? &&
         tools.failed_from_history.empty? &&
         keywords.for_tool_names.empty? &&
+        keywords.for_tags.empty? &&
         arguments.tags.to_a.empty?
+    end
+
+    # Returns true if file keywords were provided but resolved to no files (caller should return early)
+    def handle_file_scoping_with_no_files?
+      return false unless file_scoping_with_no_files?
+
+      formatter.no_reviewable_files(keywords: arguments.files.keywords)
+      true
+    end
+
+    def file_scoping_with_no_files?
+      arguments.files.keywords.any? && arguments.files.to_a.empty?
     end
 
     def display_failed_empty_message

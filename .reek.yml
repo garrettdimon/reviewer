@@ -12,6 +12,7 @@ detectors:
   # test injection / rerun_via_passthrough.
   Attribute:
     exclude:
+      - 'Reviewer::Arguments::Keywords'    # Tools wired post-construction to break circular dependency
       - 'Reviewer::Command'               # Mutable command type for re-execution
       - 'Reviewer::Configuration'          # Writable for Reviewer.configure block and tests
       - 'Reviewer::Runner'                # Strategy swappable for test injection
@@ -44,6 +45,14 @@ detectors:
   NilCheck:
     exclude:
       - 'Reviewer::Output#console_width'                                    # IO.console returns nil in non-TTY
+
+  # --- Targeted exclusions: test classes ---
+
+  # Test classes are self-documenting via test method names.
+  IrresponsibleModule:
+    exclude:
+      - 'Reviewer::Doctor::KeywordCheckTest'
+      - 'Reviewer::Session::FormatterTest'
 
   # --- Targeted exclusions: utility functions ---
 
@@ -128,6 +137,7 @@ detectors:
     exclude:
       - 'Reviewer::Batch::Formatter#missing_tools'                          # 8: iterate tools with header/footer
       - 'Reviewer::Doctor::Formatter#print_finding'                         # 8: extract 3 fields + format 3 lines
+      - 'Reviewer::Session#run_json'                                        # 8: early exits + lifecycle steps
       - 'Reviewer::Session#run_text'                                        # 9: lifecycle steps
       - 'Reviewer::Setup'                                                   # 9: setup orchestrator
       - 'Reviewer::Shell#direct'                                            # 10: Open3 wrapper + error handling

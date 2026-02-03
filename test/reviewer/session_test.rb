@@ -179,6 +179,80 @@ module Reviewer
       end
     end
 
+    def test_does_not_warn_for_valid_tool_name
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:current, [build_tool(:list)]) do
+        session = build_session(arguments: Arguments.new(%w[list]), tools: tools_collection)
+        out, _err = capture_subprocess_io { session.review }
+        refute_match(/Unrecognized/i, out)
+      end
+    end
+
+    def test_failed_with_tag_keyword_does_not_short_circuit
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:failed_from_history, []) do
+        tools_collection.stub(:current, [build_tool(:enabled_tool)]) do
+          session = build_session(arguments: Arguments.new(%w[failed ruby]), tools: tools_collection)
+          out, _err = capture_subprocess_io { session.review }
+          refute_match(/no previous run/i, out)
+          refute_match(/no failures/i, out)
+        end
+      end
+    end
+
+    def test_file_keyword_with_no_files_exits_with_message
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:current, [build_tool(:list)]) do
+        args = Arguments.new(%w[staged])
+        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+          session = build_session(arguments: args, tools: tools_collection)
+          out, _err = capture_subprocess_io { session.review }
+          assert_match(/no.*staged.*files/i, out)
+        end
+      end
+    end
+
+    def test_file_keyword_with_no_files_does_not_run_tools
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:current, [build_tool(:list)]) do
+        args = Arguments.new(%w[staged])
+        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+          session = build_session(arguments: args, tools: tools_collection)
+          _out, _err = capture_subprocess_io do
+            assert_equal 0, session.review
+          end
+        end
+      end
+    end
+
+    def test_json_file_keyword_with_no_files_outputs_json
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:current, [build_tool(:list)]) do
+        args = Arguments.new(%w[staged --json])
+        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+          session = build_session(arguments: args, tools: tools_collection)
+          assert_json_early_exit(session, message_pattern: /staged/)
+        end
+      end
+    end
+
+    def test_json_failed_with_nothing_to_run_outputs_json
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:failed_from_history, []) do
+        args = Arguments.new(%w[failed --json])
+        session = build_session(arguments: args, tools: tools_collection)
+        assert_json_early_exit(session, message_pattern: /no/i)
+      end
+    end
+
+    def assert_json_early_exit(session, message_pattern:)
+      out, _err = capture_subprocess_io { session.review }
+      parsed = JSON.parse(out)
+      assert parsed['success']
+      assert_match(message_pattern, parsed['message'])
+      assert_equal 0, parsed['summary']['total']
+    end
+
     def test_streaming_failure_does_not_show_batch_summary
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:missing_command)]) do
