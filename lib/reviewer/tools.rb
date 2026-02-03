@@ -8,7 +8,7 @@ module Reviewer
 
     # Provides an instance to work with for knowing which tools to run in a given context.
     # @param tags [Array] the tags to use to filter tools for a run
-    # @param tool_names [type] the explicitly provided tool names to filter tools for a run
+    # @param tool_names [Array<String>] the explicitly provided tool names to filter tools for a run
     # @param arguments [Arguments] the parsed CLI arguments
     # @param history [History] the history store for status persistence
     #

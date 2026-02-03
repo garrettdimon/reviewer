@@ -4,5 +4,5 @@
 
 require_relative '../lib/reviewer'
 
-Reviewer.output.clear
+Reviewer.output.clear if $stdout.tty?
 Reviewer.format

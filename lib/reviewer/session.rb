@@ -84,7 +84,7 @@ module Reviewer
     end
 
     def json_output?
-      arguments.json?
+      arguments.format == :json
     end
 
     def warn_unrecognized_keywords

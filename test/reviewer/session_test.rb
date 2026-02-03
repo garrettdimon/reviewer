@@ -72,6 +72,16 @@ module Reviewer
       end
     end
 
+    def test_format_json_flag_outputs_json
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      tools_collection.stub(:current, [build_tool(:list)]) do
+        session = build_session(arguments: Arguments.new(%w[--format json]), tools: tools_collection)
+        out, _err = capture_subprocess_io { session.review }
+        assert_match(/"success":\s*true/, out)
+        assert_match(/"tools":/, out)
+      end
+    end
+
     def test_summary_format_outputs_checkmarks
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do

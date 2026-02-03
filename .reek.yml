@@ -81,6 +81,7 @@ detectors:
   ManualDispatch:
     exclude:
       - 'Reviewer::Arguments::Files#from_keywords'                          # Maps keyword strings to git methods
+      - 'Reviewer::Output::Printer#initialize'                              # Defensive sync= guard for non-IO streams
       - 'Reviewer::Prompt#interactive?'                                     # TTY availability check
 
   # --- Targeted exclusions: size metrics ---

@@ -53,7 +53,7 @@ module Reviewer
       # @return [Printer]
       def initialize(stream = $stdout)
         @stream = stream
-        @stream.sync = true
+        @stream.sync = true if @stream.respond_to?(:sync=)
       end
 
       # Prints styled content without a newline
