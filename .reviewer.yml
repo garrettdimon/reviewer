@@ -21,6 +21,12 @@ tests:
     home:
   commands:
     review: "bundle exec rake"
+  files:
+    review: "bundle exec ruby -Itest"
+    flag: ""
+    separator: " "
+    pattern: "*_test.rb"
+    map_to_tests: "minitest"
   reports:
     open_on_fail: true
     local_file: coverage/index.html
