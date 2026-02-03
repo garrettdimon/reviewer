@@ -1,12 +1,12 @@
 PATH
   remote: .
   specs:
-    reviewer (0.1.6)
-      benchmark
-      pstore
-      rainbow
-      ruby-progressbar
-      slop
+    reviewer (1.0.0)
+      benchmark (~> 0.5)
+      pstore (~> 0.2)
+      rainbow (~> 3.1)
+      ruby-progressbar (~> 1.13)
+      slop (~> 4.10)
 
 GEM
   remote: https://rubygems.org/
@@ -318,11 +318,11 @@ DEPENDENCIES
   inch
   license_finder
   metric_fu
-  minitest (~> 5.0)
-  minitest-heat
+  minitest (~> 5.27)
+  minitest-heat (~> 2.1)
   racc
   rake (~> 13.2)
-  rdoc
+  rdoc (~> 7.1)
   reek
   reviewer!
   rubocop
@@ -330,10 +330,10 @@ DEPENDENCIES
   rubocop-rake
   rubycritic
   rufo
-  simplecov
-  simplecov_json_formatter
+  simplecov (~> 0.22)
+  simplecov_json_formatter (~> 0.1)
   standard (>= 1.35.1)
-  yard
+  yard (~> 0.9)
   yardstick
 
 BUNDLED WITH

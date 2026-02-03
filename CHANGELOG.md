@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.0.0] - 2026-02-03
+
 ### Added
 - Git-aware file targeting: `staged`, `unstaged`, `modified`, `untracked` keywords resolve files from git status and pass only relevant files to each tool
 - `failed` keyword: re-run only tools that failed in the previous run, scoped to their failed files
