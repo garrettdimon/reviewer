@@ -33,16 +33,16 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'benchmark'
-  spec.add_dependency 'pstore'
-  spec.add_dependency 'rainbow'
-  spec.add_dependency 'ruby-progressbar'
-  spec.add_dependency 'slop'
+  spec.add_dependency 'benchmark', '~> 0.5'
+  spec.add_dependency 'pstore', '~> 0.2'
+  spec.add_dependency 'rainbow', '~> 3.1'
+  spec.add_dependency 'ruby-progressbar', '~> 1.13'
+  spec.add_dependency 'slop', '~> 4.10'
 
-  spec.add_development_dependency 'minitest', '~> 5.0'
-  spec.add_development_dependency 'minitest-heat'
-  spec.add_development_dependency 'rdoc'
-  spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'simplecov_json_formatter'
-  spec.add_development_dependency 'yard'
+  spec.add_development_dependency 'minitest', '~> 5.27'
+  spec.add_development_dependency 'minitest-heat', '~> 2.1'
+  spec.add_development_dependency 'rdoc', '~> 7.1'
+  spec.add_development_dependency 'simplecov', '~> 0.22'
+  spec.add_development_dependency 'simplecov_json_formatter', '~> 0.1'
+  spec.add_development_dependency 'yard', '~> 0.9'
 end
