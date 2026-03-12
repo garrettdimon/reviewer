@@ -45,26 +45,26 @@ module Reviewer
       end
 
       def check_missing_files_config
-        @tools.all.each do |tool|
-          next if tool.skip_in_batch?
-          next if tool.supports_files?
-          next unless catalog_supports?(tool.key, :files)
-
-          report.add(:opportunities, status: :info,
-                                     message: "#{tool.name} has no file targeting configured",
-                                     detail: 'Add a `files` section to enable staged/modified file scoping')
-        end
+        suggest_missing_capability(:files, :supports_files?,
+          message_suffix: 'has no file targeting configured',
+          detail: 'Add a `files` section to enable staged/modified file scoping')
       end
 
       def check_missing_format_command
+        suggest_missing_capability(:format, :formattable?,
+          message_suffix: 'has no format command',
+          detail: 'Add a `format` command to enable `fmt` support')
+      end
+
+      def suggest_missing_capability(capability, check_method, message_suffix:, detail:)
         @tools.all.each do |tool|
           next if tool.skip_in_batch?
-          next if tool.formattable?
-          next unless catalog_supports?(tool.key, :format)
+          next if tool.public_send(check_method)
+          next unless catalog_supports?(tool.key, capability)
 
           report.add(:opportunities, status: :info,
-                                     message: "#{tool.name} has no format command",
-                                     detail: 'Add a `format` command to enable `fmt` support')
+                                     message: "#{tool.name} #{message_suffix}",
+                                     detail: detail)
         end
       end
 
