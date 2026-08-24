@@ -10,37 +10,23 @@ gem 'rake', '~> 13.2'
 # Security auditing - always run in CI
 gem 'bundler-audit'
 
-# Self-review tools - not required for running tests
-# Install with: bundle config set --local with lint && bundle install
-group :lint, optional: true do
-  # Ruby 3.4+ requires explicit racc (no longer a default gem)
-  gem 'racc'
+# Reviewer's own quality gate. Installed by default so a fresh clone can run
+# everything a pull request is expected to pass.
+gem 'racc' # Ruby 3.4+ requires explicit racc (no longer a default gem)
+gem 'rubocop'
+gem 'rubocop-minitest'
+gem 'rubocop-rake'
 
-  # Style & Linting
-  gem 'rubocop'
-  gem 'rubocop-minitest'
-  gem 'rubocop-rake'
-  gem 'standard', '>= 1.35.1'
-
-  # Code Quality & Complexity
-  gem 'debride'
-  gem 'fasterer'
-  gem 'flay'
-  gem 'flog'
-  gem 'metric_fu'
-  gem 'reek'
-  gem 'rubycritic'
-
-  # Security
-  gem 'brakeman'
-
-  # Documentation
-  gem 'inch'
-  gem 'yardstick'
-
-  # Formatting
-  gem 'rufo'
-
-  # Compliance
-  gem 'license_finder'
+# Tools Reviewer configures to exercise its own integration surface, not to
+# develop the gem. Different exit-code semantics, output shapes, prepare steps
+# and file scoping - useful to run against, unnecessary to install.
+# Enable with: bundle config set --local with dogfood && bundle install
+group :dogfood, optional: true do
+  gem 'brakeman'       # Rails-oriented scanner; exercises skip_in_batch
+  gem 'debride'        # Dead code
+  gem 'fasterer'       # Performance suggestions
+  gem 'flay'           # Structural duplication
+  gem 'flog'           # Complexity scoring
+  gem 'license_finder' # Slow, compliance-oriented; exercises the slow tag
+  gem 'reek'           # Design smells
 end

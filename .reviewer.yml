@@ -1,7 +1,7 @@
 bundle_audit:
   name: Bundle Audit
   description: Review Gem Dependencies for Security Issues
-  tags: [critical, security, dependencies, ruby, dev]
+  tags: [security, dependencies, ruby]
   links:
     home: https://github.com/rubysec/bundler-audit
     install: https://github.com/rubysec/bundler-audit#install
@@ -13,7 +13,7 @@ bundle_audit:
 tests:
   name: Minitest
   description: Unit Tests & Coverage
-  tags: [ruby, tests, dev]
+  tags: [tests, ruby]
   summary:
     pattern: '(\d+)\s+tests?'
     label: '\1 tests'
@@ -36,10 +36,11 @@ tests:
     # coverage: false
 
 reek:
+  optional: true
   # skip_in_batch: true # Reek provides guidance and is generally run solo
   name: Reek
   description: Examine Ruby Classes for Code Smells
-  tags: [ruby, quality, dev]
+  tags: [complexity, ruby]
   links:
     home: https://github.com/troessner/reek
     install: https://github.com/troessner/reek#quickstart
@@ -55,10 +56,11 @@ reek:
     documentation:
 
 flog:
+  optional: true
   # skip_in_batch: true # Flog provides guidance and is generally run solo
   name: Flog
   description: Reports your most tortured ruby code in an easy to read pain report.
-  tags: [ruby, quality, dev]
+  tags: [complexity, ruby]
   links:
     home: https://ruby.sadi.st/Flog.html
     install: https://ruby.sadi.st/Flog.html
@@ -71,10 +73,11 @@ flog:
     methods-only:
 
 flay:
+  optional: true
   # skip_in_batch: true # Flay provides guidance and is generally run solo
   name: Flay
   description: Review ruby code for structural similarities and refactoring opportunities.
-  tags: [ruby, quality, dev]
+  tags: [duplication, ruby]
   links:
     home: https://ruby.sadi.st/Flay.html
     install: https://ruby.sadi.st/Flay.html
@@ -88,7 +91,7 @@ flay:
 rubocop:
   name: Rubocop
   description: Review Ruby Syntax & Formatting for Consistency
-  tags: [ruby, syntax, dev]
+  tags: [style, ruby]
   summary:
     pattern: '(\d+)\s+offenses?'
     label: '\1 offenses'
@@ -107,24 +110,9 @@ rubocop:
     pattern: "*.rb"
   flags:
     color:
-
-# The YARD Parser can also come in handy:
-#   https://yardoc.org/types
-inch:
-  # skip_in_batch: true
-  tags: [docs, ruby, dev]
-  name: Inch
-  description: Review Ruby Documentation Quality
-  links:
-    home: https://rrrene.org/inch/
-    usage: https://www.rubydoc.info/gems/yard/file/docs/Tags.md
-  commands:
-    install: "bundle exec gem install inch"
-    review: "bundle exec inch"
-
 yard:
   # skip_in_batch: true
-  tags: [docs, ruby, dev]
+  tags: [documentation, ruby]
   name: Yard
   description: Generates Documentation
   links:
@@ -140,8 +128,9 @@ yard:
     quiet_flag: "--quiet"
 
 alex:
+  optional: true
   skip_in_batch: true
-  tags: [language, docs]
+  tags: [documentation]
   name: Alex
   description: Catch insensitive, inconsiderate writing
   links:
@@ -153,10 +142,11 @@ alex:
 # New tools for expanded testing coverage
 
 brakeman:
+  optional: true
   skip_in_batch: true # Requires Rails application, not applicable to gems
   name: Brakeman
   description: Static analysis security scanner for Ruby
-  tags: [security, ruby, dev]
+  tags: [security, ruby]
   links:
     home: https://brakemanscanner.org
     install: https://brakemanscanner.org/docs/install/
@@ -165,9 +155,10 @@ brakeman:
     review: "bundle exec brakeman --no-pager -q"
 
 fasterer:
+  optional: true
   name: Fasterer
   description: Suggest performance improvements for Ruby code
-  tags: [ruby, quality, performance, dev]
+  tags: [performance, ruby]
   links:
     home: https://github.com/DamirSvrtan/fasterer
   commands:
@@ -179,78 +170,21 @@ fasterer:
     pattern: "*.rb"
 
 debride:
-  skip_in_batch: true # Broken on Ruby 3.4 (missing require for Racc, Timeout)
+  optional: true
   name: Debride
   description: Find potentially unused methods and classes
-  tags: [ruby, quality, dev]
+  tags: [correctness, ruby]
   links:
     home: https://github.com/seattlerb/debride
   commands:
     install: "bundle exec gem install debride"
     review: "bundle exec debride lib/"
-
-rubycritic:
-  skip_in_batch: true # Generates HTML reports, best run manually
-  name: RubyCritic
-  description: Code quality analysis with HTML reports
-  tags: [ruby, quality, dev]
-  links:
-    home: https://github.com/whitesmith/rubycritic
-  commands:
-    install: "bundle exec gem install rubycritic"
-    review: "bundle exec rubycritic lib/ --no-browser -f console"
-
-metric_fu:
-  skip_in_batch: true # Meta-tool that runs many others, slow
-  name: MetricFu
-  description: Aggregate code metrics from multiple tools
-  tags: [ruby, quality, dev]
-  links:
-    home: https://github.com/metricfu/metric_fu
-  commands:
-    install: "bundle exec gem install metric_fu"
-    review: "bundle exec metric_fu"
-
-yardstick:
-  # skip_in_batch: true # Documentation coverage measurement
-  name: Yardstick
-  description: Measure YARD documentation coverage
-  tags: [docs, ruby, dev]
-  links:
-    home: https://github.com/dkubb/yardstick
-  commands:
-    install: "bundle exec gem install yardstick"
-    review: "bundle exec yardstick lib/"
-
-standard:
-  skip_in_batch: true # Conflicts with existing RuboCop configuration
-  name: Standard
-  description: Zero-configuration Ruby linter
-  tags: [ruby, syntax, dev]
-  links:
-    home: https://github.com/standardrb/standard
-  commands:
-    install: "bundle exec gem install standard"
-    review: "bundle exec standardrb"
-    format: "bundle exec standardrb --fix"
-
-rufo:
-  skip_in_batch: true # Alternative formatter to RuboCop
-  name: Rufo
-  description: Ruby code formatter
-  tags: [ruby, syntax, dev]
-  links:
-    home: https://github.com/ruby-formatter/rufo
-  commands:
-    install: "bundle exec gem install rufo"
-    review: "bundle exec rufo --check lib/"
-    format: "bundle exec rufo lib/"
-
 license_finder:
+  optional: true
   skip_in_batch: true # Slow - run manually with: rvw license_finder
   name: License Finder
   description: Check dependency licenses for compliance
-  tags: [dependencies, compliance, slow, dev]
+  tags: [compliance, dependencies, slow]
   links:
     home: https://github.com/pivotal/LicenseFinder
   commands:
@@ -260,7 +194,8 @@ license_finder:
 notes:
   name: Notes
   description: Find TODO, FIXME, HACK, and OPTIMIZE comments
-  tags: [quality, dev]
+  tags: [correctness]
   commands:
-    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' lib/ test/ || true"
-  max_exit_status: 1
+    # grep exits 1 when it finds nothing, which is not a failure here
+    max_exit_status: 1
+    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' lib/ test/"
