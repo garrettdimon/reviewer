@@ -10,14 +10,20 @@ module Reviewer
   # which no batch-enabled tool has -- the case where a tag is real but invisible
   # to any dictionary built from the enabled set.
   class SelectionTest < Minitest::Test
+    # Pin the fixture rather than reading ambient configuration: other tests swap
+    # Reviewer.configuration.file, and a selector test that depends on which one
+    # happens to be installed is testing the wrong thing.
+    FIXTURE = Pathname('test/fixtures/files/test_commands.yml')
+
     def setup
-      @config = Reviewer.configuration.file
+      @config = FIXTURE
     end
 
     def build_session(arguments:)
-      tools = Tools.new(config_file: @config, arguments: arguments, history: Reviewer.history)
+      history = History.new(file: Pathname('.reviewer_history_test.yml'))
+      tools = Tools.new(config_file: @config, arguments: arguments, history: history)
       arguments.keywords.tools = tools
-      context = Context.new(arguments: arguments, output: Output.new, history: Reviewer.history)
+      context = Context.new(arguments: arguments, output: Output.new, history: history)
       Session.new(context: context, tools: tools)
     end
 
