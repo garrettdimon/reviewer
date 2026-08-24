@@ -110,10 +110,7 @@ module Reviewer
     def test_review_dispatches_to_init_when_subcommand
       received = nil
       Setup.stub(:run, ->(configuration:, **) { received = configuration }) do
-        ARGV.replace(['init'])
-        Reviewer.review
-      ensure
-        ARGV.replace([])
+        with_argv('init') { Reviewer.review }
       end
       assert received, 'Expected Setup.run to receive a configuration for rvw init'
     end
@@ -124,10 +121,7 @@ module Reviewer
         doctor_ran = true
         Doctor::Report.new
       }) do
-        ARGV.replace(['doctor'])
-        capture_subprocess_io { Reviewer.review }
-      ensure
-        ARGV.replace([])
+        with_argv('doctor') { capture_subprocess_io { Reviewer.review } }
       end
       assert doctor_ran, 'Expected Doctor.run to be called for rvw doctor'
     end
@@ -135,10 +129,7 @@ module Reviewer
     def test_format_dispatches_to_init_when_subcommand
       received = nil
       Setup.stub(:run, ->(configuration:, **) { received = configuration }) do
-        ARGV.replace(['init'])
-        Reviewer.format
-      ensure
-        ARGV.replace([])
+        with_argv('init') { Reviewer.format }
       end
       assert received, 'Expected Setup.run to receive a configuration for fmt init'
     end
@@ -149,10 +140,7 @@ module Reviewer
         doctor_ran = true
         Doctor::Report.new
       }) do
-        ARGV.replace(['doctor'])
-        capture_subprocess_io { Reviewer.format }
-      ensure
-        ARGV.replace([])
+        with_argv('doctor') { capture_subprocess_io { Reviewer.format } }
       end
       assert doctor_ran, 'Expected Doctor.run to be called for fmt doctor'
     end
@@ -197,21 +185,17 @@ module Reviewer
     end
 
     def test_review_dispatches_to_capabilities_with_long_flag
-      ARGV.replace(['--capabilities'])
-      out, _err = capture_subprocess_io { Reviewer.review }
+      out = nil
+      with_argv('--capabilities') { out, = capture_subprocess_io { Reviewer.review } }
       assert_match(/"version"/, out)
       assert_match(/"tools"/, out)
-    ensure
-      ARGV.replace([])
     end
 
     def test_review_dispatches_to_capabilities_with_short_flag
-      ARGV.replace(['-c'])
-      out, _err = capture_subprocess_io { Reviewer.review }
+      out = nil
+      with_argv('-c') { out, = capture_subprocess_io { Reviewer.review } }
       assert_match(/"version"/, out)
       assert_match(/"keywords"/, out)
-    ensure
-      ARGV.replace([])
     end
 
     private
