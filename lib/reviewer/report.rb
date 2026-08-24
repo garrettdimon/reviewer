@@ -36,12 +36,14 @@ module Reviewer
       executed_results.all?(&:success?)
     end
 
-    # Returns the highest exit status from executed results (excludes missing and skipped)
+    # The process exit code, derived from the verdict rather than from whatever a
+    # tool returned. Forwarding a tool's status meant a tool passing under its
+    # `max_exit_status` still exited non-zero, and a tool exiting 2 -- GNU `ls`
+    # does, on an unknown option -- was indistinguishable from the usage errors
+    # `Session::USAGE_ERROR` reports.
     #
-    # @return [Integer] the maximum exit status, or 0 if empty
-    def max_exit_status
-      executed_results.map(&:exit_status).max || 0
-    end
+    # @return [Integer] 0 when the run passed, 1 when it did not
+    def exit_code = success? ? 0 : 1
 
     # Returns results for tools whose executables were not found
     #

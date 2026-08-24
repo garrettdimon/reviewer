@@ -26,14 +26,14 @@ module Reviewer
 
     # Runs the review command for the current set of tools
     #
-    # @return [Integer] the maximum exit status from all tools
+    # @return [Integer] 0 when the run passed, 1 when a tool failed, 2 for a usage error
     def review
       run_tools(:review)
     end
 
     # Runs the format command for the current set of tools
     #
-    # @return [Integer] the maximum exit status from all tools
+    # @return [Integer] 0 when the run passed, 1 when a tool failed, 2 for a usage error
     def format
       run_tools(:format)
     end
@@ -64,7 +64,7 @@ module Reviewer
       strategy = runner_strategy(current_tools)
       report = Batch.new(command_type, current_tools, strategy: strategy, context: context).run
       puts report.to_json
-      report.max_exit_status
+      report.exit_code
     end
 
     def run_text(command_type)
@@ -81,7 +81,7 @@ module Reviewer
       display_text_report(report)
       show_missing_tools(report, current_tools)
 
-      report.max_exit_status
+      report.exit_code
     end
 
     # A name Reviewer does not recognize stops the run. Resolving it to the full

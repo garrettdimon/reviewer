@@ -46,16 +46,25 @@ module Reviewer
       assert @report.success?
     end
 
-    def test_max_exit_status_returns_highest
+    def test_exit_code_is_one_whatever_the_tools_returned
       @report.add(build_result(tool_key: :rubocop, success: true, exit_status: 0))
       @report.add(build_result(tool_key: :tests, success: false, exit_status: 2))
       @report.add(build_result(tool_key: :reek, success: false, exit_status: 1))
 
-      assert_equal 2, @report.max_exit_status
+      assert_equal 1, @report.exit_code
     end
 
-    def test_max_exit_status_returns_zero_when_empty
-      assert_equal 0, @report.max_exit_status
+    def test_exit_code_is_zero_when_empty
+      assert_equal 0, @report.exit_code
+    end
+
+    # `max_exit_status` lets a tool pass on a non-zero status. The process used to
+    # exit with that status anyway -- a passing run reporting failure to the shell.
+    def test_exit_code_is_zero_when_a_tool_passed_on_a_non_zero_status
+      @report.add(build_result(tool_key: :notes, success: true, exit_status: 1))
+
+      assert_predicate @report, :success?
+      assert_equal 0, @report.exit_code
     end
 
     def test_to_h_includes_success_status
@@ -125,17 +134,17 @@ module Reviewer
       assert @report.success?
     end
 
-    def test_max_exit_status_excludes_missing_tools
+    def test_exit_code_excludes_missing_tools
       @report.add(build_result(tool_key: :rubocop, success: true, exit_status: 0))
       @report.add(build_missing_result(tool_key: :reek))
 
-      assert_equal 0, @report.max_exit_status
+      assert_equal 0, @report.exit_code
     end
 
-    def test_max_exit_status_returns_zero_when_only_missing
+    def test_exit_code_is_zero_when_only_missing
       @report.add(build_missing_result(tool_key: :reek))
 
-      assert_equal 0, @report.max_exit_status
+      assert_equal 0, @report.exit_code
     end
 
     def test_to_h_summary_includes_missing_count
