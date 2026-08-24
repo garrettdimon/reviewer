@@ -34,6 +34,24 @@ module Reviewer
         output.newline
       end
 
+      # Renders a machine-readable envelope for a name Reviewer cannot honour
+      # @param unrecognized [Array<String>] the names that matched nothing
+      # @param suggestions [Hash] closest known name per unrecognized name
+      #
+      # @return [void]
+      def unrecognized_keywords_json(unrecognized, suggestions)
+        printer.write_raw("#{JSON.pretty_generate(
+          state: 'error',
+          error: {
+            code: 'unrecognized_selector',
+            message: "Unrecognized: #{unrecognized.join(', ')}",
+            suggestions: suggestions
+          },
+          summary: { total: 0, passed: 0, failed: 0, missing: 0, duration: 0 },
+          tools: []
+        )}\n")
+      end
+
       # Displays a warning when an unrecognized output format is requested
       # @param value [String] the invalid format name
       # @param known [Array<Symbol>] the valid format options

@@ -14,6 +14,13 @@ module Reviewer
       @config = Reviewer.configuration.file
     end
 
+    def build_session(arguments:)
+      tools = Tools.new(config_file: @config, arguments: arguments, history: Reviewer.history)
+      arguments.keywords.tools = tools
+      context = Context.new(arguments: arguments, output: Output.new, history: Reviewer.history)
+      Session.new(context: context, tools: tools)
+    end
+
     def test_tagged_does_not_mutate_the_memoized_enabled_collection
       tools = Tools.new(config_file: @config, tags: ['ruby'])
       before = tools.enabled.size
@@ -58,6 +65,34 @@ module Reviewer
       keywords.tools = Tools.new(config_file: @config)
 
       assert_equal %w[rubocp], keywords.unrecognized
+    end
+
+    # The whole point: a name Reviewer does not know must stop the run, in both
+    # output modes, rather than quietly resolving to the full batch.
+    def test_an_unrecognized_name_runs_nothing_and_exits_two_in_text_mode
+      status = nil
+      out, = capture_subprocess_io do
+        status = build_session(arguments: Arguments.new(%w[rubocp])).review
+      end
+
+      assert_equal 2, status, 'A usage error is exit 2, distinct from a tool failure'
+      assert_match(/rubocp/, out)
+      refute_match(/Success/i, out)
+    end
+
+    def test_an_unrecognized_name_runs_nothing_and_exits_two_in_json_mode
+      status = nil
+      out, = capture_subprocess_io do
+        status = build_session(arguments: Arguments.new(%w[rubocp --json])).review
+      end
+
+      assert_equal 2, status
+      payload = JSON.parse(out)
+
+      assert_equal 'error', payload['state']
+      assert_equal 'unrecognized_selector', payload.dig('error', 'code')
+      assert_includes payload.dig('error', 'message'), 'rubocp'
+      assert_empty payload['tools']
     end
   end
 end

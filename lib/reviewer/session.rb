@@ -6,6 +6,10 @@ module Reviewer
   # Run lifecycle with full dependency injection.
   # Owns the review/format lifecycle that was previously in Reviewer module methods.
   class Session
+    # Exit status for a usage error -- the caller asked for something Reviewer
+    # cannot honour. Distinct from a tool failure so the two can be told apart.
+    USAGE_ERROR = 2
+
     attr_reader :context, :tools
     private :context, :tools
 
@@ -41,6 +45,8 @@ module Reviewer
     def history = context.history
 
     def run_tools(command_type)
+      return reject_unrecognized_selectors if unrecognized_selectors.any?
+
       if json_output?
         run_json(command_type)
       else
@@ -65,8 +71,6 @@ module Reviewer
       return 0 if handle_failed_with_nothing_to_run?
       return 0 if handle_file_scoping_with_no_files?
 
-      warn_unrecognized_keywords
-
       current_tools = tools.current
       return warn_no_matching_tools if current_tools.empty?
 
@@ -79,6 +83,24 @@ module Reviewer
 
       report.max_exit_status
     end
+
+    # A name Reviewer does not recognize stops the run. Resolving it to the full
+    # batch means reporting success for checks the caller never asked for, and
+    # attributing that success to a tool that never ran.
+    def reject_unrecognized_selectors
+      names = unrecognized_selectors
+      suggestions = build_suggestions(names)
+
+      if json_output?
+        formatter.unrecognized_keywords_json(names, suggestions)
+      else
+        formatter.unrecognized_keywords(names, suggestions)
+      end
+
+      USAGE_ERROR
+    end
+
+    def unrecognized_selectors = arguments.keywords.unrecognized
 
     def warn_no_matching_tools
       formatter.no_matching_tools(
