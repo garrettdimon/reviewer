@@ -2,6 +2,7 @@
 
 require 'slop'
 
+require_relative 'arguments/options'
 require_relative 'arguments/keywords'
 require_relative 'arguments/files'
 require_relative 'arguments/tags'
@@ -41,33 +42,10 @@ module Reviewer
     # @return [self]
     def initialize(options = ARGV, output: Output.new)
       @output = output
-      @options = Slop.parse(options) { |opts| configure_options(opts) }
+      @options = Slop.parse(options) { |opts| Options.configure(opts) }
     end
 
     private
-
-    def configure_options(opts)
-      configure_input_options(opts)
-      configure_output_options(opts)
-      configure_info_options(opts)
-    end
-
-    def configure_input_options(opts)
-      opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
-      opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
-    end
-
-    def configure_output_options(opts)
-      opts.on '-r', '--raw', 'force raw output (no capturing)'
-      opts.on '-j', '--json', 'output results as JSON'
-      opts.string '--format', 'output format (streaming, summary, json)', default: 'streaming'
-    end
-
-    def configure_info_options(opts)
-      opts.on('-v', '--version', 'print the version')
-      opts.on('-h', '--help', 'print the help')
-      opts.on('-c', '--capabilities', 'output capabilities as JSON')
-    end
 
     def session_formatter = @session_formatter ||= Session::Formatter.new(output)
 
