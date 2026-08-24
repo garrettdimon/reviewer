@@ -104,7 +104,7 @@ module Reviewer
 
     def matching_tags
       provided = @arguments&.keywords&.provided || []
-      all_tags = enabled.flat_map(&:tags).uniq
+      all_tags = all.flat_map(&:tags).uniq
       (provided & all_tags) + Array(@arguments&.tags&.raw)
     end
   end

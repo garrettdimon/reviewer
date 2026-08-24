@@ -40,8 +40,13 @@ module Reviewer
       assert_empty keywords.unrecognized
     end
 
+    # Passing tags: directly sets @tags and bypasses #matching_tags, which is the
+    # method that decides what a *positional* tag resolves to. Go through
+    # Arguments so the path a caller actually takes is the path under test.
     def test_a_tag_carried_only_by_a_skipped_tool_resolves_to_nothing_rather_than_everything
-      tools = Tools.new(config_file: @config, tags: ['html'])
+      arguments = Arguments.new(['html'])
+      tools = Tools.new(config_file: @config, arguments: arguments, history: Reviewer.history)
+      arguments.keywords.tools = tools
 
       # `skip_in_batch` means "only when named", so an empty set is correct here.
       # What matters is that it is empty rather than the full batch -- the caller
