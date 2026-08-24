@@ -36,7 +36,6 @@ tests:
     # coverage: false
 
 reek:
-  optional: true
   # skip_in_batch: true # Reek provides guidance and is generally run solo
   name: Reek
   description: Examine Ruby Classes for Code Smells
@@ -56,7 +55,6 @@ reek:
     documentation:
 
 flog:
-  optional: true
   # skip_in_batch: true # Flog provides guidance and is generally run solo
   name: Flog
   description: Reports your most tortured ruby code in an easy to read pain report.
@@ -73,7 +71,6 @@ flog:
     methods-only:
 
 flay:
-  optional: true
   # skip_in_batch: true # Flay provides guidance and is generally run solo
   name: Flay
   description: Review ruby code for structural similarities and refactoring opportunities.
@@ -128,7 +125,6 @@ yard:
     quiet_flag: "--quiet"
 
 alex:
-  optional: true
   skip_in_batch: true
   tags: [documentation]
   name: Alex
@@ -142,7 +138,6 @@ alex:
 # New tools for expanded testing coverage
 
 brakeman:
-  optional: true
   skip_in_batch: true # Requires Rails application, not applicable to gems
   name: Brakeman
   description: Static analysis security scanner for Ruby
@@ -155,7 +150,6 @@ brakeman:
     review: "bundle exec brakeman --no-pager -q"
 
 fasterer:
-  optional: true
   name: Fasterer
   description: Suggest performance improvements for Ruby code
   tags: [performance, ruby]
@@ -170,7 +164,6 @@ fasterer:
     pattern: "*.rb"
 
 debride:
-  optional: true
   name: Debride
   description: Find potentially unused methods and classes
   tags: [correctness, ruby]
@@ -180,7 +173,6 @@ debride:
     install: "bundle exec gem install debride"
     review: "bundle exec debride lib/"
 license_finder:
-  optional: true
   skip_in_batch: true # Slow - run manually with: rvw license_finder
   name: License Finder
   description: Check dependency licenses for compliance
