@@ -82,7 +82,7 @@ detectors:
       - 'Reviewer::Command::String::Env#env'                               # Key-value formatting
       - 'Reviewer::Doctor::OpportunityCheck#check_missing_files_config'     # Tool property inspection
       - 'Reviewer::Doctor::OpportunityCheck#check_missing_format_command'   # Tool property inspection
-      - 'Reviewer::Doctor::OpportunityCheck#suggest_missing_capability'      # Shared iteration extracted from the two above
+      - 'Reviewer::Doctor::OpportunityCheck#suggest_missing_capability'      # Selection over tools; same case as the two above, which it was extracted from
       - 'Reviewer::Output::Printer#write_raw'                              # Stream pass-through
       - 'Reviewer::Session#build_suggestions'                               # each_with_object iteration
       - 'Reviewer::Session#show_missing_tools'                              # Guard + formatter delegation
