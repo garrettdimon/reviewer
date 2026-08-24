@@ -40,7 +40,7 @@ module Reviewer
       #
       # @return [void]
       def unrecognized_keywords_json(unrecognized, suggestions)
-        printer.write_raw("#{JSON.pretty_generate(
+        payload = {
           state: 'error',
           error: {
             code: 'unrecognized_selector',
@@ -49,7 +49,9 @@ module Reviewer
           },
           summary: { total: 0, passed: 0, failed: 0, missing: 0, duration: 0 },
           tools: []
-        )}\n")
+        }
+
+        printer.write_raw("#{JSON.pretty_generate(payload)}\n")
       end
 
       # Displays a warning when an unrecognized output format is requested

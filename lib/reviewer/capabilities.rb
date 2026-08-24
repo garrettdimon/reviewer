@@ -32,7 +32,7 @@ module Reviewer
     }.freeze
 
     KEYWORDS = Arguments::Keywords::RESERVED.to_h do |keyword|
-      [keyword.to_sym, KEYWORD_DESCRIPTIONS.fetch(keyword, keyword)]
+      [keyword.to_sym, KEYWORD_DESCRIPTIONS.fetch(keyword)]
     end.freeze
 
     SCENARIOS = {
@@ -54,13 +54,6 @@ module Reviewer
       }
     end
 
-    # Every tag any configured tool carries, including tools excluded from the
-    # batch -- `-t <tag>` can select them, so a caller reading this payload needs
-    # to see them.
-    #
-    # @return [Array<String>] sorted unique tags
-    def tag_list = tools.all.flat_map(&:tags).uniq.sort
-
     # Convert capabilities to formatted JSON string
     #
     # @return [String] JSON representation of capabilities
@@ -69,6 +62,13 @@ module Reviewer
     end
 
     private
+
+    # Every tag any configured tool carries, including tools excluded from the
+    # batch -- `-t <tag>` can select them, so a caller reading this payload needs
+    # to see them.
+    #
+    # @return [Array<String>] sorted unique tags
+    def tag_list = tools.all.flat_map(&:tags).uniq.sort
 
     # Build tool data from configured tools
     #
