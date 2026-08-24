@@ -6,6 +6,10 @@ module Reviewer
   # Run lifecycle with full dependency injection.
   # Owns the review/format lifecycle that was previously in Reviewer module methods.
   class Session
+    # Exit status for a usage error -- the caller asked for something Reviewer
+    # cannot honour. Distinct from a tool failure so the two can be told apart.
+    USAGE_ERROR = 2
+
     attr_reader :context, :tools
     private :context, :tools
 
@@ -41,6 +45,8 @@ module Reviewer
     def history = context.history
 
     def run_tools(command_type)
+      return reject_unrecognized_selectors if unrecognized_selectors.any?
+
       if json_output?
         run_json(command_type)
       else
@@ -65,8 +71,6 @@ module Reviewer
       return 0 if handle_failed_with_nothing_to_run?
       return 0 if handle_file_scoping_with_no_files?
 
-      warn_unrecognized_keywords
-
       current_tools = tools.current
       return warn_no_matching_tools if current_tools.empty?
 
@@ -78,6 +82,36 @@ module Reviewer
       show_missing_tools(report, current_tools)
 
       report.max_exit_status
+    end
+
+    # A name Reviewer does not recognize stops the run. Resolving it to the full
+    # batch means reporting success for checks the caller never asked for, and
+    # attributing that success to a tool that never ran.
+    def reject_unrecognized_selectors
+      names = unrecognized_selectors
+      suggestions = build_suggestions(names)
+
+      if json_output?
+        formatter.unrecognized_keywords_json(names, suggestions)
+      else
+        formatter.unrecognized_keywords(names, suggestions)
+      end
+
+      USAGE_ERROR
+    end
+
+    # Positional selectors and `-t` values are the same request spelled two ways,
+    # so an unknown name has to fail the same either way. Keywords already track
+    # their own unrecognized set; tags are only checked against the configured
+    # vocabulary, since `-t` accepts nothing else.
+    def unrecognized_selectors
+      (arguments.keywords.unrecognized + unrecognized_tags).uniq.sort
+    end
+
+    def unrecognized_tags
+      configured = arguments.keywords.configured_tags
+
+      arguments.tags.raw.map(&:to_s).reject { |tag| configured.include?(tag) }
     end
 
     def warn_no_matching_tools
@@ -108,14 +142,6 @@ module Reviewer
         tools: []
       )
       0
-    end
-
-    def warn_unrecognized_keywords
-      unrecognized = arguments.keywords.unrecognized
-      return if unrecognized.empty?
-
-      suggestions = build_suggestions(unrecognized)
-      formatter.unrecognized_keywords(unrecognized, suggestions)
     end
 
     def build_suggestions(unrecognized)

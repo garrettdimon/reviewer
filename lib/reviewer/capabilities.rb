@@ -19,12 +19,21 @@ module Reviewer
       @tools = tools
     end
 
-    KEYWORDS = {
-      staged: 'Files staged for commit',
-      unstaged: 'Files with unstaged changes',
-      modified: 'All changed files',
-      untracked: 'New files not yet tracked'
+    # Descriptions for the reserved keywords. The keys are derived from
+    # Arguments::Keywords::RESERVED rather than restated, so a keyword can never
+    # exist in one place and be invisible in the other -- agents are told to use
+    # only names this payload lists.
+    KEYWORD_DESCRIPTIONS = {
+      'staged' => 'Files staged for commit',
+      'unstaged' => 'Files with unstaged changes',
+      'modified' => 'All changed files',
+      'untracked' => 'New files not yet tracked',
+      'failed' => 'Tools that failed in the previous run'
     }.freeze
+
+    KEYWORDS = Arguments::Keywords::RESERVED.to_h do |keyword|
+      [keyword.to_sym, KEYWORD_DESCRIPTIONS.fetch(keyword)]
+    end.freeze
 
     SCENARIOS = {
       before_commit: 'rvw staged',
@@ -39,6 +48,7 @@ module Reviewer
       {
         version: VERSION,
         tools: tools_data,
+        tags: tag_list,
         keywords: KEYWORDS,
         scenarios: SCENARIOS
       }
@@ -52,6 +62,14 @@ module Reviewer
     end
 
     private
+
+    # Every tag any configured tool carries, including tools excluded from the
+    # batch. Selecting one of those tags resolves to no tools -- `skip_in_batch`
+    # means "only when named" -- but the tag is still a recognized selector, and
+    # a caller told to use only names from this payload needs to see it.
+    #
+    # @return [Array<String>] sorted unique tags
+    def tag_list = tools.all.flat_map(&:tags).uniq.sort
 
     # Build tool data from configured tools
     #

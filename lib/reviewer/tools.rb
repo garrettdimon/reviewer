@@ -52,7 +52,7 @@ module Reviewer
     #
     # @return [Array<Tool>] the full collection of tagged-via-command-line tools for a run
     def tagged
-      enabled.keep_if { |tool| tagged?(tool) }
+      enabled.select { |tool| tagged?(tool) }
     end
 
     # Uses the full context of a run to provide the filtered subset of tools to use. It takes into
@@ -104,7 +104,7 @@ module Reviewer
 
     def matching_tags
       provided = @arguments&.keywords&.provided || []
-      all_tags = enabled.flat_map(&:tags).uniq
+      all_tags = all.flat_map(&:tags).uniq
       (provided & all_tags) + Array(@arguments&.tags&.raw)
     end
   end
