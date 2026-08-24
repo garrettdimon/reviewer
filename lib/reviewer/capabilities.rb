@@ -19,12 +19,21 @@ module Reviewer
       @tools = tools
     end
 
-    KEYWORDS = {
-      staged: 'Files staged for commit',
-      unstaged: 'Files with unstaged changes',
-      modified: 'All changed files',
-      untracked: 'New files not yet tracked'
+    # Descriptions for the reserved keywords. The keys are derived from
+    # Arguments::Keywords::RESERVED rather than restated, so a keyword can never
+    # exist in one place and be invisible in the other -- agents are told to use
+    # only names this payload lists.
+    KEYWORD_DESCRIPTIONS = {
+      'staged' => 'Files staged for commit',
+      'unstaged' => 'Files with unstaged changes',
+      'modified' => 'All changed files',
+      'untracked' => 'New files not yet tracked',
+      'failed' => 'Tools that failed in the previous run'
     }.freeze
+
+    KEYWORDS = Arguments::Keywords::RESERVED.to_h do |keyword|
+      [keyword.to_sym, KEYWORD_DESCRIPTIONS.fetch(keyword, keyword)]
+    end.freeze
 
     SCENARIOS = {
       before_commit: 'rvw staged',
@@ -39,10 +48,18 @@ module Reviewer
       {
         version: VERSION,
         tools: tools_data,
+        tags: tag_list,
         keywords: KEYWORDS,
         scenarios: SCENARIOS
       }
     end
+
+    # Every tag any configured tool carries, including tools excluded from the
+    # batch -- `-t <tag>` can select them, so a caller reading this payload needs
+    # to see them.
+    #
+    # @return [Array<String>] sorted unique tags
+    def tag_list = tools.all.flat_map(&:tags).uniq.sort
 
     # Convert capabilities to formatted JSON string
     #

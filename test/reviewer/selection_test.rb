@@ -43,6 +43,16 @@ module Reviewer
       refute_equal tools.enabled.size, tools.current.size
     end
 
+    # Three places have listed the reserved keywords independently, and the
+    # capabilities payload drifted from the other two by omitting `failed`.
+    def test_the_help_text_lists_every_reserved_keyword
+      help, = capture_subprocess_io { Reviewer.send(:show_help) }
+
+      Arguments::Keywords::RESERVED.each do |keyword|
+        assert_includes help, keyword, "Expected --help to document the `#{keyword}` keyword"
+      end
+    end
+
     def test_an_unrecognized_name_is_reported_as_such
       keywords = Arguments::Keywords.new(['rubocp'])
       keywords.tools = Tools.new(config_file: @config)

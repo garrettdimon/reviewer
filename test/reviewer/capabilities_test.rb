@@ -80,5 +80,20 @@ module Reviewer
       parsed = JSON.parse(json, symbolize_names: true)
       assert_equal @capabilities.to_h, parsed
     end
+
+    # Agents are told to pass only names present in this payload, so anything
+    # missing from it is a name they can never use.
+    def test_keywords_match_the_reserved_list_rather_than_a_second_copy
+      result = @capabilities.to_h
+
+      assert_equal Arguments::Keywords::RESERVED.sort, result[:keywords].keys.map(&:to_s).sort
+    end
+
+    def test_exposes_a_top_level_tag_list
+      result = @capabilities.to_h
+
+      assert result.key?(:tags), 'Expected a top-level tags list for -t selection'
+      assert_includes result[:tags], 'html', 'Expected tags from skip_in_batch tools'
+    end
   end
 end
