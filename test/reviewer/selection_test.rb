@@ -86,13 +86,18 @@ module Reviewer
       assert_includes payload.dig('error', 'message'), 'zzznope'
     end
 
-    def test_a_recognized_tag_via_the_flag_still_runs
-      status = nil
-      capture_subprocess_io do
-        status = build_session(arguments: Arguments.new(%w[-t ruby --json])).review
+    # Asserts on the payload rather than the exit status: a tool that fails can
+    # also exit 2 -- GNU `ls` does, on the fixture's own command -- so the status
+    # alone cannot distinguish a usage error from a tool failure.
+    def test_a_recognized_tag_via_the_flag_is_not_a_usage_error
+      out, = capture_subprocess_io do
+        build_session(arguments: Arguments.new(%w[-t ruby --json])).review
       end
 
-      refute_equal 2, status, 'A configured tag must not be treated as a usage error'
+      payload = JSON.parse(out)
+
+      refute_equal 'unrecognized_selector', payload.dig('error', 'code'),
+                   'A configured tag must not be reported as an unrecognized selector'
     end
 
     def test_an_unrecognized_name_is_reported_as_such
