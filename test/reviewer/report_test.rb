@@ -58,6 +58,15 @@ module Reviewer
       assert_equal 0, @report.exit_code
     end
 
+    # `max_exit_status` lets a tool pass on a non-zero status. The process used to
+    # exit with that status anyway -- a passing run reporting failure to the shell.
+    def test_exit_code_is_zero_when_a_tool_passed_on_a_non_zero_status
+      @report.add(build_result(tool_key: :notes, success: true, exit_status: 1))
+
+      assert_predicate @report, :success?
+      assert_equal 0, @report.exit_code
+    end
+
     def test_to_h_includes_success_status
       @report.add(build_result(tool_key: :rubocop, success: false, exit_status: 1))
       refute @report.to_h[:success]
