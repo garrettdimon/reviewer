@@ -132,14 +132,6 @@ module Reviewer
       0
     end
 
-    def warn_unrecognized_keywords
-      unrecognized = arguments.keywords.unrecognized
-      return if unrecognized.empty?
-
-      suggestions = build_suggestions(unrecognized)
-      formatter.unrecognized_keywords(unrecognized, suggestions)
-    end
-
     def build_suggestions(unrecognized)
       possible = arguments.keywords.possible
       checker = DidYouMean::SpellChecker.new(dictionary: possible)
