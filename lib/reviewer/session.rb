@@ -26,14 +26,14 @@ module Reviewer
 
     # Runs the review command for the current set of tools
     #
-    # @return [Integer] the maximum exit status from all tools
+    # @return [Integer] 0 when the run passed, 1 when a tool failed, 2 for a usage error
     def review
       run_tools(:review)
     end
 
     # Runs the format command for the current set of tools
     #
-    # @return [Integer] the maximum exit status from all tools
+    # @return [Integer] 0 when the run passed, 1 when a tool failed, 2 for a usage error
     def format
       run_tools(:format)
     end
