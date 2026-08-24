@@ -56,6 +56,7 @@ module Reviewer
                                    detail: 'Add a `format` command to enable `fmt` support')
       end
 
+      # :reek:FeatureEnvy -- selecting over tools is this method's purpose
       def suggest_missing_capability(capability, check_method, message_suffix:, detail:)
         @tools.all.each do |tool|
           next if tool.skip_in_batch?
