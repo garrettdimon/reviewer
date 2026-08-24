@@ -77,7 +77,7 @@ module Reviewer
       with_missing_config do
         stub_prompt = build_tty_prompt("y\n")
         setup_ran = false
-        Setup.stub(:run, ->(**) { setup_ran = true }) do
+        Setup.stub(:run, ->(configuration:, **) { setup_ran = !configuration.nil? }) do
           Reviewer.stub(:prompt, stub_prompt) do
             capture_subprocess_io do
               Reviewer.review
@@ -108,14 +108,14 @@ module Reviewer
     end
 
     def test_review_dispatches_to_init_when_subcommand
-      setup_ran = false
-      Setup.stub(:run, ->(**) { setup_ran = true }) do
+      received = nil
+      Setup.stub(:run, ->(configuration:, **) { received = configuration }) do
         ARGV.replace(['init'])
         Reviewer.review
       ensure
         ARGV.replace([])
       end
-      assert setup_ran, 'Expected Setup.run to be called for rvw init'
+      assert received, 'Expected Setup.run to receive a configuration for rvw init'
     end
 
     def test_review_dispatches_to_doctor_when_subcommand
@@ -133,14 +133,14 @@ module Reviewer
     end
 
     def test_format_dispatches_to_init_when_subcommand
-      setup_ran = false
-      Setup.stub(:run, ->(**) { setup_ran = true }) do
+      received = nil
+      Setup.stub(:run, ->(configuration:, **) { received = configuration }) do
         ARGV.replace(['init'])
         Reviewer.format
       ensure
         ARGV.replace([])
       end
-      assert setup_ran, 'Expected Setup.run to be called for fmt init'
+      assert received, 'Expected Setup.run to receive a configuration for fmt init'
     end
 
     def test_format_dispatches_to_doctor_when_subcommand

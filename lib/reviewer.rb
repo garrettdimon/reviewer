@@ -96,7 +96,7 @@ module Reviewer
     def handle_early_exits
       return show_help if arguments.help?
       return show_version if arguments.version?
-      return Setup.run if subcommand?(:init)
+      return Setup.run(configuration: configuration) if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
       return run_first_time_setup unless configuration.file.exist?
