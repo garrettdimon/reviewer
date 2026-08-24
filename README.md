@@ -280,7 +280,7 @@ Full review with JSON output for parsing:
 rvw --json
 ```
 
-Reviewer exits `0` when all tools pass, or with the highest exit status from any failing tool. Skipped and missing tools don't affect the exit code. This means `rvw` works directly as a CI gate — no wrapper script needed.
+Reviewer exits `0` when every tool that ran passed, `1` when one failed, and `2` when the request itself was wrong — an unrecognized tool, tag, or keyword. Tool exit codes are not forwarded: a tool passing under its `commands.max_exit_status` still exits `0`, and a failure exits `1` whatever the tool returned. Skipped and missing tools don't affect the exit code. This means `rvw` works directly as a CI gate — no wrapper script needed.
 
 ### Development
 
