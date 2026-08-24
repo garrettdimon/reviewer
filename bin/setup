@@ -3,6 +3,9 @@ set -euo pipefail
 IFS=$'\n\t'
 set -vx
 
+# Reviewer dogfoods the tools it configures, so development installs the
+# optional :dogfood group. CI does not - it only needs the gate.
+bundle config set --local with dogfood
 bundle install
 
 # Do any other automated setup that you need to do here

@@ -24,11 +24,9 @@ detectors:
   ControlParameter:
     exclude:
       - 'Reviewer::Arguments#runner_strategy'                               # Strategy selection from boolean
-      - 'Reviewer::Batch#strategy'                                           # Boolean -> strategy mapping
       - 'Reviewer::Output::Formatting#status_mark'                          # Boolean -> symbol mapping
       - 'Reviewer::Output::Formatting#status_style'                         # Boolean -> symbol mapping
       - 'Reviewer::Doctor::OpportunityCheck#catalog_supports?'              # Type-based capability query
-      - 'Reviewer::Tool::Settings#initialize'                               # DI: optional config hash
       - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Timed/untimed display
 
   # --- Targeted exclusions: repeated conditionals ---
@@ -46,14 +44,6 @@ detectors:
     exclude:
       - 'Reviewer::Output#console_width'                                    # IO.console returns nil in non-TTY
 
-  # --- Targeted exclusions: test classes ---
-
-  # Test classes are self-documenting via test method names.
-  IrresponsibleModule:
-    exclude:
-      - 'Reviewer::Doctor::KeywordCheckTest'
-      - 'Reviewer::Session::FormatterTest'
-
   # --- Targeted exclusions: utility functions ---
 
   # Private helpers that logically belong to their class despite not
@@ -61,8 +51,6 @@ detectors:
   # over-engineering for one-use helpers.
   UtilityFunction:
     exclude:
-      - 'Reviewer::Arguments#configure_input_options'                       # Slop DSL config block
-      - 'Reviewer::Arguments#configure_output_options'                      # Slop DSL config block
       - 'Reviewer::Capabilities#tool_data'                                  # Tool -> hash transform
       - 'Reviewer::Command::String::Env#needs_quotes?'                     # String analysis helper
       - 'Reviewer::Command::String::Flags#needs_quotes?'                   # String analysis helper
@@ -82,9 +70,6 @@ detectors:
   FeatureEnvy:
     exclude:
       - 'Reviewer::Command::String::Env#env'                               # Key-value formatting
-      - 'Reviewer::Doctor::OpportunityCheck#check_missing_files_config'     # Tool property inspection
-      - 'Reviewer::Doctor::OpportunityCheck#check_missing_format_command'   # Tool property inspection
-      - 'Reviewer::Output::Printer#write_raw'                              # Stream pass-through
       - 'Reviewer::Session#build_suggestions'                               # each_with_object iteration
       - 'Reviewer::Session#show_missing_tools'                              # Guard + formatter delegation
       - 'Reviewer::Setup::ToolBlock#apply_js_runner'                        # String substitution on input
@@ -124,7 +109,6 @@ detectors:
   # Classes with cohesive accessor/query interfaces that exceed default (15).
   TooManyMethods:
     exclude:
-      - 'Reviewer::Output'                                                  # 20: delegation hub
       - 'Reviewer::Runner'                                                  # 21: execution host + queries
       - 'Reviewer::Session'                                                 # 19: lifecycle orchestrator
       - 'Reviewer::Tool'                                                    # 18: settings + history + files
@@ -135,7 +119,6 @@ detectors:
   TooManyStatements:
     max_statements: 7
     exclude:
-      - 'Reviewer::Batch::Formatter#missing_tools'                          # 8: iterate tools with header/footer
       - 'Reviewer::Doctor::Formatter#print_finding'                         # 8: extract 3 fields + format 3 lines
       - 'Reviewer::Session#run_json'                                        # 8: early exits + lifecycle steps
       - 'Reviewer::Session#run_text'                                        # 9: lifecycle steps

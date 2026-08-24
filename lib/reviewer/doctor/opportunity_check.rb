@@ -46,16 +46,17 @@ module Reviewer
 
       def check_missing_files_config
         suggest_missing_capability(:files, :supports_files?,
-          message_suffix: 'has no file targeting configured',
-          detail: 'Add a `files` section to enable staged/modified file scoping')
+                                   message_suffix: 'has no file targeting configured',
+                                   detail: 'Add a `files` section to enable staged/modified file scoping')
       end
 
       def check_missing_format_command
         suggest_missing_capability(:format, :formattable?,
-          message_suffix: 'has no format command',
-          detail: 'Add a `format` command to enable `fmt` support')
+                                   message_suffix: 'has no format command',
+                                   detail: 'Add a `format` command to enable `fmt` support')
       end
 
+      # :reek:FeatureEnvy -- selecting over tools is this method's purpose
       def suggest_missing_capability(capability, check_method, message_suffix:, detail:)
         @tools.all.each do |tool|
           next if tool.skip_in_batch?

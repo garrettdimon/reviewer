@@ -11,28 +11,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (8.1.3.1)
-      base64
-      bigdecimal
-      concurrent-ruby (~> 1.0, >= 1.3.1)
-      connection_pool (>= 2.2.5)
-      drb
-      i18n (>= 1.6, < 2)
-      json
-      logger (>= 1.4.2)
-      minitest (>= 5.1)
-      securerandom (>= 0.3)
-      tzinfo (~> 2.0, >= 2.0.5)
-      uri (>= 0.13.1)
-    addressable (2.9.0)
-      public_suffix (>= 2.0.2, < 8.0)
-    arrayfields (4.9.2)
     ast (2.4.3)
-    axiom-types (0.1.1)
-      descendants_tracker (~> 0.0.4)
-      ice_nine (~> 0.11.0)
-      thread_safe (~> 0.3, >= 0.3.1)
-    base64 (0.3.0)
     benchmark (0.5.0)
     bigdecimal (3.3.1)
     brakeman (7.1.1)
@@ -40,33 +19,14 @@ GEM
     bundler-audit (0.9.3)
       bundler (>= 1.2.0)
       thor (~> 1.0)
-    cane (2.6.2)
-      parallel
-    chronic (0.10.2)
-    churn (1.0.8)
-      chronic (>= 0.2.3)
-      hirb
-      main
-      ruby_parser (~> 3.0)
-      sexp_processor (~> 4.1)
-    code_analyzer (0.5.5)
-      sexp_processor
-    code_metrics (0.1.3)
-    coderay (1.1.3)
-    coercible (1.0.0)
-      descendants_tracker (~> 0.0.1)
     concurrent-ruby (1.3.8)
-    connection_pool (3.0.2)
     csv (3.3.5)
     date (3.5.1)
-    debride (1.14.0)
+    debride (1.15.2)
       path_expander (~> 2.0)
-      prism (~> 1.5)
+      prism (~> 1.7)
       sexp_processor (~> 4.17)
-    descendants_tracker (0.0.4)
-      thread_safe (~> 0.3, >= 0.3.1)
     docile (1.4.1)
-    drb (2.2.3)
     dry-configurable (1.3.0)
       dry-core (~> 1.1)
       zeitwerk (~> 2.6)
@@ -98,10 +58,8 @@ GEM
       zeitwerk (~> 2.6)
     erb (6.0.7)
     erubi (1.13.1)
-    erubis (2.7.0)
     fasterer (0.11.0)
       ruby_parser (>= 3.19.1)
-    fattr (2.4.0)
     flay (2.14.0)
       erubi (~> 1.10)
       path_expander (~> 2.0)
@@ -111,20 +69,8 @@ GEM
       path_expander (~> 2.0)
       prism (~> 1.5)
       sexp_processor (~> 4.8)
-    hirb (0.7.3)
-    i18n (1.15.2)
-      concurrent-ruby (~> 1.0)
-    ice_nine (0.11.2)
-    inch (0.8.0)
-      pry
-      sparkr (>= 0.2.0)
-      term-ansicolor
-      yard (~> 0.9.12)
-    io-console (0.8.2)
     json (2.21.2)
     language_server-protocol (3.17.0.5)
-    launchy (2.5.2)
-      addressable (~> 2.8)
     license_finder (7.2.1)
       bundler
       csv (~> 3.2)
@@ -135,65 +81,26 @@ GEM
       xml-simple (~> 1.1.9)
     lint_roller (1.1.0)
     logger (1.7.0)
-    main (6.4.0)
-      arrayfields (~> 4.9, >= 4.9.2)
-      chronic (~> 0.10, >= 0.10.2)
-      fattr (~> 2.4, >= 2.4.0)
-      map (~> 6.6, >= 6.6.0)
-    map (6.6.0)
-    method_source (1.1.0)
-    metric_fu (4.13.0)
-      cane (~> 2.5, >= 2.5.2)
-      churn (~> 1.0, >= 1.0.2)
-      code_metrics (~> 0.1)
-      coderay
-      flay (~> 2.1, >= 2.0.1)
-      flog (~> 4.1, >= 4.1.1)
-      launchy (~> 2.0)
-      metric_fu-Saikuro (~> 1.1, >= 1.1.3)
-      multi_json
-      rails_best_practices (~> 1.14, >= 1.14.3)
-      redcard
-      reek (>= 5.4.0)
-      roodi (~> 5.0.0)
-    metric_fu-Saikuro (1.1.3)
     minitest (5.27.0)
     minitest-heat (2.1.0)
       minitest
-    mize (0.6.1)
-    multi_json (1.18.0)
     parallel (1.27.0)
     parser (3.3.10.0)
       ast (~> 2.4.1)
       racc
-    path_expander (2.0.0)
-    prism (1.7.0)
-    pry (0.15.2)
-      coderay (~> 1.1)
-      method_source (~> 1.0)
+    path_expander (2.0.1)
+    prism (1.9.0)
     pstore (0.2.0)
     psych (5.3.1)
       date
       stringio
-    public_suffix (7.0.5)
     racc (1.8.1)
-    rails_best_practices (1.23.3)
-      activesupport
-      code_analyzer (~> 0.5.5)
-      erubis
-      i18n
-      json
-      require_all (~> 3.0)
-      ruby-progressbar
     rainbow (3.1.1)
     rake (13.3.1)
     rdoc (7.1.0)
       erb
       psych (>= 4.0.0)
       tsort
-    readline (0.0.4)
-      reline
-    redcard (1.1.0)
     reek (6.5.0)
       dry-schema (~> 1.13)
       logger (~> 1.6)
@@ -201,12 +108,7 @@ GEM
       rainbow (>= 2.0, < 4.0)
       rexml (~> 3.1)
     regexp_parser (2.11.3)
-    reline (0.6.3)
-      io-console (~> 0.5)
-    require_all (3.0.0)
     rexml (3.4.4)
-    roodi (5.0.0)
-      ruby_parser (~> 3.2, >= 3.2.2)
     rubocop (1.81.7)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -225,10 +127,6 @@ GEM
       lint_roller (~> 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.38.0, < 2.0)
-    rubocop-performance (1.26.1)
-      lint_roller (~> 1.1)
-      rubocop (>= 1.75.0, < 2.0)
-      rubocop-ast (>= 1.47.1, < 2.0)
     rubocop-rake (0.7.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.72.1)
@@ -236,22 +134,8 @@ GEM
     ruby_parser (3.22.0)
       racc (~> 1.5)
       sexp_processor (~> 4.16)
-    rubycritic (4.11.0)
-      flay (~> 2.13)
-      flog (~> 4.7)
-      launchy (>= 2.5.2)
-      parser (>= 3.3.0.5)
-      rainbow (~> 3.1.1)
-      reek (~> 6.5.0, < 7.0)
-      rexml
-      ruby_parser (~> 3.21)
-      simplecov (>= 0.22.0)
-      tty-which (~> 0.5.0)
-      virtus (~> 2.0)
     rubyzip (2.4.1)
-    rufo (0.18.1)
-    securerandom (0.4.1)
-    sexp_processor (4.17.4)
+    sexp_processor (4.17.5)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -259,49 +143,17 @@ GEM
     simplecov-html (0.13.2)
     simplecov_json_formatter (0.1.4)
     slop (4.10.1)
-    sparkr (0.4.1)
-    standard (1.52.0)
-      language_server-protocol (~> 3.17.0.2)
-      lint_roller (~> 1.0)
-      rubocop (~> 1.81.7)
-      standard-custom (~> 1.0.0)
-      standard-performance (~> 1.8)
-    standard-custom (1.0.2)
-      lint_roller (~> 1.0)
-      rubocop (~> 1.50)
-    standard-performance (1.9.0)
-      lint_roller (~> 1.1)
-      rubocop-performance (~> 1.26.0)
     stringio (3.2.0)
-    sync (0.5.0)
-    term-ansicolor (1.11.3)
-      tins (~> 1)
     thor (1.4.0)
-    thread_safe (0.3.6)
-    tins (1.51.0)
-      bigdecimal
-      mize (~> 0.6)
-      readline
-      sync
     tomlrb (2.0.4)
     tsort (0.2.0)
-    tty-which (0.5.0)
-    tzinfo (2.0.6)
-      concurrent-ruby (~> 1.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
-    uri (1.1.1)
-    virtus (2.0.0)
-      axiom-types (~> 0.1)
-      coercible (~> 1.0)
-      descendants_tracker (~> 0.0, >= 0.0.3)
     with_env (1.1.0)
     xml-simple (1.1.9)
       rexml
     yard (0.9.45)
-    yardstick (0.9.9)
-      yard (~> 0.8, >= 0.8.7.2)
     zeitwerk (2.6.18)
 
 PLATFORMS
@@ -315,9 +167,7 @@ DEPENDENCIES
   fasterer
   flay
   flog
-  inch
   license_finder
-  metric_fu
   minitest (~> 5.27)
   minitest-heat (~> 2.1)
   racc
@@ -328,13 +178,9 @@ DEPENDENCIES
   rubocop
   rubocop-minitest
   rubocop-rake
-  rubycritic
-  rufo
   simplecov (~> 0.22)
   simplecov_json_formatter (~> 0.1)
-  standard (>= 1.35.1)
   yard (~> 0.9)
-  yardstick
 
 BUNDLED WITH
    2.7.2
