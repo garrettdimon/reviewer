@@ -11,7 +11,7 @@ module Reviewer
         output = block.to_s
 
         assert_includes output, 'rubocop:'
-        assert_includes output, "  name: RuboCop"
+        assert_includes output, '  name: RuboCop'
         assert_includes output, '  tags: [ruby, syntax]'
       end
 
