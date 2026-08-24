@@ -61,6 +61,7 @@ detectors:
   # over-engineering for one-use helpers.
   UtilityFunction:
     exclude:
+      - 'Reviewer::Arguments#configure_info_options'                        # Slop DSL config block
       - 'Reviewer::Arguments#configure_input_options'                       # Slop DSL config block
       - 'Reviewer::Arguments#configure_output_options'                      # Slop DSL config block
       - 'Reviewer::Capabilities#tool_data'                                  # Tool -> hash transform
@@ -84,6 +85,7 @@ detectors:
       - 'Reviewer::Command::String::Env#env'                               # Key-value formatting
       - 'Reviewer::Doctor::OpportunityCheck#check_missing_files_config'     # Tool property inspection
       - 'Reviewer::Doctor::OpportunityCheck#check_missing_format_command'   # Tool property inspection
+      - 'Reviewer::Doctor::OpportunityCheck#suggest_missing_capability'      # Shared iteration extracted from the two above
       - 'Reviewer::Output::Printer#write_raw'                              # Stream pass-through
       - 'Reviewer::Session#build_suggestions'                               # each_with_object iteration
       - 'Reviewer::Session#show_missing_tools'                              # Guard + formatter delegation
@@ -124,6 +126,7 @@ detectors:
   # Classes with cohesive accessor/query interfaces that exceed default (15).
   TooManyMethods:
     exclude:
+      - 'Reviewer::Arguments'                                               # 17: flag accessors + Slop config blocks
       - 'Reviewer::Output'                                                  # 20: delegation hub
       - 'Reviewer::Runner'                                                  # 21: execution host + queries
       - 'Reviewer::Session'                                                 # 19: lifecycle orchestrator
