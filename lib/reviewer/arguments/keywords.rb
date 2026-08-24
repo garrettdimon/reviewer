@@ -91,13 +91,14 @@ module Reviewer
       # @return [Array<String>] all keywords that Reviewer can recognize
       def possible = (RESERVED + configured_tags + configured_tool_names).uniq.sort
 
-      # Provides the complete list of all configured tags for enabled tools
+      # Provides the complete list of all configured tags, including tags carried only by
+      # tools excluded from the batch -- naming one explicitly is a valid way to select it
       #
       # @return [Array<String>] all unique configured tags
       def configured_tags
         return [] unless tools
 
-        tools.enabled.map(&:tags).flatten.uniq.sort
+        tools.all.map(&:tags).flatten.uniq.sort
       end
 
       # Provides the complete list of all configured tool names for enabled tools

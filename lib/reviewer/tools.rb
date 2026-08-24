@@ -52,7 +52,7 @@ module Reviewer
     #
     # @return [Array<Tool>] the full collection of tagged-via-command-line tools for a run
     def tagged
-      enabled.keep_if { |tool| tagged?(tool) }
+      all.select { |tool| tagged?(tool) }
     end
 
     # Uses the full context of a run to provide the filtered subset of tools to use. It takes into
