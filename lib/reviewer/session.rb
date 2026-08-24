@@ -100,7 +100,19 @@ module Reviewer
       USAGE_ERROR
     end
 
-    def unrecognized_selectors = arguments.keywords.unrecognized
+    # Positional selectors and `-t` values are the same request spelled two ways,
+    # so an unknown name has to fail the same either way. Keywords already track
+    # their own unrecognized set; tags are only checked against the configured
+    # vocabulary, since `-t` accepts nothing else.
+    def unrecognized_selectors
+      (arguments.keywords.unrecognized + unrecognized_tags).uniq.sort
+    end
+
+    def unrecognized_tags
+      configured = arguments.keywords.configured_tags
+
+      arguments.tags.raw.map(&:to_s).reject { |tag| configured.include?(tag) }
+    end
 
     def warn_no_matching_tools
       formatter.no_matching_tools(

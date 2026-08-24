@@ -65,6 +65,30 @@ module Reviewer
       end
     end
 
+    # `-t` is the path tooling uses, so an unknown tag there has to behave the
+    # same as an unknown positional rather than silently selecting nothing.
+    def test_an_unrecognized_tag_via_the_flag_runs_nothing_and_exits_two
+      status = nil
+      out, = capture_subprocess_io do
+        status = build_session(arguments: Arguments.new(%w[-t zzznope --json])).review
+      end
+
+      assert_equal 2, status
+      payload = JSON.parse(out)
+
+      assert_equal 'unrecognized_selector', payload.dig('error', 'code')
+      assert_includes payload.dig('error', 'message'), 'zzznope'
+    end
+
+    def test_a_recognized_tag_via_the_flag_still_runs
+      status = nil
+      capture_subprocess_io do
+        status = build_session(arguments: Arguments.new(%w[-t ruby --json])).review
+      end
+
+      refute_equal 2, status, 'A configured tag must not be treated as a usage error'
+    end
+
     def test_an_unrecognized_name_is_reported_as_such
       keywords = Arguments::Keywords.new(['rubocp'])
       keywords.tools = Tools.new(config_file: @config)
