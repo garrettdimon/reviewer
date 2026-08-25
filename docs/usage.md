@@ -89,7 +89,7 @@ fmt rubocop staged
 | Option | Output |
 |---|---|
 | Default | Streams a single tool; captures batches and prints actionable output |
-| `--format summary` | One result line per tool plus totals |
+| `--format summary` | One result line per tool plus totals; unmatched tools are labeled skipped |
 | `-j`, `--json`, or `--format json` | Structured JSON for automation |
 | `-r` or `--raw` | Direct passthrough output |
 

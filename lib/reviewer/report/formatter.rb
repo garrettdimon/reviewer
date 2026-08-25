@@ -42,7 +42,9 @@ module Reviewer
 
       def print_tool_line(result)
         if result.missing?
-          print_missing_tool(result)
+          print_unrun_tool(result, style: :warning, reason: 'not installed')
+        elsif result.skipped?
+          print_unrun_tool(result, style: :muted, reason: 'no matching files')
         else
           print_executed_tool(result)
         end
@@ -50,9 +52,13 @@ module Reviewer
         output.newline
       end
 
-      def print_missing_tool(result)
-        output.printer.print(:warning, "- #{result.tool_name.ljust(@name_width)}")
-        output.printer.print(:muted, '    not installed')
+      # A tool that was selected but did not run. A skip carries `success: true` so it cannot halt
+      # the batch, so styling on that would print a check mark for work that never happened. Neither
+      # case is a pass or a failure, so neither gets a status mark or a timing -- the reason says
+      # what happened, and the style separates "normal" (skipped) from "your environment is broken".
+      def print_unrun_tool(result, style:, reason:)
+        output.printer.print(style, "- #{result.tool_name.ljust(@name_width)}")
+        output.printer.print(:muted, "    #{reason}")
       end
 
       def print_executed_tool(result)
@@ -86,9 +92,15 @@ module Reviewer
         end
       end
 
+      # "All passed" is only true when every selected tool ran. With skips in the mix it names a
+      # verdict nobody reached, so the counts replace it.
       def print_success_summary
-        output.printer.print(:success, 'All passed')
-        output.printer.puts(:muted, " (#{format_duration(report.duration)})")
+        printer = output.printer
+        skipped = report.results.count(&:skipped?)
+
+        printer.print(:success, skipped.zero? ? 'All passed' : "#{report.results.count(&:executed?)} passed")
+        printer.print(:muted, ", #{skipped} skipped") unless skipped.zero?
+        printer.puts(:muted, " (#{format_duration(report.duration)})")
       end
 
       def print_failure_summary

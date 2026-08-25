@@ -170,11 +170,72 @@ module Reviewer
         refute_match(/RuboCop:/i, out)
       end
 
+      def test_skipped_tool_is_not_rendered_as_a_pass
+        @report.add(build_result(tool_key: :tests, success: true))
+        @report.add(build_skipped_result(tool_key: :rubocop))
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        rubocop_line = out.lines.find { |line| line.include?('Rubocop') }
+        refute_includes rubocop_line, Output::Formatting::CHECKMARK
+        assert_match(/no matching files/i, rubocop_line)
+      end
+
+      def test_skipped_tool_shows_no_timing
+        @report.add(build_skipped_result(tool_key: :rubocop))
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        rubocop_line = out.lines.find { |line| line.include?('Rubocop') }
+        refute_match(/\d+\.\d+s/, rubocop_line)
+      end
+
+      def test_summary_counts_skipped_separately_from_passed
+        2.times { |i| @report.add(build_result(tool_key: :"ran#{i}", success: true)) }
+        3.times { |i| @report.add(build_skipped_result(tool_key: :"skip#{i}")) }
+        @report.record_duration(1.5)
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        refute_match(/all passed/i, out)
+        assert_match(/2 passed/i, out)
+        assert_match(/3 skipped/i, out)
+      end
+
+      def test_all_passed_still_shown_when_nothing_skipped
+        @report.add(build_result(tool_key: :tests, success: true))
+        @report.record_duration(1.5)
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        assert_match(/all passed/i, out)
+      end
+
       private
 
       def duration_column_positions(output, *tool_names)
         lines = output.lines.map(&:chomp)
         tool_names.map { |name| lines.find { |l| l.include?(name) }.index(/\d+\.\d+s/) }
+      end
+
+      def build_skipped_result(tool_key:, tool_name: nil)
+        Runner::Result.new(
+          tool_key: tool_key,
+          tool_name: tool_name || tool_key.to_s.capitalize,
+          command_type: :review,
+          command_string: nil,
+          success: true,
+          exit_status: 0,
+          duration: 0,
+          stdout: nil,
+          stderr: nil,
+          skipped: true,
+          missing: nil
+        )
       end
 
       def build_result(tool_key:, success:, **options)

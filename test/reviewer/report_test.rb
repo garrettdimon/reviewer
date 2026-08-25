@@ -179,6 +179,21 @@ module Reviewer
       assert_empty @report.missing_tools
     end
 
+    # Pins the seam between this branch and `result-state`: the console stops calling a skip a pass,
+    # the payload does not. Flipping `success` here would make `failed:` count skipped tools as
+    # failures (see `to_h`), which needs the `skipped` bucket that `result-state` adds.
+    def test_summary_still_counts_skipped_as_passed_in_the_payload
+      @report.add(build_result(tool_key: :tests, success: true))
+      @report.add(build_skipped_result(tool_key: :rubocop))
+
+      summary = @report.to_h[:summary]
+
+      assert_equal 2, summary[:total]
+      assert_equal 2, summary[:passed]
+      assert_equal 0, summary[:failed]
+      refute summary.key?(:skipped)
+    end
+
     private
 
     def build_result(tool_key:, success:, exit_status: 0)
@@ -210,6 +225,14 @@ module Reviewer
         stderr: nil,
         skipped: nil,
         missing: true
+      )
+    end
+
+    def build_skipped_result(tool_key:)
+      Runner::Result.new(
+        tool_key: tool_key, tool_name: tool_key.to_s.capitalize, command_type: :review,
+        command_string: nil, success: true, exit_status: 0, duration: 0,
+        stdout: nil, stderr: nil, skipped: true, missing: nil
       )
     end
   end
