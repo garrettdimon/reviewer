@@ -137,6 +137,18 @@ module Reviewer
         assert_includes keywords.for_tool_names, 'list'
       end
 
+      def test_for_files_excludes_the_failed_tool_keyword
+        keywords = Keywords.new(%w[staged failed])
+
+        assert_equal %w[staged], keywords.for_files
+        assert_equal %w[failed staged], keywords.reserved.sort
+      end
+
+      def test_for_files_and_for_tools_partition_reserved
+        assert_equal Keywords::RESERVED.sort, (Keywords::FOR_FILES + Keywords::FOR_TOOLS).sort
+        assert_empty Keywords::FOR_FILES & Keywords::FOR_TOOLS
+      end
+
       private
 
       def tools_collection

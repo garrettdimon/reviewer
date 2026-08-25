@@ -165,6 +165,25 @@ module Reviewer
       history.set(:list, :last_status, nil)
     end
 
+    def test_failed_runs_the_tools_that_failed
+      history = Reviewer.history
+      history.set(:file_targeting_list, :last_status, :failed)
+      history.set(:file_targeting_list, :last_failed_files, ['lib/reviewer/batch.rb'])
+
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file, history: history)
+      tools_collection.stub(:current, [build_tool(:file_targeting_list)]) do
+        session = build_session(arguments: Arguments.new(%w[failed]), tools: tools_collection,
+                                history: history)
+        out, _err = capture_subprocess_io { session.review }
+
+        refute_match(/no reviewable/i, out)
+        assert_match(%r{lib/reviewer/batch\.rb}, out)
+      end
+    ensure
+      history.set(:file_targeting_list, :last_status, nil)
+      history.set(:file_targeting_list, :last_failed_files, nil)
+    end
+
     def test_failed_with_no_previous_run
       history = Reviewer.history
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
