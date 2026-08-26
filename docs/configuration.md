@@ -102,7 +102,7 @@ rubocop:
 | `files.review` | Replaces `commands.review` when files are targeted |
 | `files.format` | Replaces `commands.format` when files are targeted |
 | `files.flag` | Prefix before the resolved file list; empty means bare paths |
-| `files.separator` | Joins multiple paths; defaults to one space |
+| `files.separator` | Joins multiple shell-escaped paths; defaults to one space |
 | `files.pattern` | Keeps matching paths before the command runs |
 | `files.map_to_tests` | Maps Ruby source paths to existing `minitest` or `rspec` test paths |
 
@@ -113,7 +113,8 @@ Slashless patterns match each path's basename. Patterns containing `/` match nor
 repository-relative paths with pathname semantics. In path patterns, `**/` crosses directory
 boundaries while bare `**` does not; brace alternatives such as `'{lib,test}/**/*.rb'` are
 supported. Source-to-test mapping runs before filtering, nonexistent resolved paths are omitted,
-and matched paths retain their original form when appended to the command.
+and resolver output retains each matched path's original form. Reviewer shell-escapes each resolved
+path when appending it to the command.
 
 Source-to-test mapping recognizes Ruby files under `app/` and `lib/`, preserves matching test files,
 and omits mapped paths that do not exist.

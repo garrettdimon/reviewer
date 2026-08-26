@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 require_relative 'string/env'
 require_relative 'string/flags'
 
@@ -67,13 +69,14 @@ module Reviewer
         Flags.new(tool_settings.flags).to_s
       end
 
-      # Builds the files portion of the command string
+      # Builds the files portion of the command string with each path escaped for shell execution
       #
       # @return [String, nil] the formatted files string or nil if not applicable
       def files_string
         return nil unless files_applicable?
 
-        file_list = files.join(tool_settings.files_separator)
+        file_list = files.map { |file| Shellwords.shellescape(file) }
+                         .join(tool_settings.files_separator)
         flag = tool_settings.files_flag
 
         flag.empty? ? file_list : "#{flag} #{file_list}"

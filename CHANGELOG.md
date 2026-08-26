@@ -12,6 +12,7 @@
 - Generated Reek configuration now distinguishes full-project and file-scoped review commands
 - Generated Minitest configuration now executes every file in a scoped review
 - File-scoped commands now omit nonexistent resolved paths
+- File-scoped commands now shell-escape resolved paths before execution
 
 ## [1.0.0] - 2026-02-03
 

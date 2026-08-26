@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'json'
+require 'open3'
 
 module Reviewer
   class Command
@@ -53,6 +55,17 @@ module Reviewer
         cmd = Command::String.new(:review, tool_settings: settings, files: files)
 
         assert_equal 'custom-lint --files lib/foo.rb,lib/bar.rb', cmd.to_s
+      end
+
+      def test_preserves_shell_sensitive_file_arguments
+        settings = build_tool(:shell_file_targeting_tool).settings
+        files = ['lib/space name.rb', 'lib/a;printf INJECTED;.rb', 'lib/$HOME.rb']
+        command = Command::String.new(:review, tool_settings: settings, files: files)
+
+        stdout, stderr, status = Open3.capture3(command.to_s)
+
+        assert status.success?, stderr
+        assert_equal files, JSON.parse(stdout)
       end
 
       def test_does_not_append_files_when_tool_lacks_file_support

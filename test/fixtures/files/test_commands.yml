@@ -157,6 +157,15 @@ file_targeting_with_flag_tool:
     flag: '--files'
     separator: ','
 
+# For Testing Shell-Safe File Targeting
+shell_file_targeting_tool:
+  disabled: true
+  commands:
+    review: "ruby -rjson -e 'puts JSON.dump(ARGV)'"
+  files:
+    flag: ''
+    separator: ' '
+
 # For Testing File Pattern Filtering
 file_pattern_tool:
   disabled: true
