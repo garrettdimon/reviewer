@@ -6,7 +6,6 @@ require 'tmpdir'
 module Reviewer
   class SetupTest < Minitest::Test
     FIXTURES = Pathname('test/fixtures/projects')
-    CONFIGURATION_URL = 'https://github.com/garrettdimon/reviewer/blob/main/docs/configuration.md'
 
     def test_shows_already_exists_when_config_present
       with_temp_config(existing: true) do
@@ -23,7 +22,7 @@ module Reviewer
           Setup.run(configuration: Reviewer.configuration, project_dir: FIXTURES.join('empty_project'))
         end
         assert_match(/no supported tools detected/i, out)
-        assert_includes out, CONFIGURATION_URL
+        assert_includes out, Setup::CONFIG_URL
         refute config_file.exist?
       end
     end
@@ -49,7 +48,7 @@ module Reviewer
         end
         assert_match(/RuboCop/, out)
         assert_match(/Gemfile\.lock/, out)
-        assert_includes out, CONFIGURATION_URL
+        assert_includes out, Setup::CONFIG_URL
         assert_match(/rvw/, out)
       end
     end
