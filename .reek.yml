@@ -72,7 +72,6 @@ detectors:
       - 'Reviewer::Command::String::Env#env'                               # Key-value formatting
       - 'Reviewer::Session#build_suggestions'                               # each_with_object iteration
       - 'Reviewer::Session#show_missing_tools'                              # Guard + formatter delegation
-      - 'Reviewer::Setup::ToolBlock#apply_js_runner'                        # String substitution on input
       - 'Reviewer::Setup::ToolBlock#quote'                                  # YAML quoting on input string
       - 'Reviewer::Tool::Timing#average_time'                               # Array computation
       - 'Reviewer::Runner::Strategies::Captured#finish_progress_bar'        # Operates on bar parameter
