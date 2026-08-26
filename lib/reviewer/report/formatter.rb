@@ -92,8 +92,8 @@ module Reviewer
         end
       end
 
-      # "All passed" is only true when every selected tool ran. With skips in the mix it names a
-      # verdict nobody reached, so the counts replace it.
+      # When selected tools are skipped, "All passed" names a verdict nobody reached, so the counts
+      # replace it.
       def print_success_summary
         printer = output.printer
         skipped = report.results.count(&:skipped?)
