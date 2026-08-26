@@ -10,7 +10,7 @@ module Reviewer
   # Handles first-run setup: detecting tools and generating .reviewer.yml
   module Setup
     # URL to the configuration documentation for setup output messages
-    CONFIG_URL = 'https://github.com/garrettdimon/reviewer#configuration'
+    CONFIG_URL = 'https://github.com/garrettdimon/reviewer/blob/main/docs/configuration.md'
 
     # Runs the full setup flow: detect tools, generate config, display results
     # @param project_dir [Pathname, String] the project root to scan (defaults to pwd)
