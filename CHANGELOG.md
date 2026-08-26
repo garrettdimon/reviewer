@@ -10,6 +10,7 @@
 
 ### Fixed
 - Generated Reek configuration now distinguishes full-project and file-scoped review commands
+- Generated Minitest configuration now executes every file in a scoped review
 
 ## [1.0.0] - 2026-02-03
 

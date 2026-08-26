@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'open3'
 
 module Reviewer
   module Setup
@@ -130,13 +131,19 @@ module Reviewer
         assert_equal 'rspec', parsed['specs']['files']['map_to_tests']
       end
 
-      def test_includes_file_scoped_commands_in_files_block
-        generator = Generator.new([:tests])
-        yaml = generator.generate
+      def test_generated_minitest_command_runs_each_scoped_file
+        tests = YAML.safe_load(Generator.new([:tests]).generate).fetch('tests')
+        fixtures = %w[
+          test/fixtures/files/minitest/first.rb
+          test/fixtures/files/minitest/second.rb
+        ]
 
-        parsed = YAML.safe_load(yaml)
-        files = parsed['tests']['files']
-        assert_equal 'bundle exec ruby -Itest', files['review']
+        command = "#{tests.dig('files', 'review')} #{fixtures.join(' ')}"
+        stdout, _stderr, status = Open3.capture3(command)
+
+        assert status.success?
+        assert_includes stdout, 'first scoped file loaded'
+        assert_includes stdout, 'second scoped file loaded'
       end
 
       def test_minitest_review_command_is_rake_test

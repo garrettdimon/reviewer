@@ -22,7 +22,7 @@ tests:
   commands:
     review: "bundle exec rake"
   files:
-    review: "bundle exec ruby -Itest"
+    review: "bundle exec ruby -Itest -e 'ARGV.each { |file| require File.expand_path(file) }'"
     flag: ""
     separator: " "
     pattern: "*_test.rb"
