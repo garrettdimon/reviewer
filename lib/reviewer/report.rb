@@ -105,7 +105,7 @@ module Reviewer
         failed: results.count(&:failed?),
         skipped: results.count(&:skipped?),
         missing: results.count(&:missing?),
-        not_run: results.count { |result| result.state == :not_run },
+        not_run: results.count(&:not_run?),
         duration: duration
       }
     end

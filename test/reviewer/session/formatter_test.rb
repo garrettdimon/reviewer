@@ -31,7 +31,13 @@ module Reviewer
         refute parsed.key?('success')
         refute parsed.key?('message')
         assert_equal 'unrecognized_selector', parsed.dig('error', 'code')
-        assert_equal Report.empty_summary.transform_keys(&:to_s), parsed['summary']
+        assert_equal(
+          {
+            'total' => 0, 'passed' => 0, 'failed' => 0, 'skipped' => 0,
+            'missing' => 0, 'not_run' => 0, 'duration' => 0
+          },
+          parsed['summary']
+        )
         assert_empty parsed['tools']
       end
     end

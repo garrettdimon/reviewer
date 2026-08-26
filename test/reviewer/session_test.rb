@@ -149,7 +149,7 @@ module Reviewer
       end
     end
 
-    def test_json_reports_recognized_selection_with_no_enabled_tools # rubocop:disable Metrics/AbcSize
+    def test_json_reports_recognized_selection_with_no_enabled_tools
       arguments = Arguments.new(%w[-t disabled --json])
       tools_collection = Tools.new(arguments: arguments, config_file: Reviewer.configuration.file)
       session = build_session(arguments: arguments, tools: tools_collection)
@@ -159,7 +159,7 @@ module Reviewer
 
       assert_equal 'empty', parsed['state']
       assert_equal 'No matching tools found', parsed['message']
-      assert_equal Report.empty_summary.transform_keys(&:to_s), parsed['summary']
+      assert_equal empty_json_summary, parsed['summary']
     end
 
     def test_json_reports_when_selected_tools_do_not_support_the_command # rubocop:disable Metrics/AbcSize
@@ -298,14 +298,15 @@ module Reviewer
       assert_equal 'empty', parsed['state']
       assert parsed['success']
       assert_match(message_pattern, parsed['message'])
-      assert_equal(
-        {
-          'total' => 0, 'passed' => 0, 'failed' => 0, 'skipped' => 0,
-          'missing' => 0, 'not_run' => 0, 'duration' => 0
-        },
-        parsed['summary']
-      )
+      assert_equal empty_json_summary, parsed['summary']
       assert_empty parsed['tools']
+    end
+
+    def empty_json_summary
+      {
+        'total' => 0, 'passed' => 0, 'failed' => 0, 'skipped' => 0,
+        'missing' => 0, 'not_run' => 0, 'duration' => 0
+      }
     end
 
     def with_empty_staged_files(arguments)

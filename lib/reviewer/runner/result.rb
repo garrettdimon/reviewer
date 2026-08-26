@@ -169,6 +169,7 @@ module Reviewer
       def missing? = missing
 
       def state?(value) = state == value
+      private :state?
 
       # Whether this result represents a tool that actually ran
       #

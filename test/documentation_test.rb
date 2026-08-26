@@ -75,15 +75,16 @@ class DocumentationTest < Minitest::Test
   end
 
   def test_usage_includes_a_valid_review_json_report # rubocop:disable Metrics/AbcSize
-    report = review_json_report(File.read('docs/usage.md'))
+    report = fenced_blocks(File.read('docs/usage.md'), 'json')
+             .map { |block| JSON.parse(block) }
+             .find { |value| value.key?('tools') && value.key?('summary') }
 
     refute_nil report, 'Usage must include a valid review JSON report'
     assert_equal 1, report['schema_version']
     assert_equal %w[schema_version success summary tools], report.keys.sort
 
-    summary = report['summary']
-    state_total = summary.values_at('passed', 'failed', 'skipped', 'missing', 'not_run').sum
-    assert_equal summary['total'], state_total
+    state_total = report['summary'].values_at('passed', 'failed', 'skipped', 'missing', 'not_run').sum
+    assert_equal report.dig('summary', 'total'), state_total
 
     tool = report['tools'].first
     assert_equal 'skipped', tool['state']
@@ -159,11 +160,6 @@ class DocumentationTest < Minitest::Test
   def doctor_json_report(markdown)
     fenced_blocks(markdown, 'json').map { |block| JSON.parse(block) }
                                    .find { |value| value['schema_version'] == 1 }
-  end
-
-  def review_json_report(markdown)
-    fenced_blocks(markdown, 'json').map { |block| JSON.parse(block) }
-                                   .find { |value| value.key?('tools') && value.key?('summary') }
   end
 
   def assert_relative_links_resolve(source)

@@ -397,7 +397,6 @@ module Reviewer
         result = build_via_from_runner(success: false, exit_status: 1)
 
         assert_equal :failed, result.state
-        assert_respond_to result, :failed?
         assert_predicate result, :failed?
         refute result.success
         assert_equal 1, result.exit_status
