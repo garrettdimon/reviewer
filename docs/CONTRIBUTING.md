@@ -29,7 +29,7 @@ exercising the CLI from the repository.
 Reviewer uses Minitest. Run only the test file covering the code you changed:
 
 ```console
-bundle exec ruby -Itest test/reviewer/setup_test.rb
+bundle exec rvw tests -f test/reviewer/setup_test.rb
 ```
 
 Write a failing test first, confirm the expected failure, make the minimum change, and rerun that

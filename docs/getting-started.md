@@ -35,6 +35,25 @@ Review that file before running it: its commands execute with the same permissio
 If `.reviewer.yml` already exists, `rvw init` leaves it unchanged. If no supported tools are found,
 Reviewer prints a link to the [configuration reference](configuration.md) instead.
 
+### Update an existing generated configuration
+
+No migration is required. Commands in an existing `.reviewer.yml` remain project-owned, so keep
+Yarn, pnpm, or pinned commands when they reflect the project's policy. To adopt Reviewer's current
+generated defaults, edit only the applicable `commands.review` and `commands.format` values; do not
+delete a customized file just to regenerate it.
+
+| Tool | Previous generated forms | Current generated values |
+|---|---|---|
+| ESLint | `yarn eslint .` or `pnpm exec eslint .`, with `--fix` for format | Review: `npx eslint .`; format: `npx eslint . --fix` |
+| Prettier | `yarn prettier --check .` or `pnpm exec prettier --check .`, with `--write .` for format | Review: `npx prettier --check .`; format: `npx prettier --write .` |
+| Stylelint | `yarn stylelint "**/*.css"` or `pnpm exec stylelint "**/*.css"`, with `--fix` for format | Review: `npx stylelint "**/*.css"`; format: `npx stylelint "**/*.css" --fix` |
+| TypeScript | `npx tsc --noEmit`, `yarn tsc --noEmit`, or `pnpm exec tsc --noEmit` | Review: `npx --package=typescript tsc --noEmit` |
+| Biome | `yarn @biomejs/biome check .` or `pnpm exec @biomejs/biome check .`, with `--fix` for format | Review: `npx @biomejs/biome check .`; format: `npx @biomejs/biome check . --fix` |
+
+These defaults use npm's normal [`npx` resolution behavior](https://docs.npmjs.com/cli/v11/commands/npx/),
+which may acquire a missing package. Reviewer does not run a separate installer. Projects may
+replace these commands or pin package versions in their own configuration.
+
 ## Configure manually
 
 Auto-detection is optional. The smallest valid `.reviewer.yml` names a tool and provides its review
