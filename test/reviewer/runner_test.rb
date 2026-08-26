@@ -66,7 +66,8 @@ module Reviewer
       end
       result = runner.to_result
 
-      assert result.success
+      refute result.success
+      assert_equal :skipped, result.state
       assert result.skipped
     end
 

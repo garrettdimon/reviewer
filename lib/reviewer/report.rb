@@ -66,19 +66,27 @@ module Reviewer
       missing_results
     end
 
+    # Counts each result by its explicit state.
+    # @return [Hash] result counts and total duration
+    def summary
+      {
+        total: results.size,
+        passed: results.count(&:passed?),
+        failed: results.count(&:failed?),
+        skipped: results.count(&:skipped?),
+        missing: results.count(&:missing?),
+        not_run: results.count { |result| result.state == :not_run },
+        duration: duration
+      }
+    end
+
     # Converts the report to a hash suitable for serialization
     #
     # @return [Hash] structured hash with summary and tool results
     def to_h
       {
         success: success?,
-        summary: {
-          total: results.size,
-          passed: results.count(&:success?),
-          failed: results.count { |result| !result.success? && !result.missing? },
-          missing: missing_results.size,
-          duration: duration
-        },
+        summary: summary,
         tools: results.map(&:to_h)
       }
     end

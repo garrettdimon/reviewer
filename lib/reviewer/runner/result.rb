@@ -11,26 +11,29 @@ module Reviewer
     # @!attribute [r] command_type
     #   @return [Symbol] the type of command run (:review, :format, etc.)
     # @!attribute [r] command_string
-    #   @return [String] the full command string that was executed
+    #   @return [String, nil] the full command string that was executed
+    # @!attribute [r] state
+    #   @return [Symbol] the canonical result state (:passed, :failed, :skipped, or :missing)
     # @!attribute [r] success
-    #   @return [Boolean] whether the command completed successfully
+    #   @return [Boolean] compatibility value derived from state; true only for passed results
     # @!attribute [r] exit_status
-    #   @return [Integer] the exit status code from the command
+    #   @return [Integer, nil] the exit status code from the command
     # @!attribute [r] duration
-    #   @return [Float] the execution time in seconds
+    #   @return [Float, nil] the execution time in seconds
     # @!attribute [r] stdout
     #   @return [String, nil] the standard output from the command
     # @!attribute [r] stderr
     #   @return [String, nil] the standard error from the command
     # @!attribute [r] skipped
-    #   @return [Boolean] whether the tool was skipped
+    #   @return [Boolean, nil] compatibility value that is true only for skipped results
     # @!attribute [r] missing
-    #   @return [Boolean] whether the tool's executable was not found
+    #   @return [Boolean, nil] compatibility value that is true only for missing results
     Result = Struct.new(
       :tool_key,
       :tool_name,
       :command_type,
       :command_string,
+      :state,
       :success,
       :exit_status,
       :duration,
@@ -43,8 +46,29 @@ module Reviewer
       keyword_init: true
     ) do
       # Freeze on initialization to maintain immutability like Data.define
-      def initialize(...)
-        super
+      # :reek:FeatureEnvy -- validates the supplied compatibility values against canonical state
+      # :reek:TooManyStatements -- compatibility is intentionally isolated in this initializer
+      def initialize(state: nil, success: nil, skipped: nil, missing: nil, **attributes)
+        state ||= if skipped
+                    :skipped
+                  elsif missing
+                    :missing
+                  elsif success == true
+                    :passed
+                  elsif success == false
+                    :failed
+                  end
+
+        conflicting_flags = skipped && state != :skipped ||
+                            missing && state != :missing ||
+                            skipped && missing
+        conflicting_success = state == :passed && success == false ||
+                              state == :failed && success == true
+        if conflicting_flags || conflicting_success
+          raise ArgumentError, 'Result state conflicts with legacy values'
+        end
+
+        super(**attributes, state: state, success: success, skipped: skipped, missing: missing)
         freeze
       end
 
@@ -73,10 +97,14 @@ module Reviewer
       end
 
       def self.build_skipped(runner)
+        tool = runner.tool
         new(
-          **base_attributes(runner),
+          tool_key: tool.key,
+          tool_name: tool.name,
+          command_type: runner.command.type,
           command_string: nil,
-          success: true, exit_status: 0, duration: 0,
+          state: :skipped,
+          success: false, exit_status: nil, duration: nil,
           stdout: nil, stderr: nil, skipped: true
         )
       end
@@ -84,6 +112,7 @@ module Reviewer
       def self.build_missing(runner)
         new(
           **base_attributes(runner),
+          state: :missing,
           success: false, exit_status: runner.shell.result.exit_status, duration: 0,
           stdout: nil, stderr: nil, skipped: nil, missing: true
         )
@@ -95,6 +124,7 @@ module Reviewer
         settings = runner.tool.settings
         new(
           **base_attributes(runner),
+          state: runner.success? ? :passed : :failed,
           success: runner.success?, exit_status: shell_result.exit_status,
           duration: shell.timer.total_seconds,
           stdout: shell_result.stdout, stderr: shell_result.stderr, skipped: nil,
@@ -105,9 +135,23 @@ module Reviewer
 
       private_class_method :base_attributes, :build_skipped, :build_missing, :build_executed
 
-      alias_method :success?, :success
-      alias_method :skipped?, :skipped
-      alias_method :missing?, :missing
+      def passed? = state?(:passed)
+      def failed? = state?(:failed)
+      def success = passed?
+
+      def skipped
+        true if state?(:skipped)
+      end
+
+      def missing
+        true if state?(:missing)
+      end
+
+      def success? = success
+      def skipped? = skipped
+      def missing? = missing
+
+      def state?(value) = state == value
 
       # Whether this result represents a tool that actually ran (not skipped or missing)
       #
@@ -131,11 +175,12 @@ module Reviewer
       #
       # @return [Hash] hash representation with nil values removed
       def to_h
-        {
+        attributes = {
           tool: tool_key,
           name: tool_name,
           command_type: command_type,
           command: command_string,
+          state: state,
           success: success,
           exit_status: exit_status,
           duration: duration,
@@ -143,7 +188,9 @@ module Reviewer
           stderr: stderr,
           skipped: skipped,
           missing: missing
-        }.compact # Excludes summary_pattern/summary_label (config, not results)
+        }
+
+        skipped? ? attributes : attributes.compact
       end
     end
   end

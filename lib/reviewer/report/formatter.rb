@@ -94,17 +94,23 @@ module Reviewer
 
       # When selected tools are skipped, "All passed" names a verdict nobody reached, so the counts
       # replace it.
+      # :reek:FeatureEnvy -- formats Report's state counts for display
+      # :reek:TooManyStatements -- one linear summary line with optional state counts
       def print_success_summary
         printer = output.printer
-        skipped = report.results.count(&:skipped?)
+        counts = report.summary
+        state_counts = %i[skipped missing].filter_map do |state|
+          ", #{counts[state]} #{state}" unless counts[state].zero?
+        end.join
 
-        printer.print(:success, skipped.zero? ? 'All passed' : "#{report.results.count(&:executed?)} passed")
-        printer.print(:muted, ", #{skipped} skipped") unless skipped.zero?
+        all_passed = counts[:passed] == counts[:total]
+        printer.print(:success, all_passed ? 'All passed' : "#{counts[:passed]} passed")
+        printer.print(:muted, state_counts) unless state_counts.empty?
         printer.puts(:muted, " (#{format_duration(report.duration)})")
       end
 
       def print_failure_summary
-        failed_results = report.results.reject(&:success?).reject(&:missing?)
+        failed_results = report.results.select(&:failed?)
 
         failed_results.each do |result|
           output.newline
