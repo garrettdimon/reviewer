@@ -4,6 +4,7 @@ require 'test_helper'
 require 'yaml'
 
 class DocumentationTest < Minitest::Test
+  AGENT_GUIDE = 'AGENTS.md'
   DOCUMENTATION_PAGES = %w[
     docs/README.md
     docs/getting-started.md
@@ -29,6 +30,12 @@ class DocumentationTest < Minitest::Test
     missing_pages = DOCUMENTATION_PAGES.reject { |page| File.file?(page) }
 
     assert_empty missing_pages, "Missing documentation pages: #{missing_pages.join(', ')}"
+  end
+
+  def test_agent_guide_delegates_to_contributor_guide
+    assert File.file?(AGENT_GUIDE), "Missing #{AGENT_GUIDE}"
+    assert_includes markdown_targets(File.read(AGENT_GUIDE)), 'docs/CONTRIBUTING.md'
+    assert_relative_links_resolve(AGENT_GUIDE)
   end
 
   def test_documentation_navigation_is_relative_and_resolves
