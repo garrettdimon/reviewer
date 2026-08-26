@@ -51,9 +51,16 @@ module Reviewer
       private
 
       def validate_configuration
-        raise InvalidConfigurationError, "Tools configuration file (#{file}) must contain a mapping of tools" unless configuration.is_a?(Hash) && configuration.values.all?(Hash)
+        raise InvalidConfigurationError, "Tools configuration file (#{file}) must contain a mapping of tools" unless tool_mappings?
+        raise InvalidConfigurationError, "Tools configuration file (#{file}) commands must contain mappings" unless command_mappings?
 
         require_review_commands
+      end
+
+      def tool_mappings? = configuration.is_a?(Hash) && configuration.values.all?(Hash)
+
+      def command_mappings?
+        configuration.values.all? { |tool| !tool.key?(:commands) || tool[:commands].is_a?(Hash) }
       end
 
       def require_review_commands

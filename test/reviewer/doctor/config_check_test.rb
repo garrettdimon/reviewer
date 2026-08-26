@@ -59,6 +59,16 @@ module Reviewer
         end
       end
 
+      def test_reports_non_mapping_commands_as_invalid
+        with_swapped_config(Pathname('test/fixtures/files/test_commands_invalid_shape.yml')) do
+          report = Report.new
+          state = ConfigCheck.new(report, configuration: Reviewer.configuration).check
+
+          assert_equal :invalid, state
+          assert_equal :invalid, report.configuration_state
+        end
+      end
+
       private
 
       def run_check
