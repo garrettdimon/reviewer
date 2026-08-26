@@ -4,15 +4,19 @@
 - Moved long-form guidance into version-controlled repository documentation; setup output and gem metadata now link to it
 - Doctor separates configured tools from sourced project discoveries in human and JSON reports
 - `rvw init` is deprecated while retaining its existing generation behavior for one transition cycle
+- Skipped results now report `success: false` and null unavailable execution fields
 
 ### Added
 - Repository-relative and brace-alternative matching for `files.pattern`
+- Explicit tool result states, fail-fast `not_run` results, schema-versioned JSON, and empty/error envelopes
 
 ### Fixed
 - Generated Reek configuration now distinguishes full-project and file-scoped review commands
 - Generated Minitest configuration now executes every file in a scoped review
 - File-scoped commands now omit nonexistent resolved paths
 - File-scoped commands now shell-escape resolved paths before execution
+- Result summaries now total every state accurately and avoid claiming all-missing runs passed
+- Recognized empty JSON requests now return a documented envelope instead of no output
 
 ## [1.0.0] - 2026-02-03
 

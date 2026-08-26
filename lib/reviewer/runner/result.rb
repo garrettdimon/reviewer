@@ -190,8 +190,8 @@ module Reviewer
 
       # Converts the result to a hash suitable for serialization
       #
-      # @return [Hash] hash representation with nil values removed
-      def to_h
+      # @return [Hash] serialized result; skipped and not-run execution fields remain explicit nils
+      def to_h # rubocop:disable Metrics/AbcSize
         attributes = {
           tool: tool_key,
           name: tool_name,
@@ -207,7 +207,9 @@ module Reviewer
           missing: missing
         }
 
-        skipped? || not_run? ? attributes : attributes.compact
+        return attributes.compact unless skipped? || not_run?
+
+        attributes.compact.merge(attributes.slice(:command, :exit_status, :duration, :stdout, :stderr))
       end
     end
   end

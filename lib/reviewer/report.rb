@@ -6,6 +6,36 @@ require_relative 'report/formatter'
 module Reviewer
   # Collects results from multiple tool runs and provides serialization
   class Report
+    SCHEMA_VERSION = 1
+
+    # Builds the zero-valued summary shared by empty and error envelopes.
+    # @return [Hash] all result-state counts and duration set to zero
+    def self.empty_summary
+      {
+        total: 0,
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        missing: 0,
+        not_run: 0,
+        duration: 0
+      }
+    end
+
+    # Builds an empty report envelope with a context-specific message.
+    # @param message [String] why no tool results are present
+    # @return [Hash] a schema-versioned empty envelope
+    def self.empty(message: 'No tools ran')
+      {
+        schema_version: SCHEMA_VERSION,
+        state: 'empty',
+        success: true,
+        message: message,
+        summary: empty_summary,
+        tools: []
+      }
+    end
+
     attr_reader :results, :duration
 
     def initialize
@@ -29,7 +59,7 @@ module Reviewer
       @duration = seconds
     end
 
-    # Whether all executed tools in the report succeeded (excludes missing and skipped)
+    # Whether all executed tools in the report succeeded
     #
     # @return [Boolean] true if all executed results are successful
     def success?
@@ -84,7 +114,10 @@ module Reviewer
     #
     # @return [Hash] structured hash with summary and tool results
     def to_h
+      return self.class.empty if results.empty?
+
       {
+        schema_version: SCHEMA_VERSION,
         success: success?,
         summary: summary,
         tools: results.map(&:to_h)
@@ -100,7 +133,7 @@ module Reviewer
 
     private
 
-    # Results for tools that actually executed (excludes skipped and missing)
+    # Results for tools that actually executed (passed or failed)
     #
     # @return [Array<Runner::Result>] executed results only
     def executed_results

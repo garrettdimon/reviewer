@@ -159,6 +159,13 @@ module Reviewer
         end
       end
 
+      def test_to_h_keeps_only_true_legacy_flags_for_skipped_result
+        hash = build_via_from_runner(skipped: true).to_h
+
+        assert hash[:skipped]
+        refute hash.key?(:missing)
+      end
+
       def test_success_predicate
         assert @result.success?
       end
@@ -196,6 +203,13 @@ module Reviewer
         ]
 
         assert_null_execution_data(result)
+      end
+
+      def test_not_run_hash_omits_legacy_flags
+        hash = Result.not_run(tool: build_tool(:enabled_tool), command_type: :review).to_h
+
+        refute hash.key?(:skipped)
+        refute hash.key?(:missing)
       end
 
       def test_legacy_construction_derives_state

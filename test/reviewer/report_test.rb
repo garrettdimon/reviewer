@@ -72,6 +72,33 @@ module Reviewer
       refute @report.to_h[:success]
     end
 
+    def test_to_h_includes_schema_version
+      @report.add(build_result(tool_key: :rubocop, success: true))
+      payload = @report.to_h
+
+      assert_equal 1, payload[:schema_version]
+      refute payload.key?(:state)
+      refute payload.key?(:message)
+      refute payload.key?(:error)
+    end
+
+    def test_empty_report_uses_the_empty_envelope
+      assert_equal(
+        {
+          schema_version: 1,
+          state: 'empty',
+          success: true,
+          message: 'No tools ran',
+          summary: {
+            total: 0, passed: 0, failed: 0, skipped: 0,
+            missing: 0, not_run: 0, duration: 0
+          },
+          tools: []
+        },
+        @report.to_h
+      )
+    end
+
     def test_to_h_includes_summary_counts
       @report.add(build_result(tool_key: :rubocop, success: true, exit_status: 0))
       @report.add(build_result(tool_key: :tests, success: false, exit_status: 1))
@@ -83,6 +110,7 @@ module Reviewer
     end
 
     def test_to_h_includes_duration
+      @report.add(build_result(tool_key: :rubocop, success: true))
       @report.record_duration(8.5)
       assert_equal 8.5, @report.to_h[:summary][:duration]
     end
@@ -179,7 +207,7 @@ module Reviewer
       assert_empty @report.missing_tools
     end
 
-    def test_summary_counts_each_result_state_once
+    def test_summary_counts_each_result_state_once # rubocop:disable Metrics/AbcSize
       @report.add(build_result(tool_key: :tests, success: true))
       @report.add(build_result(tool_key: :notes, success: false))
       @report.add(build_skipped_result(tool_key: :rubocop))

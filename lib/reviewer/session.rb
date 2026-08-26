@@ -54,16 +54,18 @@ module Reviewer
       end
     end
 
-    def run_json(command_type)
+    def run_json(command_type) # rubocop:disable Metrics/AbcSize
       message = json_early_exit_message
       return emit_json_early_exit(message) if message
 
       current_tools = tools.current
-      return 0 if current_tools.empty?
+      return emit_json_early_exit('No matching tools found') if current_tools.empty?
 
       strategy = runner_strategy(current_tools)
       report = Batch.new(command_type, current_tools, strategy: strategy, context: context).run
-      puts report.to_json
+      empty_message = "No tools support the requested #{command_type} command"
+      payload = report.results.empty? ? Report.empty(message: empty_message) : report.to_h
+      puts JSON.pretty_generate(payload)
       report.exit_code
     end
 
@@ -135,12 +137,7 @@ module Reviewer
     end
 
     def emit_json_early_exit(message)
-      puts JSON.pretty_generate(
-        success: true,
-        message: message,
-        summary: { total: 0, passed: 0, failed: 0, missing: 0, duration: 0 },
-        tools: []
-      )
+      puts JSON.pretty_generate(Report.empty(message: message))
       0
     end
 

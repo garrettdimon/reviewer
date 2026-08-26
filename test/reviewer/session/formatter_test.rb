@@ -19,6 +19,21 @@ module Reviewer
         assert_match(/staged/, out)
         assert_match(/modified/, out)
       end
+
+      def test_unrecognized_keywords_json_uses_the_error_envelope # rubocop:disable Metrics/AbcSize
+        out, _err = capture_subprocess_io do
+          formatter.unrecognized_keywords_json(['lsit'], 'lsit' => 'list')
+        end
+        parsed = JSON.parse(out)
+
+        assert_equal 1, parsed['schema_version']
+        assert_equal 'error', parsed['state']
+        refute parsed.key?('success')
+        refute parsed.key?('message')
+        assert_equal 'unrecognized_selector', parsed.dig('error', 'code')
+        assert_equal Report.empty_summary.transform_keys(&:to_s), parsed['summary']
+        assert_empty parsed['tools']
+      end
     end
   end
 end
