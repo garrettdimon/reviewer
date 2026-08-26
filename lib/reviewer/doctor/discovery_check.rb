@@ -7,7 +7,7 @@ module Reviewer
   module Doctor
     # Reports known tools observed in the project but absent from valid configuration.
     class DiscoveryCheck
-      SHELL_OPERATORS = /&&|\|\||[;|]/
+      SHELL_OPERATORS = /[;&|]/
 
       def initialize(report, project_dir, configured_keys:)
         @report = report
@@ -57,7 +57,9 @@ module Reviewer
       end
 
       def package_scripts
-        JSON.parse(@project_dir.join('package.json').read).fetch('scripts', {})
+        package = JSON.parse(@project_dir.join('package.json').read)
+        scripts = package['scripts'] if package.is_a?(Hash)
+        scripts.is_a?(Hash) ? scripts : {}
       rescue Errno::ENOENT, JSON::ParserError
         {}
       end

@@ -55,6 +55,14 @@ module Reviewer
                      eslint.observations.map(&:to_h)
       end
 
+      def test_retains_filesystem_discoveries_when_package_scripts_are_not_a_mapping
+        report = run_check(FIXTURES.join('invalid_package_shape_project'))
+        eslint = report.discoveries.find { |discovery| discovery.key == :eslint }
+
+        assert_equal [{ kind: :configuration_file, source: { path: 'eslint.config.js' } }],
+                     eslint.observations.map(&:to_h)
+      end
+
       private
 
       def run_check(project_dir, configured_keys: [])
