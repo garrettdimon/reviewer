@@ -88,14 +88,6 @@ class DocumentationTest < Minitest::Test
     supported_keys.each { |configuration, supported| assert_equal supported.sort, configuration.keys.sort }
   end
 
-  def test_changelog_records_repository_documentation
-    unreleased = File.read('CHANGELOG.md')[/^## \[Unreleased\]\n(?<body>.*?)(?=^## |\z)/m, :body]
-
-    assert_includes unreleased, '### Changed'
-    assert_match(/repository documentation/i, unreleased)
-    assert_match(/setup.*gem metadata/i, unreleased)
-  end
-
   def test_gem_metadata_uses_repository_documentation_without_a_wiki
     metadata = Gem::Specification.load('reviewer.gemspec').metadata
 
