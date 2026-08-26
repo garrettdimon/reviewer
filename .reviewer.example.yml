@@ -7,7 +7,7 @@
 #  tags: [ruby, dependencies]
 #  links:
 #    home:
-#    install:                   # Shown when the executable is missing.
+#    install:
 #    ignore_syntax:            # Shown after review failures.
 #    disable_syntax:           # Shown after review failures.
 #  commands:

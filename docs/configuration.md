@@ -142,9 +142,8 @@ rubocop:
     review: bundle exec rubocop
 ```
 
-`links.install` may be shown when an executable is missing. `links.ignore_syntax` and
-`links.disable_syntax` may be shown after a review failure. Link values are informational and are
-never executed.
+`links.ignore_syntax` and `links.disable_syntax` may be shown after a review failure. Link values are
+informational and are never executed.
 
 ## Summary details
 
