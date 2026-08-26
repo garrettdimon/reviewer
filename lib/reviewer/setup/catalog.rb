@@ -148,6 +148,7 @@ module Reviewer
           },
           files: { flag: '', separator: ' ', pattern: '*.js' },
           detect: {
+            executables: %w[eslint],
             files: %w[.eslintrc .eslintrc.js .eslintrc.json .eslintrc.yml eslint.config.js eslint.config.mjs]
           }
         },
@@ -160,6 +161,7 @@ module Reviewer
             format: 'npx prettier --write .'
           },
           detect: {
+            executables: %w[prettier],
             files: %w[.prettierrc .prettierrc.js .prettierrc.json .prettierrc.yml .prettierrc.yaml]
           }
         },
@@ -173,6 +175,7 @@ module Reviewer
           },
           files: { flag: '', separator: ' ', pattern: '*.css' },
           detect: {
+            executables: %w[stylelint],
             files: %w[.stylelintrc .stylelintrc.js .stylelintrc.json .stylelintrc.yml]
           }
         },
@@ -184,6 +187,7 @@ module Reviewer
             review: 'npx tsc --noEmit'
           },
           detect: {
+            executables: %w[tsc],
             files: %w[tsconfig.json]
           }
         },
@@ -197,6 +201,7 @@ module Reviewer
           },
           files: { flag: '', separator: ' ', pattern: '*.js' },
           detect: {
+            executables: %w[biome @biomejs/biome],
             files: %w[biome.json biome.jsonc]
           }
         }

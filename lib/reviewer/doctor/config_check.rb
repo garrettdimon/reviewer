@@ -19,27 +19,38 @@ module Reviewer
       # Checks for .reviewer.yml existence and validity
       def check
         config_file = @configuration.file
+        report.set_configuration(path: configuration_path(config_file), state: :missing)
 
-        unless config_file.exist?
-          report.add(:configuration, status: :error,
-                                     message: 'No .reviewer.yml found', detail: 'Run `rvw init` to generate one')
-          return
-        end
+        return :missing unless config_file.exist?
 
-        report.add(:configuration, status: :ok, message: '.reviewer.yml found')
-        validate_via_loader
+        validate_via_loader(config_file)
       end
 
       private
 
       # Exercises the full Configuration::Loader pipeline (parse + validate) to surface config errors
-      def validate_via_loader
+      def validate_via_loader(config_file)
         Configuration::Loader.configuration(file: @configuration.file)
-        report.add(:configuration, status: :ok, message: 'Configuration is valid')
+        report.set_configuration(path: configuration_path(config_file), state: :valid)
+        :valid
       rescue Configuration::Loader::InvalidConfigurationError => e
-        report.add(:configuration, status: :error, message: 'YAML syntax error', detail: e.message)
+        invalid_configuration('Invalid configuration', e.message, config_file)
       rescue Configuration::Loader::MissingReviewCommandError => e
-        report.add(:configuration, status: :error, message: 'Missing review command', detail: e.message)
+        invalid_configuration('Missing review command', e.message, config_file)
+      end
+
+      def invalid_configuration(message, detail, config_file)
+        report.add(:configuration, status: :error, message: message, detail: detail)
+        report.set_configuration(path: configuration_path(config_file), state: :invalid)
+        :invalid
+      end
+
+      def configuration_path(config_file)
+        path = Pathname(config_file)
+        return path.to_s unless path.absolute?
+
+        relative = path.relative_path_from(Pathname.pwd)
+        relative.to_s.start_with?('../') ? path.to_s : relative.to_s
       end
     end
   end

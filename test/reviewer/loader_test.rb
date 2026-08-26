@@ -35,6 +35,16 @@ module Reviewer
         assert_raises(Loader::InvalidConfigurationError) { Loader.new(file: 'test/fixtures/files/test_commands_broken.yml') }
       end
 
+      def test_fails_gracefully_with_empty_configuration_yaml
+        assert_raises(Loader::InvalidConfigurationError) { Loader.new(file: 'test/fixtures/files/empty.yml') }
+      end
+
+      def test_fails_gracefully_when_commands_are_not_a_mapping
+        assert_raises(Loader::InvalidConfigurationError) do
+          Loader.new(file: 'test/fixtures/files/test_commands_invalid_shape.yml')
+        end
+      end
+
       def test_review_commands_present_returns_true_for_valid_config
         loader = Loader.new(file: config_file)
         assert loader.review_commands_present?

@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+- Moved long-form guidance into version-controlled repository documentation; setup output and gem metadata now link to it
+- Doctor separates configured tools from sourced project discoveries in human and JSON reports
+- `rvw init` is deprecated while retaining its existing generation behavior for one transition cycle
+
 ## [1.0.0] - 2026-02-03
 
 ### Added

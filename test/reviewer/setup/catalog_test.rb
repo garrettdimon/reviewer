@@ -5,6 +5,20 @@ require 'test_helper'
 module Reviewer
   module Setup
     class CatalogTest < Minitest::Test
+      NODE_COMMANDS = {
+        eslint: { review: 'npx eslint .', format: 'npx eslint . --fix' },
+        prettier: { review: 'npx prettier --check .', format: 'npx prettier --write .' },
+        stylelint: {
+          review: 'npx stylelint "**/*.css"',
+          format: 'npx stylelint "**/*.css" --fix'
+        },
+        typescript: { review: 'npx tsc --noEmit' },
+        biome: {
+          review: 'npx @biomejs/biome check .',
+          format: 'npx @biomejs/biome check . --fix'
+        }
+      }.freeze
+
       def test_all_returns_a_frozen_hash
         assert_kind_of Hash, Catalog.all
         assert Catalog.all.frozen?
@@ -69,6 +83,14 @@ module Reviewer
         assert_equal 'bundle exec ruby -Itest', config[:files][:review]
         assert_equal '*_test.rb', config[:files][:pattern]
         assert_equal 'minitest', config[:files][:map_to_tests]
+      end
+
+      def test_node_tools_use_exact_commands
+        actual = NODE_COMMANDS.keys.to_h do |key|
+          [key, Catalog.config_for(key)[:commands]]
+        end
+
+        assert_equal NODE_COMMANDS, actual
       end
     end
   end

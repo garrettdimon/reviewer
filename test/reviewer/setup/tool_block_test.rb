@@ -64,8 +64,7 @@ module Reviewer
       end
 
       def test_applies_js_runner_substitution
-        block = ToolBlock.new(:eslint, Catalog.config_for(:eslint), js_runner: 'yarn')
-        output = block.to_s
+        output = ToolBlock.new(:eslint, Catalog.config_for(:eslint), js_runner: 'yarn').to_s
 
         assert_includes output, 'yarn eslint'
         refute_includes output, 'npx eslint'

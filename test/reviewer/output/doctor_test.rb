@@ -4,67 +4,72 @@ require 'test_helper'
 
 module Reviewer
   class DoctorOutputTest < Minitest::Test
-    def test_renders_ok_report
-      report = Reviewer::Doctor::Report.new
-      report.add(:configuration, status: :ok, message: '.reviewer.yml found')
-      report.add(:environment, status: :ok, message: 'Ruby 3.2.0')
+    def test_renders_configured_tools_and_discoveries_separately
+      report = example_report
 
       out = capture_output(report)
-      assert_match(/Configuration/, out)
-      assert_match(/\.reviewer\.yml found/, out)
-      assert_match(/Environment/, out)
-      assert_match(/No issues found/, out)
+
+      assert_match(/Reviewer Doctor/, out)
+      assert_match(/Configured tools/, out)
+      assert_match(/Minitest \(tests\)/, out)
+      assert_match(/Review\s+bundle exec rake test/, out)
+      assert_match(/Configured in\s+\.reviewer\.yml › tests/, out)
+      assert_match(/Discoveries/, out)
+      assert_match(/ESLint/, out)
+      assert_match(/Command\s+eslint \./, out)
+      assert_match(/Discovered via\s+package\.json › scripts\.lint/, out)
+      refute_match(/Opportunities|recommend|Add a `format`|Add a `files`/, out)
     end
 
-    def test_renders_error_report
-      report = Reviewer::Doctor::Report.new
-      report.add(:configuration, status: :error, message: 'No .reviewer.yml found',
-                                 detail: 'Run `rvw init` to generate one')
+    def test_collapses_successful_environment_facts
+      out = capture_output(example_report)
 
-      out = capture_output(report)
-      assert_match(/No \.reviewer\.yml found/, out)
-      assert_match(/rvw init/, out)
-      assert_match(/1 issue found/, out)
+      assert_match(/Ruby #{Regexp.escape(RUBY_VERSION)} · git 2\.40\.0 · repository/, out)
     end
 
-    def test_renders_warning_findings
-      report = Reviewer::Doctor::Report.new
-      report.add(:environment, status: :warning, message: 'Not inside a git repository',
-                               detail: 'Git keywords will not work')
+    def test_renders_missing_configuration_without_calling_it_an_error
+      report = Doctor::Report.new
+      report.set_configuration(path: '.reviewer.yml', state: :missing)
 
       out = capture_output(report)
-      assert_match(/Not inside a git repository/, out)
-      assert_match(/Git keywords/, out)
-      assert_match(/No issues found/, out) # warnings don't count as issues
-    end
 
-    def test_renders_multiple_errors
-      report = Reviewer::Doctor::Report.new
-      report.add(:configuration, status: :error, message: 'Error one')
-      report.add(:configuration, status: :error, message: 'Error two')
-
-      out = capture_output(report)
-      assert_match(/2 issues found/, out)
-    end
-
-    def test_skips_empty_sections
-      report = Reviewer::Doctor::Report.new
-      report.add(:configuration, status: :ok, message: 'Config ok')
-      # tools, opportunities, environment are empty
-
-      out = capture_output(report)
-      assert_match(/Configuration/, out)
-      refute_match(/^Tools$/, out)
-      refute_match(/^Opportunities$/, out)
-      refute_match(/^Environment$/, out)
+      assert_match(/\.reviewer\.yml not found/, out)
+      assert_match(/No tools configured · 0 discovered/, out)
+      refute_match(/issue found|rvw init/, out)
     end
 
     private
 
+    def example_report
+      report = Doctor::Report.new
+      report.set_configuration(path: '.reviewer.yml', state: :valid)
+      report.add_configured_tool(
+        key: :tests,
+        name: 'Minitest',
+        skip_in_batch: false,
+        commands: { review: 'bundle exec rake test' },
+        files: { pattern: '*_test.rb' },
+        source: { path: '.reviewer.yml', location: 'tests' }
+      )
+      report.add_discovery(
+        key: :eslint,
+        name: 'ESLint',
+        observations: [Doctor::Report::Observation.new(
+          kind: :command,
+          value: 'eslint .',
+          path: 'package.json',
+          location: 'scripts.lint'
+        )]
+      )
+      report.add_environment(name: :ruby, status: :ok, value: RUBY_VERSION)
+      report.add_environment(name: :git, status: :ok, value: '2.40.0')
+      report.add_environment(name: :repository, status: :ok, value: 'repository')
+      report
+    end
+
     def capture_output(report)
       output = Reviewer::Output.new
-      formatter = Reviewer::Doctor::Formatter.new(output)
-      out, _err = capture_subprocess_io { formatter.print(report) }
+      out, _err = capture_subprocess_io { Doctor::Formatter.new(output).print(report) }
       out
     end
   end

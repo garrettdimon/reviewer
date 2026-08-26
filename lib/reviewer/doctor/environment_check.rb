@@ -25,20 +25,27 @@ module Reviewer
       private
 
       def check_ruby_version
-        report.add(:environment, status: :ok, message: "Ruby #{RUBY_VERSION}")
+        report.add_environment(name: :ruby, status: :ok, value: RUBY_VERSION)
       end
 
       def check_git
         stdout, _stderr, status = Open3.capture3('git --version')
 
         unless status.success?
-          report.add(:environment, status: :warning,
-                                   message: 'Git not available',
-                                   detail: 'Git keywords (staged, modified, etc.) require git')
+          report.add_environment(
+            name: :git,
+            status: :warning,
+            value: 'not available',
+            detail: 'Git keywords (staged, modified, etc.) require git'
+          )
           return
         end
 
-        report.add(:environment, status: :ok, message: stdout.strip)
+        report.add_environment(
+          name: :git,
+          status: :ok,
+          value: stdout.strip.delete_prefix('git version ')
+        )
         check_git_repo
       end
 
@@ -46,11 +53,14 @@ module Reviewer
         _stdout, _stderr, status = Open3.capture3('git rev-parse --git-dir')
 
         if status.success?
-          report.add(:environment, status: :ok, message: 'Inside a git repository')
+          report.add_environment(name: :repository, status: :ok, value: 'repository')
         else
-          report.add(:environment, status: :warning,
-                                   message: 'Not inside a git repository',
-                                   detail: 'Git keywords (staged, modified, etc.) will not work')
+          report.add_environment(
+            name: :repository,
+            status: :warning,
+            value: 'not inside a git repository',
+            detail: 'Git keywords (staged, modified, etc.) will not work'
+          )
         end
       end
     end

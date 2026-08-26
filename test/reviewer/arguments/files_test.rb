@@ -65,6 +65,27 @@ module Reviewer
         end
       end
 
+      def test_git_keywords_preserve_deleted_paths
+        commands = {
+          staged: 'git --no-pager diff --staged --name-only',
+          unstaged: 'git --no-pager diff --name-only',
+          modified: 'git --no-pager diff --name-only HEAD'
+        }
+
+        commands.each do |keyword, expected_command|
+          command = nil
+          git = lambda do |value|
+            command = value
+            ["deleted.rb\nkept.rb\n", '', MockStatus.new(true, 0)]
+          end
+
+          Open3.stub(:capture3, git) do
+            assert_equal ['deleted.rb', 'kept.rb'], Files.new(keywords: [keyword]).to_a
+          end
+          assert_equal expected_command, command
+        end
+      end
+
       def test_generating_files_from_flags_and_keywords
         staged_files = ['lib/reviewer.rb']
         files_array = ['*.css', '*.rb']

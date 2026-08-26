@@ -76,6 +76,20 @@ module Reviewer
         assert_includes brakeman.reasons, 'app/controllers/ directory'
       end
 
+      def test_results_include_structured_sources
+        rubocop = Detector.new(FIXTURES.join('ruby_project')).detect.find { |result| result.key == :rubocop }
+
+        assert_respond_to rubocop, :sources
+        assert_includes rubocop.sources.map(&:to_h), {
+          kind: :dependency,
+          source: { path: 'Gemfile.lock', location: 'rubocop' }
+        }
+        assert_includes rubocop.sources.map(&:to_h), {
+          kind: :configuration_file,
+          source: { path: '.rubocop.yml' }
+        }
+      end
+
       def test_handles_missing_gemfile_lock
         detector = Detector.new(FIXTURES.join('empty_project'))
         results = detector.detect
