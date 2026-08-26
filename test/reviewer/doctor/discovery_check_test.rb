@@ -8,8 +8,6 @@ module Reviewer
       FIXTURES = Pathname('test/fixtures/projects')
 
       def test_groups_direct_commands_by_tool
-        assert Doctor.const_defined?(:DiscoveryCheck), 'Expected Doctor::DiscoveryCheck'
-
         report = Report.new
         DiscoveryCheck.new(report, FIXTURES.join('js_project'), configured_keys: []).check
 
