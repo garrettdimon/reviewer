@@ -178,6 +178,8 @@ module Reviewer
         out, _err = capture_subprocess_io { Reviewer.review }
         assert_match(/--help/, out)
         assert_match(/--version/, out)
+        assert_match(/rvw init.*deprecated/i, out)
+        assert_match(/rvw doctor.*configuration and project discoveries/i, out)
       end
     end
 

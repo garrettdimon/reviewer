@@ -16,6 +16,17 @@ module Reviewer
       end
     end
 
+    def test_prints_deprecation_warning_to_stderr
+      with_temp_config do
+        _out, err = capture_subprocess_io do
+          Setup.run(configuration: Reviewer.configuration, project_dir: FIXTURES.join('empty_project'))
+        end
+
+        assert_equal 'Warning: rvw init is deprecated. ' \
+                     "Run rvw doctor to inspect project discoveries before creating .reviewer.yml.\n", err
+      end
+    end
+
     def test_shows_no_tools_when_empty_project
       with_temp_config do |config_file|
         out, _err = capture_subprocess_io do

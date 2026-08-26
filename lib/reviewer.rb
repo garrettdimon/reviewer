@@ -122,8 +122,8 @@ module Reviewer
             rvw <tool>                   Run a single tool by its config key
             rvw <tag>                    Run tools matching a tag
             fmt                          Auto-fix with format commands
-            rvw init                     Generate .reviewer.yml from Gemfile.lock
-            rvw doctor                   Check configuration and tool health
+            rvw init                     Generate .reviewer.yml (deprecated)
+            rvw doctor                   Inspect configuration and project discoveries
 
         Keywords:
             staged                       Files staged for commit
