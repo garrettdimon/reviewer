@@ -32,7 +32,6 @@ module Reviewer
     # @return [Report] the report containing results for all commands run
     def run
       elapsed_time = Benchmark.realtime do
-        clear_last_statuses
         matching_tools.each do |tool|
           runner = run_tool(tool)
           break unless runner.success? || runner.missing?
@@ -53,15 +52,9 @@ module Reviewer
 
       result = runner.to_result
       @report.add(result)
-      tool.record_run(result) unless runner.missing?
+      tool.record_run(result)
 
       runner
-    end
-
-    def clear_last_statuses
-      matching_tools.each do |tool|
-        context.history.set(tool.key, :last_status, nil)
-      end
     end
 
     # Returns the set of tools matching the provided command. So when formatting, if a tool does not

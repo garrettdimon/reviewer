@@ -62,8 +62,10 @@ File selectors resolve paths from Git:
 | `modified` | Staged and unstaged changes compared with `HEAD` |
 | `untracked` | Untracked, non-ignored files |
 
-`failed` selects tools whose previous run failed and, when available, reuses each tool's stored
-failed file paths.
+`failed` selects tools whose last executed review failed and, when available, reuses each tool's
+stored failed file paths. A tool remains selected until an executed review records a pass. Skipped,
+missing, formatted, and not-run tools leave that review history unchanged, so a passing scoped run
+can coexist with tools still selected by `rvw failed`.
 
 Selections compose:
 

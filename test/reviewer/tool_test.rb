@@ -146,6 +146,48 @@ module Reviewer
       assert_includes history.get(:enabled_tool, :last_failed_files), 'lib/reviewer/batch.rb'
     end
 
+    def test_record_run_preserves_review_history_for_skipped_results
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+      history.set(:enabled_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.new(
+        tool_key: :enabled_tool, tool_name: 'Enabled Test Tool',
+        command_type: :review, command_string: nil,
+        success: true, exit_status: 0, duration: 0,
+        stdout: nil, stderr: nil, skipped: true, missing: nil
+      )
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_equal ['lib/reviewer/batch.rb'], history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
+    def test_record_run_preserves_review_history_for_format_results
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+      history.set(:enabled_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.new(
+        tool_key: :enabled_tool, tool_name: 'Enabled Test Tool',
+        command_type: :format, command_string: 'ls',
+        success: true, exit_status: 0, duration: 0.5,
+        stdout: nil, stderr: nil, skipped: nil, missing: nil
+      )
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_equal ['lib/reviewer/batch.rb'], history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
     def test_resolve_files_delegates_to_file_resolver
       tool = build_tool(:file_pattern_tool)
 

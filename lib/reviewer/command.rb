@@ -107,7 +107,7 @@ module Reviewer
       end
     end
 
-    # Retrieves failed files stored from the previous run for this tool
+    # Retrieves failed files stored from the last executed review for this tool
     #
     # @return [Array<String>] stored failed file paths, or empty array
     def stored_failed_files

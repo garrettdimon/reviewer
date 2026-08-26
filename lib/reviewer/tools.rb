@@ -67,7 +67,7 @@ module Reviewer
       (specified + tagged + failed).uniq
     end
 
-    # Returns tools that failed in the previous run based on history
+    # Returns tools whose last executed review failed and have not passed since
     #
     # @return [Array<Tool>] tools with :last_status of :failed in history
     def failed_from_history
