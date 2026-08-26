@@ -45,6 +45,8 @@ module Reviewer
           print_unrun_tool(result, style: :warning, reason: 'not installed')
         elsif result.skipped?
           print_unrun_tool(result, style: :muted, reason: 'no matching files')
+        elsif result.not_run?
+          print_unrun_tool(result, style: :muted, reason: 'stopped after failure')
         else
           print_executed_tool(result)
         end
@@ -52,10 +54,8 @@ module Reviewer
         output.newline
       end
 
-      # A tool that was selected but did not run. A skip carries `success: true` so it cannot halt
-      # the batch, so styling on that would print a check mark for work that never happened. Neither
-      # case is a pass or a failure, so neither gets a status mark or a timing -- the reason says
-      # what happened, and the style separates "normal" (skipped) from "your environment is broken".
+      # A tool that was selected but did not run is neither a pass nor a failure, so it gets no
+      # status mark or timing. The reason explains whether the tool was skipped, missing, or stopped.
       def print_unrun_tool(result, style:, reason:)
         output.printer.print(style, "- #{result.tool_name.ljust(@name_width)}")
         output.printer.print(:muted, "    #{reason}")
@@ -85,27 +85,24 @@ module Reviewer
       end
 
       def print_summary
-        if report.success?
-          print_success_summary
-        else
-          print_failure_summary
-        end
+        print_failure_summary unless report.success?
+        print_result_summary
       end
 
-      # When selected tools are skipped, "All passed" names a verdict nobody reached, so the counts
-      # replace it.
+      # "All passed" is reserved for reports containing only passed results. Other reports list
+      # every nonzero state count so the totals account for every selected runnable tool.
       # :reek:FeatureEnvy -- formats Report's state counts for display
       # :reek:TooManyStatements -- one linear summary line with optional state counts
-      def print_success_summary
+      def print_result_summary # rubocop:disable Metrics/AbcSize
         printer = output.printer
         counts = report.summary
-        state_counts = %i[skipped missing].filter_map do |state|
-          ", #{counts[state]} #{state}" unless counts[state].zero?
-        end.join
+        state_counts = counts.filter_map do |state, count|
+          "#{count} #{state}" unless %i[total duration].include?(state) || count.zero?
+        end
 
         all_passed = counts[:passed] == counts[:total]
-        printer.print(:success, all_passed ? 'All passed' : "#{counts[:passed]} passed")
-        printer.print(:muted, state_counts) unless state_counts.empty?
+        style = report.success? ? :success : :failure
+        printer.print(style, all_passed ? 'All passed' : state_counts.join(', '))
         printer.puts(:muted, " (#{format_duration(report.duration)})")
       end
 

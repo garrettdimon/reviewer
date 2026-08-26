@@ -185,6 +185,19 @@ module Reviewer
         assert_nil result.missing
       end
 
+      def test_not_run_factory_builds_an_unexecuted_result
+        result = Result.not_run(tool: build_tool(:enabled_tool), command_type: :review)
+
+        expected = [:enabled_tool, 'Enabled Test Tool', :review, :not_run]
+        assert_equal expected, [result.tool_key, result.tool_name, result.command_type, result.state]
+        assert_equal [true, false, false, nil, nil, true], [
+          result.not_run?, result.executed?, result.success,
+          result.skipped, result.missing, result.frozen?
+        ]
+
+        assert_null_execution_data(result)
+      end
+
       def test_legacy_construction_derives_state
         assert_equal :passed, @result.state
       end
@@ -328,11 +341,7 @@ module Reviewer
         assert_equal :skipped, result.state
         assert result.skipped
         refute result.success
-        assert_nil result.command_string
-        assert_nil result.exit_status
-        assert_nil result.duration
-        assert_nil result.stdout
-        assert_nil result.stderr
+        assert_null_execution_data(result)
       end
 
       def test_skipped_result_does_not_record_a_seed
@@ -360,7 +369,6 @@ module Reviewer
       def test_from_runner_builds_executed_result
         result = build_via_from_runner
 
-        assert_respond_to result, :state
         assert_equal :passed, result.state
         assert_predicate result, :passed?
         refute result.skipped
@@ -388,6 +396,14 @@ module Reviewer
       end
 
       private
+
+      def assert_null_execution_data(result)
+        hash = result.to_h
+        %i[command exit_status duration stdout stderr].each do |key|
+          assert hash.key?(key), "Expected #{key} to be present"
+          assert_nil hash[key]
+        end
+      end
 
       def build_via_from_runner(skipped: false, missing: false, success: true, exit_status: nil,
                                 tool_key: :enabled_tool, context: default_context)

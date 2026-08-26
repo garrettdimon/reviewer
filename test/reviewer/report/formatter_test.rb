@@ -233,6 +233,45 @@ module Reviewer
         assert_match(/1 missing/i, out)
       end
 
+      def test_formats_not_run_tool_without_timing_or_failure_details
+        @report.add(build_result(
+                      tool_key: :tests,
+                      success: false,
+                      exit_status: 1,
+                      stdout: 'test failure output'
+                    ))
+        @report.add(Runner::Result.not_run(tool: build_tool(:enabled_tool), command_type: :review))
+
+        out, _err = capture_subprocess_io { Formatter.new(@report).print }
+        line = out.lines.find { |candidate| candidate.include?('Enabled Test Tool') }
+
+        assert_match(/^- .*Enabled Test Tool/, line)
+        assert_match(/stopped after failure/i, line)
+        refute_match(/\d+\.\d+s/, line)
+        assert_match(/1 not_run/i, out)
+        refute_match(/Enabled Test Tool:/i, out)
+      end
+
+      def test_formats_one_result_in_every_state # rubocop:disable Metrics/AbcSize
+        @report.add(build_result(tool_key: :passed, success: true))
+        @report.add(build_result(tool_key: :failed, success: false, exit_status: 1, stdout: 'failure'))
+        @report.add(build_skipped_result(tool_key: :skipped))
+        @report.add(build_missing_result(tool_key: :missing))
+        @report.add(Runner::Result.not_run(tool: build_tool(:enabled_tool), command_type: :review))
+
+        out, _err = capture_subprocess_io { Formatter.new(@report).print }
+
+        assert_match(/^✓ Passed/, out)
+        assert_match(/^✗ Failed/, out)
+        assert_match(/^- Skipped.*no matching files/, out)
+        assert_match(/^- Missing.*not installed/, out)
+        assert_match(/^- Enabled Test Tool.*stopped after failure/, out)
+        %w[passed failed skipped missing not_run].each { |state| assert_match(/1 #{state}/, out) }
+        failed_headings = out.lines.count { |line| line.match?(/^Failed:$/) }
+        assert_equal 1, failed_headings
+        refute_match(/^(Passed|Skipped|Missing|Enabled Test Tool):$/i, out)
+      end
+
       def test_all_passed_still_shown_when_nothing_skipped
         @report.add(build_result(tool_key: :tests, success: true))
         @report.record_duration(1.5)

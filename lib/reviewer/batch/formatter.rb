@@ -57,6 +57,16 @@ module Reviewer
         output.newline
       end
 
+      # Displays tools that fail-fast prevented from running.
+      # @param results [Array<Runner::Result>] not-run results in batch order
+      #
+      # @return [void]
+      def not_run_tools(results)
+        results.each do |result|
+          printer.puts(:muted, "- #{result.tool_name}    stopped after failure")
+        end
+      end
+
       # Displays a message when `rvw failed` is used but no tools failed in the last run
       #
       # @return [void]

@@ -228,5 +228,33 @@ module Reviewer
       assert @report.results.first.missing
       assert @report.results.last.success
     end
+
+    def test_skipped_tool_followed_by_passing_tool
+      arguments = Arguments.new(%w[-f README.md])
+      context = default_context(arguments: arguments)
+      tools = [build_tool(:file_pattern_tool), build_tool(:list)]
+
+      capture_subprocess_io do
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: context).run
+      end
+
+      assert_equal %i[file_pattern_tool list], @report.results.map(&:tool_key)
+      assert_equal %i[skipped passed], @report.results.map(&:state)
+    end
+
+    def test_reports_each_tool_stopped_after_a_failure # rubocop:disable Metrics/AbcSize
+      tools = %i[failing_command minimum_viable_tool list].map { |key| build_tool(key) }
+
+      capture_subprocess_io do
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
+      end
+
+      assert_equal %i[failing_command minimum_viable_tool list], @report.results.map(&:tool_key)
+      assert_equal %i[failed not_run not_run], @report.results.map(&:state)
+      unavailable = @report.results.drop(1).map do |result|
+        [result.executed?, result.command_string, result.exit_status, result.duration, result.stdout, result.stderr]
+      end
+      assert_equal [[false, nil, nil, nil, nil, nil], [false, nil, nil, nil, nil, nil]], unavailable
+    end
   end
 end

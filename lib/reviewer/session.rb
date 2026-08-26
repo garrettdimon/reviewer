@@ -192,12 +192,10 @@ module Reviewer
     end
 
     def display_text_report(report)
-      if arguments.format == :summary
-        Report::Formatter.new(report, output: output).print
-      elsif report.success?
-        ran_count = report.results.count(&:executed?)
-        batch_formatter.summary(ran_count, report.duration)
-      end
+      return Report::Formatter.new(report, output: output).print if arguments.format == :summary
+      return batch_formatter.not_run_tools(report.results.select(&:not_run?)) unless report.success?
+
+      batch_formatter.summary(report.results.count(&:executed?), report.duration)
     end
 
     def show_missing_tools(report, current_tools)

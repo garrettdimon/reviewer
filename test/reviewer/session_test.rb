@@ -223,7 +223,7 @@ module Reviewer
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do
         args = Arguments.new(%w[staged])
-        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+        with_empty_staged_files(args) do
           session = build_session(arguments: args, tools: tools_collection)
           out, _err = capture_subprocess_io { session.review }
           assert_match(/no.*staged.*files/i, out)
@@ -235,7 +235,7 @@ module Reviewer
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do
         args = Arguments.new(%w[staged])
-        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+        with_empty_staged_files(args) do
           session = build_session(arguments: args, tools: tools_collection)
           _out, _err = capture_subprocess_io do
             assert_equal 0, session.review
@@ -248,7 +248,7 @@ module Reviewer
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do
         args = Arguments.new(%w[staged --json])
-        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+        with_empty_staged_files(args) do
           session = build_session(arguments: args, tools: tools_collection)
           assert_json_early_exit(session, message_pattern: /staged/)
         end
@@ -272,12 +272,31 @@ module Reviewer
       assert_equal 0, parsed['summary']['total']
     end
 
+    def with_empty_staged_files(arguments)
+      files = Arguments::Files.new(keywords: ['staged'])
+      files.stub(:to_a, []) { arguments.stub(:files, files) { yield } }
+    end
+
     def test_streaming_failure_does_not_show_batch_summary
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:missing_command)]) do
         session = build_session(tools: tools_collection)
         out, _err = capture_subprocess_io { session.review }
         refute_match(/all passed/i, out)
+      end
+    end
+
+    def test_streaming_failure_shows_each_tool_stopped_by_fail_fast
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      selected = %i[failing_command minimum_viable_tool list].map { |key| build_tool(key) }
+
+      tools_collection.stub(:current, selected) do
+        session = build_session(tools: tools_collection)
+        out, _err = capture_subprocess_io { session.review }
+
+        counts = ['- Minimum_viable_tool', '- List'].map { |line| out.scan("#{line}    stopped after failure").size }
+        assert_equal [1, 1], counts
+        refute_match(/stopped after failure.*\d+\.\d+s/, out)
       end
     end
   end

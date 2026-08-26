@@ -187,6 +187,22 @@ module Reviewer
       history.set(:enabled_tool, :last_failed_files, nil)
     end
 
+    def test_record_run_preserves_review_history_for_not_run_results
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+      history.set(:enabled_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.not_run(tool: tool, command_type: :review)
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_equal ['lib/reviewer/batch.rb'], history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
     def test_record_run_preserves_review_history_for_format_results
       history = Reviewer.history
       history.set(:enabled_tool, :last_status, :failed)

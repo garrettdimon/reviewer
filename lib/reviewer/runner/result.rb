@@ -13,7 +13,7 @@ module Reviewer
     # @!attribute [r] command_string
     #   @return [String, nil] the full command string that was executed
     # @!attribute [r] state
-    #   @return [Symbol] the canonical result state (:passed, :failed, :skipped, or :missing)
+    #   @return [Symbol] the canonical result state (:passed, :failed, :skipped, :missing, :not_run)
     # @!attribute [r] success
     #   @return [Boolean] compatibility value derived from state; true only for passed results
     # @!attribute [r] exit_status
@@ -48,7 +48,7 @@ module Reviewer
       # Freeze on initialization to maintain immutability like Data.define
       # :reek:FeatureEnvy -- validates the supplied compatibility values against canonical state
       # :reek:TooManyStatements -- compatibility is intentionally isolated in this initializer
-      def initialize(state: nil, success: nil, skipped: nil, missing: nil, **attributes)
+      def initialize(state: nil, success: nil, skipped: nil, missing: nil, **attributes) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         state ||= if skipped
                     :skipped
                   elsif missing
@@ -59,14 +59,12 @@ module Reviewer
                     :failed
                   end
 
-        conflicting_flags = skipped && state != :skipped ||
-                            missing && state != :missing ||
-                            skipped && missing
-        conflicting_success = state == :passed && success == false ||
-                              state == :failed && success == true
-        if conflicting_flags || conflicting_success
-          raise ArgumentError, 'Result state conflicts with legacy values'
-        end
+        conflicting_flags = (skipped && state != :skipped) ||
+                            (missing && state != :missing) ||
+                            (skipped && missing)
+        conflicting_success = (state == :passed && success == false) ||
+                              (state == :failed && success == true)
+        raise ArgumentError, 'Result state conflicts with legacy values' if conflicting_flags || conflicting_success
 
         super(**attributes, state: state, success: success, skipped: skipped, missing: missing)
         freeze
@@ -84,6 +82,25 @@ module Reviewer
         else
           build_executed(runner)
         end
+      end
+
+      # Builds a result for a tool that fail-fast prevented from running.
+      # @param tool [Tool] the selected tool that did not run
+      # @param command_type [Symbol] the requested command type
+      #
+      # @return [Result] an immutable not-run result
+      def self.not_run(tool:, command_type:)
+        new(
+          tool_key: tool.key,
+          tool_name: tool.name,
+          command_type: command_type,
+          command_string: nil,
+          state: :not_run,
+          exit_status: nil,
+          duration: nil,
+          stdout: nil,
+          stderr: nil
+        )
       end
 
       def self.base_attributes(runner)
@@ -104,8 +121,7 @@ module Reviewer
           command_type: runner.command.type,
           command_string: nil,
           state: :skipped,
-          success: false, exit_status: nil, duration: nil,
-          stdout: nil, stderr: nil, skipped: true
+          exit_status: nil, duration: nil, stdout: nil, stderr: nil
         )
       end
 
@@ -113,8 +129,8 @@ module Reviewer
         new(
           **base_attributes(runner),
           state: :missing,
-          success: false, exit_status: runner.shell.result.exit_status, duration: 0,
-          stdout: nil, stderr: nil, skipped: nil, missing: true
+          exit_status: runner.shell.result.exit_status, duration: 0,
+          stdout: nil, stderr: nil
         )
       end
 
@@ -125,9 +141,9 @@ module Reviewer
         new(
           **base_attributes(runner),
           state: runner.success? ? :passed : :failed,
-          success: runner.success?, exit_status: shell_result.exit_status,
+          exit_status: shell_result.exit_status,
           duration: shell.timer.total_seconds,
-          stdout: shell_result.stdout, stderr: shell_result.stderr, skipped: nil,
+          stdout: shell_result.stdout, stderr: shell_result.stderr,
           summary_pattern: settings.summary_pattern,
           summary_label: settings.summary_label
         )
@@ -137,7 +153,8 @@ module Reviewer
 
       def passed? = state?(:passed)
       def failed? = state?(:failed)
-      def success = passed?
+      def not_run? = state?(:not_run)
+      alias_method :success, :passed?
 
       def skipped
         true if state?(:skipped)
@@ -153,10 +170,10 @@ module Reviewer
 
       def state?(value) = state == value
 
-      # Whether this result represents a tool that actually ran (not skipped or missing)
+      # Whether this result represents a tool that actually ran
       #
       # @return [Boolean] true if the tool was executed
-      def executed? = !skipped? && !missing?
+      def executed? = passed? || failed?
 
       # Extracts a short summary detail from stdout for display purposes.
       # Each tool type may have its own summary format (test count, offense count, etc.)
@@ -190,7 +207,7 @@ module Reviewer
           missing: missing
         }
 
-        skipped? ? attributes : attributes.compact
+        skipped? || not_run? ? attributes : attributes.compact
       end
     end
   end
