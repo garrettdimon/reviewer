@@ -18,9 +18,23 @@ module Reviewer
         settings = build_settings(files: { pattern: '*.rb' })
         resolver = FileResolver.new(settings)
 
-        result = resolver.resolve(['app/models/user.rb', 'app/assets/app.js', 'lib/tool.rb'])
+        result = resolver.resolve([
+                                    'lib/reviewer/tool/file_resolver.rb',
+                                    'README.md',
+                                    'test/reviewer/tool/file_resolver_test.rb'
+                                  ])
 
-        assert_equal ['app/models/user.rb', 'lib/tool.rb'], result
+        assert_equal ['lib/reviewer/tool/file_resolver.rb',
+                      'test/reviewer/tool/file_resolver_test.rb'], result
+      end
+
+      def test_omits_nonexistent_files_after_filtering
+        settings = build_settings(files: { pattern: 'lib/**/*.rb' })
+        resolver = FileResolver.new(settings)
+
+        result = resolver.resolve(['lib/reviewer.rb', 'lib/deleted.rb'])
+
+        assert_equal ['lib/reviewer.rb'], result
       end
 
       def test_matches_patterns_without_slashes_against_basename
@@ -141,7 +155,7 @@ module Reviewer
         settings = build_settings(files: { pattern: '*.rb' })
         resolver = FileResolver.new(settings)
 
-        refute resolver.skip?(['app/models/user.rb'])
+        refute resolver.skip?(['lib/reviewer.rb'])
       end
 
       private

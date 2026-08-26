@@ -65,22 +65,23 @@ module Reviewer
     end
 
     def test_target_files_filters_by_pattern
-      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb,lib/bar.js,test/baz_test.rb]))
+      files = %w[-f lib/reviewer.rb,README.md,test/reviewer/command_test.rb]
+      context = default_context(arguments: Arguments.new(files))
 
       command = Reviewer::Command.new(build_tool(:file_pattern_tool), :review, context: context)
 
-      assert_includes command.target_files, 'lib/foo.rb'
-      assert_includes command.target_files, 'test/baz_test.rb'
-      refute_includes command.target_files, 'lib/bar.js'
+      assert_includes command.target_files, 'lib/reviewer.rb'
+      assert_includes command.target_files, 'test/reviewer/command_test.rb'
+      refute_includes command.target_files, 'README.md'
     end
 
     def test_target_files_returns_all_files_when_no_pattern
-      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb,lib/bar.js]))
+      context = default_context(arguments: Arguments.new(%w[-f lib/reviewer.rb,README.md]))
 
       command = Reviewer::Command.new(build_tool(:file_targeting_tool), :review, context: context)
 
-      assert_includes command.target_files, 'lib/foo.rb'
-      assert_includes command.target_files, 'lib/bar.js'
+      assert_includes command.target_files, 'lib/reviewer.rb'
+      assert_includes command.target_files, 'README.md'
     end
 
     def test_target_files_returns_empty_when_no_files_match_pattern
@@ -92,11 +93,12 @@ module Reviewer
     end
 
     def test_target_files_filters_by_test_file_pattern
-      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb,test/foo_test.rb,test/bar_test.rb]))
+      files = %w[-f lib/reviewer.rb,test/reviewer/command_test.rb,test/reviewer/tool_test.rb]
+      context = default_context(arguments: Arguments.new(files))
 
       command = Reviewer::Command.new(build_tool(:test_pattern_tool), :review, context: context)
 
-      assert_equal %w[test/bar_test.rb test/foo_test.rb], command.target_files.sort
+      assert_equal %w[test/reviewer/command_test.rb test/reviewer/tool_test.rb], command.target_files.sort
     end
 
     def test_skip_returns_true_when_files_requested_but_none_match
@@ -116,7 +118,7 @@ module Reviewer
     end
 
     def test_skip_returns_false_when_files_match_pattern
-      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb]))
+      context = default_context(arguments: Arguments.new(%w[-f lib/reviewer.rb]))
 
       command = Reviewer::Command.new(build_tool(:file_pattern_tool), :review, context: context)
 
@@ -124,7 +126,7 @@ module Reviewer
     end
 
     def test_skip_returns_false_when_tool_has_no_pattern
-      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb]))
+      context = default_context(arguments: Arguments.new(%w[-f README.md]))
 
       command = Reviewer::Command.new(build_tool(:file_targeting_tool), :review, context: context)
 

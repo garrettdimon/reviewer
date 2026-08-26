@@ -149,9 +149,9 @@ module Reviewer
     def test_resolve_files_delegates_to_file_resolver
       tool = build_tool(:file_pattern_tool)
 
-      result = tool.resolve_files(['app/models/user.rb', 'app.js'])
+      result = tool.resolve_files(['lib/reviewer.rb', 'README.md'])
 
-      assert_equal ['app/models/user.rb'], result
+      assert_equal ['lib/reviewer.rb'], result
     end
 
     def test_resolve_files_returns_files_unchanged_when_no_pattern
