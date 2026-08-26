@@ -83,21 +83,41 @@ module Reviewer
         assert_match(/^# Review Ruby syntax/, yaml)
       end
 
-      def test_preserves_node_catalog_commands
-        keys = %i[eslint prettier stylelint typescript biome]
-        parsed = YAML.safe_load(Generator.new(keys).generate)
-        expected = keys.to_h do |key|
-          [key.to_s, Catalog.config_for(key)[:commands].transform_keys(&:to_s)]
-        end
-        actual = parsed.transform_values { |config| config.fetch('commands') }
+      def test_uses_yarn_when_lockfile_present
+        Dir.mktmpdir do |dir|
+          Pathname(dir).join('yarn.lock').write('')
 
-        assert_equal expected, actual
+          parsed = YAML.safe_load(Generator.new([:eslint], project_dir: Pathname(dir)).generate)
+
+          assert_match(/^yarn /, parsed['eslint']['commands']['review'])
+        end
+      end
+
+      def test_uses_pnpm_when_lockfile_present
+        Dir.mktmpdir do |dir|
+          Pathname(dir).join('pnpm-lock.yaml').write('')
+
+          parsed = YAML.safe_load(Generator.new([:eslint], project_dir: Pathname(dir)).generate)
+
+          assert_match(/^pnpm exec /, parsed['eslint']['commands']['review'])
+        end
+      end
+
+      def test_defaults_to_npx_without_lockfile
+        Dir.mktmpdir do |dir|
+          parsed = YAML.safe_load(Generator.new([:eslint], project_dir: Pathname(dir)).generate)
+
+          assert_match(/^npx /, parsed['eslint']['commands']['review'])
+        end
       end
 
       def test_does_not_alter_ruby_commands
-        parsed = YAML.safe_load(Generator.new([:rubocop]).generate)
+        Dir.mktmpdir do |dir|
+          Pathname(dir).join('yarn.lock').write('')
+          parsed = YAML.safe_load(Generator.new([:rubocop], project_dir: Pathname(dir)).generate)
 
-        assert_match(/^bundle exec/, parsed['rubocop']['commands']['review'])
+          assert_match(/^bundle exec/, parsed['rubocop']['commands']['review'])
+        end
       end
 
       def test_includes_rspec_files_config

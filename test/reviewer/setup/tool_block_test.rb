@@ -63,37 +63,11 @@ module Reviewer
         assert_includes output, '    map_to_tests: minitest'
       end
 
-      def test_preserves_top_level_commands
-        definition = {
-          name: 'JavaScript tool',
-          description: 'Checks JavaScript',
-          commands: {
-            review: 'npx example check',
-            format: 'npx example check --fix'
-          }
-        }
+      def test_applies_js_runner_substitution
+        output = ToolBlock.new(:eslint, Catalog.config_for(:eslint), js_runner: 'yarn').to_s
 
-        output = ToolBlock.new(:javascript, definition).to_s
-        commands = YAML.safe_load(output).fetch('javascript').fetch('commands')
-
-        assert_equal definition[:commands].transform_keys(&:to_s), commands
-      end
-
-      def test_preserves_file_scoped_commands
-        definition = {
-          name: 'JavaScript tool',
-          description: 'Checks JavaScript',
-          commands: { review: 'npx example check' },
-          files: {
-            review: 'npx example check-file',
-            format: 'npx example check-file --fix'
-          }
-        }
-
-        output = ToolBlock.new(:javascript, definition).to_s
-        files = YAML.safe_load(output).fetch('javascript').fetch('files')
-
-        assert_equal definition[:files].transform_keys(&:to_s), files
+        assert_includes output, 'yarn eslint'
+        refute_includes output, 'npx eslint'
       end
 
       def test_does_not_alter_non_npx_commands
@@ -109,7 +83,7 @@ module Reviewer
           description: 'A tool: with special #chars',
           commands: { review: 'run --flag' }
         }
-        block = ToolBlock.new(:test_tool, definition)
+        block = ToolBlock.new(:test_tool, definition, js_runner: 'npx')
         output = block.to_s
 
         assert_includes output, "'A tool: with special #chars'"
@@ -121,7 +95,7 @@ module Reviewer
           description: 'No special chars here',
           commands: { review: 'bundle exec test' }
         }
-        block = ToolBlock.new(:simple, definition)
+        block = ToolBlock.new(:simple, definition, js_runner: 'npx')
         output = block.to_s
 
         assert_includes output, '  name: Simple'
@@ -134,7 +108,7 @@ module Reviewer
           description: 'A test tool',
           commands: { review: 'run' }
         }
-        block = ToolBlock.new(:bare, definition)
+        block = ToolBlock.new(:bare, definition, js_runner: 'npx')
         output = block.to_s
 
         assert_includes output, "  name: 'true'"
@@ -147,7 +121,7 @@ module Reviewer
           commands: { review: 'run' },
           files: { flag: '', separator: ' ', pattern: '*.rb' }
         }
-        block = ToolBlock.new(:tool, definition)
+        block = ToolBlock.new(:tool, definition, js_runner: 'npx')
         output = block.to_s
 
         assert_includes output, "    flag: ''"
@@ -176,7 +150,7 @@ module Reviewer
       private
 
       def tool_block(key)
-        ToolBlock.new(key, Catalog.config_for(key))
+        ToolBlock.new(key, Catalog.config_for(key), js_runner: 'npx')
       end
     end
   end

@@ -12,7 +12,7 @@ module Reviewer
           review: 'npx stylelint "**/*.css"',
           format: 'npx stylelint "**/*.css" --fix'
         },
-        typescript: { review: 'npx --package=typescript tsc --noEmit' },
+        typescript: { review: 'npx tsc --noEmit' },
         biome: {
           review: 'npx @biomejs/biome check .',
           format: 'npx @biomejs/biome check . --fix'

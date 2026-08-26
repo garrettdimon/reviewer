@@ -181,7 +181,7 @@ module Reviewer
           description: 'Type-check TypeScript code',
           tags: %w[javascript typescript],
           commands: {
-            review: 'npx --package=typescript tsc --noEmit'
+            review: 'npx tsc --noEmit'
           },
           detect: {
             files: %w[tsconfig.json]
