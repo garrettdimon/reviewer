@@ -53,7 +53,7 @@ Pass a comma-separated list once and let each tool apply its configured file syn
 rvw -f lib/reviewer.rb,test/reviewer_test.rb
 ```
 
-File keywords resolve paths from Git:
+File selectors resolve paths from Git:
 
 | Keyword | Files |
 |---|---|
@@ -61,7 +61,9 @@ File keywords resolve paths from Git:
 | `unstaged` | Unstaged changes |
 | `modified` | Staged and unstaged changes compared with `HEAD` |
 | `untracked` | Untracked, non-ignored files |
-| `failed` | Tools, and when available files, from the previous failed run |
+
+`failed` selects tools whose previous run failed and, when available, reuses each tool's stored
+failed file paths.
 
 Selections compose:
 
