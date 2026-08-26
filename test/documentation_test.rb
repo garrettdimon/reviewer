@@ -70,11 +70,15 @@ class DocumentationTest < Minitest::Test
   def test_example_configuration_contains_only_supported_keys
     tool = YAML.safe_load_file('.reviewer.example.yml').fetch('tool-name-key')
 
-    assert_supported_keys tool, %w[skip_in_batch name description tags links commands files env flags summary]
-    assert_supported_keys tool.fetch('links'), %w[home install ignore_syntax disable_syntax]
-    assert_supported_keys tool.fetch('commands'), %w[install prepare review format max_exit_status]
-    assert_supported_keys tool.fetch('files'), %w[review format flag separator pattern map_to_tests]
-    assert_supported_keys tool.fetch('summary', {}), %w[pattern label]
+    supported_keys = [
+      [tool, %w[skip_in_batch name description tags links commands files env flags summary]],
+      [tool.fetch('links'), %w[home install ignore_syntax disable_syntax]],
+      [tool.fetch('commands'), %w[install prepare review format max_exit_status]],
+      [tool.fetch('files'), %w[review format flag separator pattern map_to_tests]],
+      [tool.fetch('summary', {}), %w[pattern label]]
+    ]
+
+    supported_keys.each { |configuration, supported| assert_empty configuration.keys - supported }
   end
 
   def test_gem_metadata_uses_repository_documentation_without_a_wiki
@@ -110,10 +114,6 @@ class DocumentationTest < Minitest::Test
       heading = line[/^#+\s+(.+)$/, 1]
       heading.downcase.gsub(/[^a-z0-9 _-]/, '').tr(' ', '-') if heading
     end
-  end
-
-  def assert_supported_keys(configuration, supported)
-    assert_empty configuration.keys - supported
   end
 
   def canonical_repository_urls
