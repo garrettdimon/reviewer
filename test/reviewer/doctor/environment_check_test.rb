@@ -10,28 +10,29 @@ module Reviewer
         report = Report.new
         EnvironmentCheck.new(report).check
 
-        ruby_finding = report.section(:environment).find { |f| f.message.include?('Ruby') }
+        ruby_finding = report.environment.find { |finding| finding.name == :ruby }
         assert ruby_finding
         assert_equal :ok, ruby_finding.status
-        assert_match(/Ruby \d+\.\d+/, ruby_finding.message)
+        assert_equal RUBY_VERSION, ruby_finding.value
       end
 
       def test_reports_git_version_when_available
         report = Report.new
         EnvironmentCheck.new(report).check
 
-        git_finding = report.section(:environment).find { |f| f.message.include?('git version') }
+        git_finding = report.environment.find { |finding| finding.name == :git }
         assert git_finding
         assert_equal :ok, git_finding.status
+        assert_match(/\d+\.\d+/, git_finding.value)
       end
 
       def test_reports_warning_when_git_unavailable
         report = run_with_failed_git
 
-        ruby = find_env(report, 'Ruby')
+        ruby = find_env(report, :ruby)
         assert ruby
 
-        git = find_env(report, 'Git not available')
+        git = find_env(report, :git)
         assert git
         assert_equal :warning, git.status
       end
@@ -40,22 +41,23 @@ module Reviewer
         report = Report.new
         EnvironmentCheck.new(report).check
 
-        repo_finding = report.section(:environment).find { |f| f.message.include?('git repository') }
+        repo_finding = report.environment.find { |finding| finding.name == :repository }
         assert repo_finding
+        assert_equal 'repository', repo_finding.value
       end
 
       def test_reports_warning_when_not_in_git_repo
         report = run_with_git_but_no_repo
 
-        not_repo = find_env(report, 'Not inside a git repository')
+        not_repo = find_env(report, :repository)
         assert not_repo
         assert_equal :warning, not_repo.status
       end
 
       private
 
-      def find_env(report, text)
-        report.section(:environment).find { |f| f.message.include?(text) }
+      def find_env(report, name)
+        report.environment.find { |finding| finding.name == name }
       end
 
       def run_with_git_but_no_repo

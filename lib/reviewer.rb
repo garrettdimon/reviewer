@@ -2,6 +2,7 @@
 
 require 'benchmark'
 require 'forwardable'
+require 'json'
 require 'rainbow'
 
 require_relative 'reviewer/configuration'
@@ -158,7 +159,11 @@ module Reviewer
 
     def run_doctor
       report = Doctor.run(configuration: configuration, tools: tools)
-      Doctor::Formatter.new(output).print(report)
+      if arguments.json?
+        puts JSON.pretty_generate(report.to_h)
+      else
+        Doctor::Formatter.new(output).print(report)
+      end
     end
 
     def run_first_time_setup

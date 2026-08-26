@@ -4,6 +4,11 @@ require 'test_helper'
 
 module Reviewer
   class ReviewerTest < Minitest::Test
+    def setup
+      ARGV.clear
+      Reviewer.instance_variable_set(:@arguments, nil)
+    end
+
     def test_that_it_has_a_version_number
       refute_nil VERSION
     end
@@ -124,6 +129,20 @@ module Reviewer
         with_argv('doctor') { capture_subprocess_io { Reviewer.review } }
       end
       assert doctor_ran, 'Expected Doctor.run to be called for rvw doctor'
+    end
+
+    def test_doctor_json_serializes_the_report_without_terminal_formatting
+      report = Doctor::Report.new
+      report.set_configuration(path: '.reviewer.yml', state: :missing)
+
+      Doctor.stub(:run, report) do
+        out, _err = with_argv('doctor', '--json') { capture_subprocess_io { Reviewer.review } }
+        parsed = JSON.parse(out)
+
+        assert_equal 1, parsed.fetch('schema_version')
+        assert_equal 'missing', parsed.dig('configuration', 'state')
+        refute_match(/\e\[/, out)
+      end
     end
 
     def test_format_dispatches_to_init_when_subcommand

@@ -6,42 +6,56 @@ require 'tmpdir'
 module Reviewer
   module Doctor
     class ConfigCheckTest < Minitest::Test
-      def test_reports_error_when_config_missing
+      def test_reports_missing_configuration_as_state
         with_temp_config do
           report = Report.new
-          ConfigCheck.new(report, configuration: Reviewer.configuration).check
+          state = ConfigCheck.new(report, configuration: Reviewer.configuration).check
 
-          errors = report.section(:configuration).select { |f| f.status == :error }
-          assert_equal 1, errors.size
-          assert_match(/no .reviewer.yml found/i, errors.first.message)
-          assert_match(/rvw init/, errors.first.detail)
+          assert_equal :missing, state
+          assert_equal :missing, report.configuration_state
+          assert_empty report.errors
         end
       end
 
-      def test_reports_ok_when_config_valid
-        ok_findings = run_check.select { |f| f.status == :ok }
-        assert ok_findings.size >= 2
-        assert(ok_findings.any? { |f| f.message =~ /found/i })
-        assert(ok_findings.any? { |f| f.message =~ /valid/i })
+      def test_reports_valid_configuration_as_state
+        report, state = run_check
+
+        assert_equal :valid, state
+        assert_equal :valid, report.configuration_state
+        assert_empty report.section(:configuration)
       end
 
       def test_reports_error_for_invalid_yaml
         with_temp_config(content: 'bad: yaml: [invalid') do
           report = Report.new
-          ConfigCheck.new(report, configuration: Reviewer.configuration).check
+          state = ConfigCheck.new(report, configuration: Reviewer.configuration).check
 
+          assert_equal :invalid, state
+          assert_equal :invalid, report.configuration_state
           errors = report.section(:configuration).select { |f| f.status == :error }
-          assert(errors.any? { |f| f.message =~ /yaml syntax error/i })
+          assert(errors.any? { |f| f.message =~ /invalid configuration/i })
         end
       end
 
       def test_reports_error_for_missing_review_command
         with_temp_config(content: "tool:\n  commands:\n    format: 'ls'") do
           report = Report.new
-          ConfigCheck.new(report, configuration: Reviewer.configuration).check
+          state = ConfigCheck.new(report, configuration: Reviewer.configuration).check
 
+          assert_equal :invalid, state
           errors = report.section(:configuration).select { |f| f.status == :error }
           assert(errors.any? { |f| f.message =~ /missing review command/i })
+        end
+      end
+
+      def test_reports_empty_yaml_as_invalid
+        with_swapped_config(Pathname('test/fixtures/files/empty.yml')) do
+          report = Report.new
+          state = ConfigCheck.new(report, configuration: Reviewer.configuration).check
+
+          assert_equal :invalid, state
+          assert_equal :invalid, report.configuration_state
+          assert_match(/invalid configuration/i, report.errors.first.message)
         end
       end
 
@@ -49,8 +63,8 @@ module Reviewer
 
       def run_check
         report = Report.new
-        ConfigCheck.new(report, configuration: Reviewer.configuration).check
-        report.section(:configuration)
+        state = ConfigCheck.new(report, configuration: Reviewer.configuration).check
+        [report, state]
       end
 
       def with_temp_config(content: nil)

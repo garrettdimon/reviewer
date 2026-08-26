@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "compound": "eslint . && prettier --check .",
+    "delegated": "npm run lint",
+    "environment": "NODE_ENV=test eslint ."
+  }
+}

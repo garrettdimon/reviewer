@@ -23,18 +23,35 @@ module Reviewer
         return unless @configuration.file.exist?
 
         @tools.all.each do |tool|
-          skipped = tool.skip_in_batch?
-
-          report.add(:tools,
-                     status: skipped ? :muted : :ok,
-                     message: "#{tool.name} (#{tool.key}) — #{command_summary(tool)}")
+          report.add_configured_tool(
+            key: tool.key,
+            name: tool.name,
+            skip_in_batch: tool.skip_in_batch?,
+            commands: configured_commands(tool),
+            files: configured_files(tool),
+            source: { path: configuration_path, location: tool.key.to_s }
+          )
         end
       end
 
       private
 
-      def command_summary(tool)
-        %i[review format install prepare].select { |cmd| tool.command?(cmd) }.join(', ')
+      def configured_commands(tool)
+        tool.commands.slice(:review, :format, :prepare, :install)
+      end
+
+      def configured_files(tool)
+        tool.settings.config.fetch(:files, {}).slice(
+          :review, :format, :pattern, :flag, :separator, :map_to_tests
+        ).compact
+      end
+
+      def configuration_path
+        path = Pathname(@configuration.file)
+        return path.to_s unless path.absolute?
+
+        relative = path.relative_path_from(Pathname.pwd)
+        relative.to_s.start_with?('../') ? path.to_s : relative.to_s
       end
     end
   end

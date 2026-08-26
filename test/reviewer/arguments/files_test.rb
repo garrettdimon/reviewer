@@ -65,6 +65,19 @@ module Reviewer
         end
       end
 
+      def test_staged_excludes_deleted_files
+        files = Files.new(provided: [], keywords: %w[staged])
+        status = MockStatus.new(true, 0)
+        git = lambda do |command|
+          stdout = command.include?('--diff-filter=ACMR') ? "kept.rb\n" : "deleted.rb\nkept.rb\n"
+          [stdout, '', status]
+        end
+
+        Open3.stub(:capture3, git) do
+          assert_equal ['kept.rb'], files.to_a
+        end
+      end
+
       def test_generating_files_from_flags_and_keywords
         staged_files = ['lib/reviewer.rb']
         files_array = ['*.css', '*.rb']
