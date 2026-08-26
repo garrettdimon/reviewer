@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Changed
+- Moved long-form guidance into version-controlled repository documentation; setup output and gem metadata now link to it
+
 ## [1.0.0] - 2026-02-03
 
 ### Added
