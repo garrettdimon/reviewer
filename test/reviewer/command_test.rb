@@ -242,13 +242,32 @@ module Reviewer
       assert_nil command.run_summary
     end
 
-    def test_tracked_reek_does_not_bake_full_scope_into_scoped_command
-      arguments = Arguments.new(%w[-f lib/reviewer.rb,test/reviewer/command_test.rb])
+    def test_tracked_reek_skips_a_test_only_request
+      context = default_context(arguments: Arguments.new(%w[-f test/reviewer/command_test.rb]))
+      command = Reviewer::Command.new(tracked_tool(:reek), :review, context: context)
+
+      assert_nil command.run_summary
+    end
+
+    def test_tracked_reek_uses_the_scoped_command_with_matching_files
+      arguments = Arguments.new(%w[-f lib/reviewer.rb,test/reviewer_test.rb,README.md])
       command = Reviewer::Command.new(tracked_tool(:reek), :review,
                                       context: default_context(arguments: arguments))
 
       expected = 'bundle exec reek --config .reek.yml --force-exclusion ' \
-                 '--color --documentation lib/reviewer.rb test/reviewer/command_test.rb'
+                 '--color --documentation lib/reviewer.rb'
+      assert_equal expected, command.string
+    end
+
+    def test_tracked_notes_uses_the_scoped_command_with_matching_files
+      arguments = Arguments.new(
+        %w[-f lib/reviewer.rb,test/reviewer/command_test.rb,script/example.rb,README.md]
+      )
+      command = Reviewer::Command.new(tracked_tool(:notes), :review,
+                                      context: default_context(arguments: arguments))
+
+      expected = "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' " \
+                 'lib/reviewer.rb test/reviewer/command_test.rb'
       assert_equal expected, command.string
     end
 

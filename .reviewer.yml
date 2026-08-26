@@ -50,7 +50,7 @@ reek:
     review: "bundle exec reek --config .reek.yml --force-exclusion"
     flag: ""
     separator: " "
-    pattern: "*.rb"
+    pattern: "lib/**/*.rb"
   flags:
     color:
     documentation:
@@ -192,3 +192,8 @@ notes:
     # grep exits 1 when it finds nothing, which is not a failure here
     max_exit_status: 1
     review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?' lib/ test/"
+  files:
+    review: "grep -rn --include='*.rb' -E '(TODO|FIXME|HACK|OPTIMIZE|XXX):?'"
+    flag: ""
+    separator: " "
+    pattern: "{lib,test}/**/*.rb"
