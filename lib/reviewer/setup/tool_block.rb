@@ -11,13 +11,11 @@ module Reviewer
       # Creates a renderer for a single tool's YAML configuration block
       # @param key [Symbol] the tool key (e.g., :rubocop)
       # @param definition [Hash] the catalog definition for this tool
-      # @param js_runner [String] the JS package runner to substitute for npx
       #
       # @return [ToolBlock]
-      def initialize(key, definition, js_runner:)
+      def initialize(key, definition)
         @key = key
         @definition = definition
-        @js_runner = js_runner
       end
 
       # Renders the full YAML block for this tool
@@ -53,7 +51,7 @@ module Reviewer
         %i[install prepare review format].each do |type|
           next unless commands[type]
 
-          lines << "    #{type}: #{quote(apply_js_runner(commands[type].to_s))}"
+          lines << "    #{type}: #{quote(commands[type])}"
         end
         lines
       end
@@ -67,7 +65,7 @@ module Reviewer
 
       def files_command_lines
         %i[review format].filter_map do |type|
-          "    #{type}: #{quote(apply_js_runner(tool_files[type].to_s))}" if tool_files[type]
+          "    #{type}: #{quote(tool_files[type])}" if tool_files[type]
         end
       end
 
@@ -86,12 +84,6 @@ module Reviewer
 
       def tool_files
         @definition[:files]
-      end
-
-      def apply_js_runner(command)
-        return command unless command.start_with?('npx ')
-
-        command.sub('npx ', "#{@js_runner} ")
       end
 
       def quote(value)

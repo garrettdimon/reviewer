@@ -33,7 +33,7 @@ module Reviewer
         return
       end
 
-      yaml = Generator.new(results.map(&:key), project_dir: project_dir).generate
+      yaml = Generator.new(results.map(&:key)).generate
       config_file.write(yaml)
       formatter.setup_success(results)
     end
