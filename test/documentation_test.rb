@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'json'
 require 'yaml'
 
 class DocumentationTest < Minitest::Test
@@ -60,6 +61,18 @@ class DocumentationTest < Minitest::Test
     assert_includes markdown_targets(section), 'docs/configuration.md'
   end
 
+  def test_getting_started_structures_setup_around_doctor
+    markdown = File.read('docs/getting-started.md')
+    commands = fenced_blocks(markdown, 'console').flat_map(&:lines).map(&:strip)
+    reports = fenced_blocks(markdown, 'json').map { |block| JSON.parse(block) }
+
+    assert_operator commands.count('rvw doctor'), :>=, 2
+    report = reports.find { |value| value['schema_version'] == 1 }
+    refute_nil report, 'Getting started must include a valid Doctor JSON report'
+    assert_kind_of Array, report['configured_tools']
+    assert_kind_of Array, report['discoveries']
+  end
+
   def test_canonical_repository_urls_resolve_to_tracked_markdown
     canonical_repository_urls.each do |url, path, anchor|
       assert_includes `git ls-files -- #{path}`.lines.map(&:chomp), path, "#{url} must target a tracked file"
@@ -105,6 +118,10 @@ class DocumentationTest < Minitest::Test
 
   def markdown_targets(markdown)
     markdown.to_s.scan(/(?<!!)\[[^\]]+\]\(([^)]+)\)/).flatten
+  end
+
+  def fenced_blocks(markdown, language)
+    markdown.scan(/^```#{Regexp.escape(language)}\n(.*?)^```$/m).flatten
   end
 
   def assert_relative_links_resolve(source)

@@ -10,7 +10,7 @@ Participation in the project follows the [Code of Conduct](../CODE_OF_CONDUCT.md
 - Preserve a project's commands and configuration instead of imposing tool policy.
 - Make defaults simple while allowing each project to tune its workflow.
 - Run tools in a predictable order and stop after an actionable failure.
-- Report opportunities without turning Reviewer into a quality score.
+- Report observations without turning Reviewer into a quality score.
 
 ## Development setup
 

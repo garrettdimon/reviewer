@@ -9,8 +9,8 @@ Frictionless code quality.
 Reviewer wraps your code quality tools — tests, linters, security audits, formatters — into a single
 command with a consistent interface. Configure once, run everywhere.
 
-Reviewer works with any command-line tool but is built for Ruby projects. Auto-setup detects tools
-from `Gemfile.lock`, and file mapping supports Minitest and RSpec conventions.
+Reviewer works with any command-line tool but is built for Ruby projects. Doctor can inspect a
+project for known tool signals, and file mapping supports Minitest and RSpec conventions.
 
 ## Before & After
 
@@ -52,13 +52,20 @@ Reviewer requires Ruby 3.2 or newer.
 
 ```console
 gem install reviewer
-rvw init
+rvw doctor
+```
+
+Use Doctor's configured-tool inventory and project discoveries to write the commands the project
+owns in `.reviewer.yml`, then inspect and run them:
+
+```console
+rvw doctor
 rvw
 ```
 
 Or add `gem 'reviewer'` to the project's `Gemfile` before running `bundle install`.
 
-See [Getting started](docs/getting-started.md) for manual setup and the first review.
+See [Getting started](docs/getting-started.md) for the Doctor-guided setup workflow and first review.
 
 ## Configuration
 

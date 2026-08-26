@@ -53,11 +53,10 @@ bundle_audit:
 | `commands.install` | Recovery hint that Reviewer may display; Reviewer does not execute it |
 | `commands.max_exit_status` | Highest review-command status considered successful; defaults to `0` |
 
-Commands in an existing `.reviewer.yml` are shell strings owned by the project; Reviewer runs them
-as configured and does not execute `commands.install`. During `rvw init`, Reviewer copies catalog
-commands without translating them for a detected package manager. JavaScript defaults use `npx`
-regardless of lockfiles; npm may acquire a missing package while resolving an `npx` command. Review,
-replace, or pin generated commands before running them when the project needs different policy.
+Commands in `.reviewer.yml` are shell strings owned by the project. Reviewer preserves each saved
+command as configured, then applies only the explicit composition settings below. `commands.install`
+is display-only: Reviewer has no installer and never executes it. Projects may replace or pin any
+saved command without changing Reviewer's behavior.
 
 ## Command composition
 

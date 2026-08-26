@@ -6,7 +6,7 @@ Reviewer selects, composes, and runs them.
 
 ## Start here
 
-- [Getting started](getting-started.md) — install Reviewer, generate a configuration, and run the
+- [Getting started](getting-started.md) — inspect the project, write a configuration, and run the
   first review.
 - [Usage](usage.md) — select tools and files, format code, choose output, and use Reviewer in common
   workflows.

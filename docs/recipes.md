@@ -3,10 +3,10 @@
 These examples are starting points. Copy only the tools a project uses, keep the commands the project
 already trusts, and consult the [configuration reference](configuration.md) for composition rules.
 
-`rvw init` can generate configurations for recognized tools:
+Start with Doctor to see configured tools and sourced discoveries before choosing project commands:
 
 ```console
-rvw init
+rvw doctor
 ```
 
 ## Focus tests on changed files

@@ -1,7 +1,7 @@
 # Getting started
 
-Reviewer requires Ruby 3.2 or newer. It works with any command-line tool and can detect common Ruby
-and JavaScript tools when generating a project configuration.
+Reviewer requires Ruby 3.2 or newer. It coordinates the commands a project owns in `.reviewer.yml`.
+Doctor can also surface known tool signals without deciding how those tools should run.
 
 ## Install
 
@@ -21,43 +21,52 @@ gem 'reviewer'
 bundle install
 ```
 
-## Generate a configuration
+## Inspect the project
 
 From the project root, run:
 
 ```console
-rvw init
+rvw doctor
 ```
 
-Reviewer inspects the project for tools it recognizes and writes their commands to `.reviewer.yml`.
-Review that file before running it: its commands execute with the same permissions as your shell.
+Doctor separates configured tools from discoveries that are not yet configured:
 
-If `.reviewer.yml` already exists, `rvw init` leaves it unchanged. If no supported tools are found,
-Reviewer prints a link to the [configuration reference](configuration.md) instead.
+```text
+Reviewer Doctor
 
-### Update an existing generated configuration
+Configuration
+  ✓ .reviewer.yml is valid
 
-No migration is required. Commands in an existing `.reviewer.yml` remain project-owned, so keep
-Yarn, pnpm, or pinned commands when they reflect the project's policy. To adopt Reviewer's current
-generated defaults, edit only the applicable `commands.review` and `commands.format` values; do not
-delete a customized file just to regenerate it.
+Configured tools
+  Minitest (tests)
+    Review         bundle exec rake test
+    Files          *_test.rb
+    Configured in  .reviewer.yml › tests
 
-| Tool | Previous generated forms | Current generated values |
-|---|---|---|
-| ESLint | `yarn eslint .` or `pnpm exec eslint .`, with `--fix` for format | Review: `npx eslint .`; format: `npx eslint . --fix` |
-| Prettier | `yarn prettier --check .` or `pnpm exec prettier --check .`, with `--write .` for format | Review: `npx prettier --check .`; format: `npx prettier --write .` |
-| Stylelint | `yarn stylelint "**/*.css"` or `pnpm exec stylelint "**/*.css"`, with `--fix` for format | Review: `npx stylelint "**/*.css"`; format: `npx stylelint "**/*.css" --fix` |
-| TypeScript | `npx tsc --noEmit`, `yarn tsc --noEmit`, or `pnpm exec tsc --noEmit` | Review: `npx --package=typescript tsc --noEmit` |
-| Biome | `yarn @biomejs/biome check .` or `pnpm exec @biomejs/biome check .`, with `--fix` for format | Review: `npx @biomejs/biome check .`; format: `npx @biomejs/biome check . --fix` |
+Discoveries
+  RuboCop
+    Discovered via Gemfile.lock › rubocop
+                   .rubocop.yml
 
-These defaults use npm's normal [`npx` resolution behavior](https://docs.npmjs.com/cli/v11/commands/npx/),
-which may acquire a missing package. Reviewer does not run a separate installer. Projects may
-replace these commands or pin package versions in their own configuration.
+  ESLint
+    Command        eslint .
+    Discovered via package.json › scripts.lint
+                   eslint.config.js
 
-## Configure manually
+Environment
+  ✓ Ruby 3.4.5 · git 2.50.1 · repository
 
-Auto-detection is optional. The smallest valid `.reviewer.yml` names a tool and provides its review
-command:
+Configuration valid · 1 configured · 2 discovered
+```
+
+`Configured tools` reflects `.reviewer.yml`. `Discoveries` lists what Doctor observed and the
+source of each observation. A package-script command is shown exactly as written in `package.json`;
+Reviewer does not infer a package manager, installation method, file target, or format command.
+
+## Write the configuration
+
+Use the project files named by Doctor, existing development instructions, and commands that already
+work for the project. A human or agent can then write the smallest valid `.reviewer.yml`:
 
 ```yaml
 tests:
@@ -68,6 +77,87 @@ tests:
 The YAML key is also the selector used on the command line. See the
 [configuration reference](configuration.md) for every supported setting and
 [recipes](recipes.md) for more examples.
+
+Run Doctor again before the first review:
+
+```console
+rvw doctor
+rvw
+```
+
+Doctor never writes `.reviewer.yml`. Missing or invalid configuration is reported in the
+`Configuration` section while discoveries remain available.
+
+### JSON for agents and scripts
+
+`rvw doctor --json` returns the same report as structured data without terminal styling:
+
+```json
+{
+  "schema_version": 1,
+  "configuration": {
+    "path": ".reviewer.yml",
+    "state": "valid",
+    "findings": []
+  },
+  "configured_tools": [
+    {
+      "key": "tests",
+      "name": "Minitest",
+      "skip_in_batch": false,
+      "commands": {
+        "review": "bundle exec rake test"
+      },
+      "files": {
+        "pattern": "*_test.rb",
+        "map_to_tests": "minitest"
+      },
+      "source": {
+        "path": ".reviewer.yml",
+        "location": "tests"
+      }
+    }
+  ],
+  "discoveries": [
+    {
+      "key": "eslint",
+      "name": "ESLint",
+      "observations": [
+        {
+          "kind": "command",
+          "value": "eslint .",
+          "source": {
+            "path": "package.json",
+            "location": "scripts.lint"
+          }
+        }
+      ]
+    }
+  ],
+  "environment": [
+    {
+      "name": "ruby",
+      "status": "ok",
+      "value": "3.4.5"
+    }
+  ],
+  "summary": {
+    "configured_tools": 1,
+    "discoveries": 1,
+    "configuration_issues": 0,
+    "environment_warnings": 0
+  }
+}
+```
+
+## Existing configurations and deprecated init
+
+Existing `.reviewer.yml` files remain valid and unchanged; no migration is required. Keep customized,
+pinned, Yarn, pnpm, or other project-specific commands rather than deleting the file to regenerate it.
+
+`rvw init` remains available for one deprecation cycle and retains its existing generation behavior.
+It now prints a warning directing setup work to Doctor. Generated files are ordinary project-owned
+configuration and may be edited like any other `.reviewer.yml`.
 
 ## Run the first review
 

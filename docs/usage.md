@@ -3,6 +3,29 @@
 `rvw` reviews code; `fmt` runs configured formatting commands. Both commands use the tool keys,
 tags, file keywords, and file options defined by the project.
 
+## Inspect configuration and discoveries
+
+Run Doctor to see validly configured tools, project discoveries, and environment checks:
+
+```console
+rvw doctor
+```
+
+The human report uses separate `Configured tools` and `Discoveries` sections. Configured entries show
+their saved commands and `.reviewer.yml` location. Discoveries show each observed tool with the file,
+directory, resolved gem, or direct package script that produced it. Doctor does not write configuration.
+
+Use JSON when another program or agent will consume the report:
+
+```console
+rvw doctor --json
+```
+
+The JSON schema includes `configuration`, `configured_tools`, `discoveries`, `environment`, and a
+count summary. Missing or invalid Reviewer configuration still produces a report and exits successfully;
+unexpected internal failures retain a nonzero status. See the concrete outputs in
+[Getting started](getting-started.md#inspect-the-project).
+
 ## Select tools
 
 Run every tool not marked `skip_in_batch`:
