@@ -54,9 +54,12 @@ module Reviewer
           tags: %w[ruby quality],
           commands: {
             install: 'bundle exec gem install reek',
-            review: 'bundle exec reek'
+            review: 'bundle exec reek .'
           },
-          files: { flag: '', separator: ' ', pattern: '*.rb' },
+          files: {
+            review: 'bundle exec reek --force-exclusion',
+            flag: '', separator: ' ', pattern: '*.rb'
+          },
           detect: {
             gems: %w[reek],
             files: %w[.reek.yml]

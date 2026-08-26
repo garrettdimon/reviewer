@@ -146,6 +146,16 @@ module Reviewer
         parsed = YAML.safe_load(yaml)
         assert_equal 'bundle exec rake test', parsed['tests']['commands']['review']
       end
+
+      def test_generates_a_usable_reek_configuration
+        generator = Generator.new([:reek])
+
+        reek = YAML.safe_load(generator.generate).fetch('reek')
+
+        assert_equal 'bundle exec reek .', reek.dig('commands', 'review')
+        assert_equal 'bundle exec reek --force-exclusion', reek.dig('files', 'review')
+        assert_equal '*.rb', reek.dig('files', 'pattern')
+      end
     end
   end
 end

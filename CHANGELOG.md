@@ -8,6 +8,9 @@
 ### Added
 - Repository-relative and brace-alternative matching for `files.pattern`
 
+### Fixed
+- Generated Reek configuration now distinguishes full-project and file-scoped review commands
+
 ## [1.0.0] - 2026-02-03
 
 ### Added
