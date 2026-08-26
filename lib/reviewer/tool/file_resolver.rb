@@ -43,7 +43,14 @@ module Reviewer
       end
 
       def filter(files)
-        files.select { |file| File.fnmatch(pattern, File.basename(file)) }
+        files.select do |file|
+          if pattern.include?('/')
+            candidate = file.delete_prefix("#{Dir.pwd}/").delete_prefix('./')
+            File.fnmatch(pattern, candidate, File::FNM_PATHNAME | File::FNM_EXTGLOB)
+          else
+            File.fnmatch(pattern, File.basename(file))
+          end
+        end
       end
 
       def pattern

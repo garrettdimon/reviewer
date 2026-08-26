@@ -106,6 +106,12 @@ rubocop:
 | `files.pattern` | Keeps matching paths before the command runs |
 | `files.map_to_tests` | Maps Ruby source paths to existing `minitest` or `rspec` test paths |
 
+Slashless patterns match each path's basename. Patterns containing `/` match normalized
+repository-relative paths with pathname semantics. In path patterns, `**/` crosses directory
+boundaries while bare `**` does not; brace alternatives such as `'{lib,test}/**/*.rb'` are
+supported. Source-to-test mapping runs before filtering, and matched paths retain their original
+form when appended to the command.
+
 Source-to-test mapping recognizes Ruby files under `app/` and `lib/`, preserves matching test files,
 and omits mapped paths that do not exist.
 
