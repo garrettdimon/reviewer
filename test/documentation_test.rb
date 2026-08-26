@@ -2,6 +2,8 @@
 
 require 'test_helper'
 require 'json'
+require 'open3'
+require 'shellwords'
 require 'yaml'
 
 class DocumentationTest < Minitest::Test
@@ -70,6 +72,17 @@ class DocumentationTest < Minitest::Test
     refute_nil report, 'Getting started must include a valid Doctor JSON report'
     assert_kind_of Array, report['configured_tools']
     assert_kind_of Array, report['discoveries']
+  end
+
+  def test_minitest_recipe_runs_every_selected_file
+    recipes = fenced_blocks(File.read('docs/recipes.md'), 'yaml').map { |block| YAML.safe_load(block) }
+    command = recipes.find { |recipe| recipe.key?('tests') }.dig('tests', 'files', 'review')
+    fixture_files = %w[test/fixtures/files/recipe_one.rb test/fixtures/files/recipe_two.rb]
+
+    stdout, stderr, status = Open3.capture3(*Shellwords.split(command), *fixture_files)
+
+    assert status.success?, stderr
+    assert_equal %w[recipe-one recipe-two], stdout.lines.map(&:chomp)
   end
 
   def test_canonical_repository_urls_resolve_to_tracked_markdown

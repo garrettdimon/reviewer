@@ -20,7 +20,7 @@ tests:
   commands:
     review: bundle exec rake test
   files:
-    review: bundle exec ruby -Itest
+    review: bundle exec ruby -Itest -e 'ARGV.each { |file| require File.expand_path(file) }'
     pattern: "*_test.rb"
     map_to_tests: minitest
 ```
