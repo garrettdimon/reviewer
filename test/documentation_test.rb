@@ -64,10 +64,9 @@ class DocumentationTest < Minitest::Test
   def test_getting_started_structures_setup_around_doctor
     markdown = File.read('docs/getting-started.md')
     commands = fenced_blocks(markdown, 'console').flat_map(&:lines).map(&:strip)
-    reports = fenced_blocks(markdown, 'json').map { |block| JSON.parse(block) }
 
     assert_operator commands.count('rvw doctor'), :>=, 2
-    report = reports.find { |value| value['schema_version'] == 1 }
+    report = doctor_json_report(markdown)
     refute_nil report, 'Getting started must include a valid Doctor JSON report'
     assert_kind_of Array, report['configured_tools']
     assert_kind_of Array, report['discoveries']
@@ -122,6 +121,11 @@ class DocumentationTest < Minitest::Test
 
   def fenced_blocks(markdown, language)
     markdown.scan(/^```#{Regexp.escape(language)}\n(.*?)^```$/m).flatten
+  end
+
+  def doctor_json_report(markdown)
+    fenced_blocks(markdown, 'json').map { |block| JSON.parse(block) }
+                                   .find { |value| value['schema_version'] == 1 }
   end
 
   def assert_relative_links_resolve(source)

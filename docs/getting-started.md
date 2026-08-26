@@ -40,7 +40,7 @@ Configuration
 Configured tools
   Minitest (tests)
     Review         bundle exec rake test
-    Files          *_test.rb
+    Files          *_test.rb → minitest
     Configured in  .reviewer.yml › tests
 
 Discoveries
