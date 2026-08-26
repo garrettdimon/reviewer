@@ -12,7 +12,7 @@
 #    disable_syntax:           # Shown after review failures.
 #  commands:
 #    install:                  # Displayed as guidance; never executed.
-#    prepare:                  # Cached for six hours after success.
+#    prepare:                  # Attempted at most once every six hours, regardless of exit status.
 #    review:                   # Required.
 #    format:                   # Used by `fmt`.
 #    max_exit_status:          # Defaults to 0 for review commands.
@@ -44,7 +44,7 @@ tool-name-key:
     ignore_syntax: https://example.com/ignore
     disable_syntax: https://example.com/disable
   commands:
-    install: 'bundle install tool'
+    install: 'bundle exec gem install tool'
     prepare: 'bundle exec tool update'
     review: 'bundle exec tool'
     format: 'bundle exec tool --format'

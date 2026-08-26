@@ -49,12 +49,14 @@ bundle_audit:
 |---|---|
 | `commands.review` | Required command used by `rvw` |
 | `commands.format` | Command used by `fmt`; tools without one are skipped during formatting |
-| `commands.prepare` | Runs before review or format when it has not completed successfully in the previous six hours |
+| `commands.prepare` | Runs before review or format at most once every six hours; failed attempts are cached too |
 | `commands.install` | Recovery hint that Reviewer may display; Reviewer does not execute it |
 | `commands.max_exit_status` | Highest review-command status considered successful; defaults to `0` |
 
-Commands are shell strings owned by the project. Reviewer does not install tools or choose runtimes
-and package managers on the project's behalf.
+Commands in an existing `.reviewer.yml` are shell strings owned by the project; Reviewer runs them
+as configured and does not execute `commands.install`. During `rvw init`, generated catalog commands
+that begin with `npx` use `yarn` when `yarn.lock` exists, `pnpm exec` when `pnpm-lock.yaml` exists,
+and `npx` when neither lockfile exists. Review and edit the generated file before running it.
 
 ## Command composition
 

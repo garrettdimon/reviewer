@@ -79,7 +79,7 @@ agent workflows without running review commands.
 |---|---|
 | `0` | Every executed tool passed; skipped and missing tools do not fail the run |
 | `1` | At least one executed tool failed |
-| `2` | The request used an unrecognized tool, tag, keyword, or another invalid option |
+| `2` | The request used an unrecognized tool, tag, or keyword |
 
 A tool may pass with a nonzero process status when its `commands.max_exit_status` allows it. Reviewer
 returns its own status above instead of forwarding the tool's process status.
