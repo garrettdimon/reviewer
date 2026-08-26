@@ -151,7 +151,7 @@ module Reviewer
         @history.set(key, :last_failed_files, nil)
       else
         files = Runner::FailedFiles.new(result.stdout, result.stderr).to_a
-        @history.set(key, :last_failed_files, files) if files.any?
+        @history.set(key, :last_failed_files, files)
       end
     end
 

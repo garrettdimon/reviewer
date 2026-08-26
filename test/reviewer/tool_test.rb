@@ -146,6 +146,26 @@ module Reviewer
       assert_includes history.get(:enabled_tool, :last_failed_files), 'lib/reviewer/batch.rb'
     end
 
+    def test_record_run_replaces_old_files_after_pathless_failure
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_failed_files, ['lib/old.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.new(
+        tool_key: :enabled_tool, tool_name: 'Enabled Test Tool',
+        command_type: :review, command_string: 'ls',
+        success: false, exit_status: 1, duration: 0.5,
+        stdout: 'global failure', stderr: nil, skipped: nil, missing: nil
+      )
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_empty history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
     def test_record_run_preserves_review_history_for_skipped_results
       history = Reviewer.history
       history.set(:enabled_tool, :last_status, :failed)
