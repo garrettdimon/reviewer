@@ -21,9 +21,11 @@ class DocumentationTest < Minitest::Test
     'lib/reviewer/setup.rb'
   ].freeze
   CANONICAL_REPOSITORY_URL = %r{
-    https://github\.com/garrettdimon/reviewer/blob/main/
-    (?<path>[A-Za-z0-9_./-]+)
-    (?:\#(?<anchor>[A-Za-z0-9_-]+))?
+    (?<url>
+      https://github\.com/garrettdimon/reviewer/blob/main/
+      (?<path>[A-Za-z0-9_./-]+)
+      (?:\#(?<anchor>[A-Za-z0-9_-]+))?
+    )
   }x
 
   def test_maintained_documentation_pages_exist
@@ -125,9 +127,7 @@ class DocumentationTest < Minitest::Test
 
   def canonical_repository_urls
     PUBLIC_LINK_SOURCES.flat_map do |source|
-      File.read(source).scan(CANONICAL_REPOSITORY_URL).map do |path, anchor|
-        [Regexp.last_match(0), path, anchor]
-      end
+      File.read(source).scan(CANONICAL_REPOSITORY_URL)
     end
   end
 end
