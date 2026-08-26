@@ -106,6 +106,9 @@ rubocop:
 | `files.pattern` | Keeps matching paths before the command runs |
 | `files.map_to_tests` | Maps Ruby source paths to existing `minitest` or `rspec` test paths |
 
+Only tools with a `files:` block receive resolved file arguments; tools without one run their
+configured command unchanged.
+
 Slashless patterns match each path's basename. Patterns containing `/` match normalized
 repository-relative paths with pathname semantics. In path patterns, `**/` crosses directory
 boundaries while bare `**` does not; brace alternatives such as `'{lib,test}/**/*.rb'` are
