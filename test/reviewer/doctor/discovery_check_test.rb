@@ -31,7 +31,7 @@ module Reviewer
         }
       end
 
-      def test_ignores_compound_delegated_and_environment_prefixed_scripts
+      def test_ignores_compound_multiline_delegated_and_environment_prefixed_scripts
         report = run_check(FIXTURES.join('js_project'))
         commands = report.discoveries.flat_map(&:observations).filter_map do |observation|
           observation.value if observation.kind == :command

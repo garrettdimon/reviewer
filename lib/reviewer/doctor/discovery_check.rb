@@ -7,7 +7,7 @@ module Reviewer
   module Doctor
     # Reports known tools observed in the project but absent from valid configuration.
     class DiscoveryCheck
-      SHELL_OPERATORS = /[;&|]/
+      SHELL_OPERATORS = /[;&|\r\n]/
 
       def initialize(report, project_dir, configured_keys:)
         @report = report
