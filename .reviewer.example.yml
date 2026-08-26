@@ -52,7 +52,7 @@ tool-name-key:
   files:
     review: 'bundle exec tool --files'
     format: 'bundle exec tool --format --files'
-    flag: 'files'
+    flag: ''
     separator: ','
     pattern: '{lib,test}/**/*.rb'
     map_to_tests: minitest
