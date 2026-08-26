@@ -134,16 +134,16 @@ module Reviewer
       def test_generated_minitest_command_runs_each_scoped_file
         tests = YAML.safe_load(Generator.new([:tests]).generate).fetch('tests')
         fixtures = %w[
-          test/fixtures/files/minitest/first.rb
-          test/fixtures/files/minitest/second.rb
+          test/fixtures/files/recipe_one.rb
+          test/fixtures/files/recipe_two.rb
         ]
 
         command = "#{tests.dig('files', 'review')} #{fixtures.join(' ')}"
         stdout, _stderr, status = Open3.capture3(command)
 
         assert status.success?
-        assert_includes stdout, 'first scoped file loaded'
-        assert_includes stdout, 'second scoped file loaded'
+        assert_includes stdout, 'recipe-one'
+        assert_includes stdout, 'recipe-two'
       end
 
       def test_minitest_review_command_is_rake_test
