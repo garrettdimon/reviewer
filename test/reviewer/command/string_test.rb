@@ -59,7 +59,7 @@ module Reviewer
 
       def test_preserves_shell_sensitive_file_arguments
         settings = build_tool(:shell_file_targeting_tool).settings
-        files = ['lib/space name.rb', 'lib/a;printf INJECTED;.rb', 'lib/$HOME.rb']
+        files = ['lib/space name.rb', 'lib/a;printf INJECTED;.rb', 'lib/$HOME.rb', 'lib/trailing-space.rb ']
         command = Command::String.new(:review, tool_settings: settings, files: files)
 
         stdout, stderr, status = Open3.capture3(command.to_s)

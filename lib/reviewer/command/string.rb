@@ -27,10 +27,9 @@ module Reviewer
       #
       # @return [String] the full command string
       def to_s
-        to_a
-          .map(&:strip) # Remove extra spaces on the components
-          .join(' ')    # Merge the components
-          .strip        # Strip extra spaces from the end result
+        components = [env_variables, body, flags].compact.map(&:strip).reject(&:empty?)
+        components << files_string if files_string
+        components.join(' ')
       end
 
       # Converts the command to an array of its components
