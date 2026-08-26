@@ -86,15 +86,15 @@ module Reviewer
       end
 
       def staged
-        git_files(%w[diff --staged --name-only])
+        git_files(%w[diff --staged --name-only --diff-filter=ACMR])
       end
 
       def unstaged
-        git_files(%w[diff --name-only])
+        git_files(%w[diff --name-only --diff-filter=ACMR])
       end
 
       def modified
-        git_files(%w[diff --name-only HEAD])
+        git_files(%w[diff --name-only --diff-filter=ACMR HEAD])
       end
 
       def untracked

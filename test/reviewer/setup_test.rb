@@ -16,6 +16,17 @@ module Reviewer
       end
     end
 
+    def test_prints_deprecation_warning_to_stderr
+      with_temp_config do
+        _out, err = capture_subprocess_io do
+          Setup.run(configuration: Reviewer.configuration, project_dir: FIXTURES.join('empty_project'))
+        end
+
+        assert_equal 'Warning: rvw init is deprecated. ' \
+                     "Run rvw doctor to inspect project discoveries before creating .reviewer.yml.\n", err
+      end
+    end
+
     def test_shows_no_tools_when_empty_project
       with_temp_config do |config_file|
         out, _err = capture_subprocess_io do
@@ -53,6 +64,24 @@ module Reviewer
       end
     end
 
+    def test_uses_yarn_for_javascript_tools_when_yarn_lockfile_is_present
+      command = generated_review_command(FIXTURES.join('js_yarn_project'), 'eslint')
+
+      assert_equal 'yarn eslint .', command
+    end
+
+    def test_uses_pnpm_for_javascript_tools_when_pnpm_lockfile_is_present
+      command = generated_review_command(FIXTURES.join('js_pnpm_project'), 'eslint')
+
+      assert_equal 'pnpm exec eslint .', command
+    end
+
+    def test_uses_npx_for_javascript_tools_without_a_supported_lockfile
+      command = generated_review_command(FIXTURES.join('js_project'), 'eslint')
+
+      assert_equal 'npx eslint .', command
+    end
+
     private
 
     # Sets up a temporary config file, yields it, and restores configuration.
@@ -63,6 +92,16 @@ module Reviewer
         config_file.write('existing: config') if existing
 
         with_swapped_config(config_file) { yield config_file }
+      end
+    end
+
+    def generated_review_command(project_dir, tool)
+      with_temp_config do |config_file|
+        capture_subprocess_io do
+          Setup.run(configuration: Reviewer.configuration, project_dir: project_dir)
+        end
+
+        return YAML.safe_load(config_file.read).fetch(tool).fetch('commands').fetch('review')
       end
     end
   end

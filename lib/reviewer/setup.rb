@@ -11,6 +11,8 @@ module Reviewer
   module Setup
     # URL to the configuration documentation for setup output messages
     CONFIG_URL = 'https://github.com/garrettdimon/reviewer/blob/main/docs/configuration.md'
+    DEPRECATION_WARNING = 'Warning: rvw init is deprecated. ' \
+                          'Run rvw doctor to inspect project discoveries before creating .reviewer.yml.'
 
     # Runs the full setup flow: detect tools, generate config, display results
     # @param project_dir [Pathname, String] the project root to scan (defaults to pwd)
@@ -18,6 +20,7 @@ module Reviewer
     #
     # @return [void]
     def self.run(configuration:, project_dir: Pathname.pwd, output: Output.new)
+      warn DEPRECATION_WARNING
       config_file = configuration.file
       formatter = Formatter.new(output)
 
@@ -33,7 +36,7 @@ module Reviewer
         return
       end
 
-      yaml = Generator.new(results.map(&:key)).generate
+      yaml = Generator.new(results.map(&:key), project_dir: project_dir).generate
       config_file.write(yaml)
       formatter.setup_success(results)
     end
