@@ -65,16 +65,24 @@ module Reviewer
         end
       end
 
-      def test_staged_excludes_deleted_files
-        files = Files.new(provided: [], keywords: %w[staged])
-        status = MockStatus.new(true, 0)
-        git = lambda do |command|
-          stdout = command.include?('--diff-filter=ACMR') ? "kept.rb\n" : "deleted.rb\nkept.rb\n"
-          [stdout, '', status]
-        end
+      def test_git_keywords_preserve_deleted_paths
+        commands = {
+          staged: 'git --no-pager diff --staged --name-only',
+          unstaged: 'git --no-pager diff --name-only',
+          modified: 'git --no-pager diff --name-only HEAD'
+        }
 
-        Open3.stub(:capture3, git) do
-          assert_equal ['kept.rb'], files.to_a
+        commands.each do |keyword, expected_command|
+          command = nil
+          git = lambda do |value|
+            command = value
+            ["deleted.rb\nkept.rb\n", '', MockStatus.new(true, 0)]
+          end
+
+          Open3.stub(:capture3, git) do
+            assert_equal ['deleted.rb', 'kept.rb'], Files.new(keywords: [keyword]).to_a
+          end
+          assert_equal expected_command, command
         end
       end
 
