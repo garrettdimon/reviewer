@@ -183,6 +183,13 @@ module Reviewer
       end
     end
 
+    def test_review_help_describes_failed_as_the_last_executed_review
+      out, _err = with_argv('--help') { capture_subprocess_io { Reviewer.review } }
+
+      assert_equal 2, out.scan(/last executed review failed/i).size
+      refute_match(/failed last time/i, out)
+    end
+
     def test_review_prints_version_and_exits_early
       with_argv('--version') do
         out, _err = capture_subprocess_io { Reviewer.review }

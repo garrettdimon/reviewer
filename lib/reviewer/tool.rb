@@ -136,11 +136,14 @@ module Reviewer
     end
     alias :== eql?
 
-    # Records the pass/fail status and failed files from a result into history
+    # Records the pass/fail status and failed files from an executed review result into history.
+    # Results for other command types and results that did not execute leave review history intact.
     # @param result [Runner::Result] the result of running this tool
     #
     # @return [void]
     def record_run(result)
+      return unless result.executed? && result.command_type == :review
+
       status = result.success? ? :passed : :failed
       @history.set(key, :last_status, status)
 
@@ -148,7 +151,7 @@ module Reviewer
         @history.set(key, :last_failed_files, nil)
       else
         files = Runner::FailedFiles.new(result.stdout, result.stderr).to_a
-        @history.set(key, :last_failed_files, files) if files.any?
+        @history.set(key, :last_failed_files, files)
       end
     end
 

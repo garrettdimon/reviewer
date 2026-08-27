@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 require_relative 'string/env'
 require_relative 'string/flags'
 
@@ -25,10 +27,9 @@ module Reviewer
       #
       # @return [String] the full command string
       def to_s
-        to_a
-          .map(&:strip) # Remove extra spaces on the components
-          .join(' ')    # Merge the components
-          .strip        # Strip extra spaces from the end result
+        components = [env_variables, body, flags].compact.map(&:strip).reject(&:empty?)
+        components << files_string if files_string
+        components.join(' ')
       end
 
       # Converts the command to an array of its components
@@ -67,13 +68,14 @@ module Reviewer
         Flags.new(tool_settings.flags).to_s
       end
 
-      # Builds the files portion of the command string
+      # Builds the files portion of the command string with each path escaped for shell execution
       #
       # @return [String, nil] the formatted files string or nil if not applicable
       def files_string
         return nil unless files_applicable?
 
-        file_list = files.join(tool_settings.files_separator)
+        file_list = files.map { |file| Shellwords.shellescape(file) }
+                         .join(tool_settings.files_separator)
         flag = tool_settings.files_flag
 
         flag.empty? ? file_list : "#{flag} #{file_list}"

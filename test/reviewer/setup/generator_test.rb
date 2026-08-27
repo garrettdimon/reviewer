@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'open3'
 
 module Reviewer
   module Setup
@@ -130,13 +131,19 @@ module Reviewer
         assert_equal 'rspec', parsed['specs']['files']['map_to_tests']
       end
 
-      def test_includes_file_scoped_commands_in_files_block
-        generator = Generator.new([:tests])
-        yaml = generator.generate
+      def test_generated_minitest_command_runs_each_scoped_file
+        tests = YAML.safe_load(Generator.new([:tests]).generate).fetch('tests')
+        fixtures = %w[
+          test/fixtures/files/recipe_one.rb
+          test/fixtures/files/recipe_two.rb
+        ]
 
-        parsed = YAML.safe_load(yaml)
-        files = parsed['tests']['files']
-        assert_equal 'bundle exec ruby -Itest', files['review']
+        command = "#{tests.dig('files', 'review')} #{fixtures.join(' ')}"
+        stdout, _stderr, status = Open3.capture3(command)
+
+        assert status.success?
+        assert_includes stdout, 'recipe-one'
+        assert_includes stdout, 'recipe-two'
       end
 
       def test_minitest_review_command_is_rake_test
@@ -145,6 +152,16 @@ module Reviewer
 
         parsed = YAML.safe_load(yaml)
         assert_equal 'bundle exec rake test', parsed['tests']['commands']['review']
+      end
+
+      def test_generates_a_usable_reek_configuration
+        generator = Generator.new([:reek])
+
+        reek = YAML.safe_load(generator.generate).fetch('reek')
+
+        assert_equal 'bundle exec reek .', reek.dig('commands', 'review')
+        assert_equal 'bundle exec reek --force-exclusion', reek.dig('files', 'review')
+        assert_equal '*.rb', reek.dig('files', 'pattern')
       end
     end
   end

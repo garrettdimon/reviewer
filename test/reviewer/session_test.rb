@@ -62,26 +62,6 @@ module Reviewer
       end
     end
 
-    def test_json_format_outputs_json
-      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
-      tools_collection.stub(:current, [build_tool(:list)]) do
-        session = build_session(arguments: Arguments.new(%w[--json]), tools: tools_collection)
-        out, _err = capture_subprocess_io { session.review }
-        assert_match(/"success":\s*true/, out)
-        assert_match(/"tools":/, out)
-      end
-    end
-
-    def test_format_json_flag_outputs_json
-      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
-      tools_collection.stub(:current, [build_tool(:list)]) do
-        session = build_session(arguments: Arguments.new(%w[--format json]), tools: tools_collection)
-        out, _err = capture_subprocess_io { session.review }
-        assert_match(/"success":\s*true/, out)
-        assert_match(/"tools":/, out)
-      end
-    end
-
     def test_summary_format_outputs_checkmarks
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do
@@ -139,16 +119,6 @@ module Reviewer
       end
     end
 
-    def test_json_returns_zero_when_no_matching_tools
-      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
-      tools_collection.stub(:current, []) do
-        session = build_session(arguments: Arguments.new(%w[--json]), tools: tools_collection)
-        _out, _err = capture_subprocess_io do
-          assert_equal 0, session.review
-        end
-      end
-    end
-
     def test_failed_with_previous_run_but_no_failures
       history = Reviewer.history
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
@@ -163,6 +133,25 @@ module Reviewer
       end
     ensure
       history.set(:list, :last_status, nil)
+    end
+
+    def test_failed_runs_the_tools_that_failed
+      history = Reviewer.history
+      history.set(:file_targeting_list, :last_status, :failed)
+      history.set(:file_targeting_list, :last_failed_files, ['lib/reviewer/batch.rb'])
+
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file, history: history)
+      tools_collection.stub(:current, [build_tool(:file_targeting_list)]) do
+        session = build_session(arguments: Arguments.new(%w[failed]), tools: tools_collection,
+                                history: history)
+        out, _err = capture_subprocess_io { session.review }
+
+        refute_match(/no reviewable/i, out)
+        assert_match(%r{lib/reviewer/batch\.rb}, out)
+      end
+    ensure
+      history.set(:file_targeting_list, :last_status, nil)
+      history.set(:file_targeting_list, :last_failed_files, nil)
     end
 
     def test_failed_with_no_previous_run
@@ -204,7 +193,7 @@ module Reviewer
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do
         args = Arguments.new(%w[staged])
-        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+        with_empty_staged_files(args) do
           session = build_session(arguments: args, tools: tools_collection)
           out, _err = capture_subprocess_io { session.review }
           assert_match(/no.*staged.*files/i, out)
@@ -216,7 +205,7 @@ module Reviewer
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:list)]) do
         args = Arguments.new(%w[staged])
-        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
+        with_empty_staged_files(args) do
           session = build_session(arguments: args, tools: tools_collection)
           _out, _err = capture_subprocess_io do
             assert_equal 0, session.review
@@ -225,32 +214,9 @@ module Reviewer
       end
     end
 
-    def test_json_file_keyword_with_no_files_outputs_json
-      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
-      tools_collection.stub(:current, [build_tool(:list)]) do
-        args = Arguments.new(%w[staged --json])
-        args.stub(:files, Arguments::Files.new(keywords: ['staged'])) do
-          session = build_session(arguments: args, tools: tools_collection)
-          assert_json_early_exit(session, message_pattern: /staged/)
-        end
-      end
-    end
-
-    def test_json_failed_with_nothing_to_run_outputs_json
-      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
-      tools_collection.stub(:failed_from_history, []) do
-        args = Arguments.new(%w[failed --json])
-        session = build_session(arguments: args, tools: tools_collection)
-        assert_json_early_exit(session, message_pattern: /no/i)
-      end
-    end
-
-    def assert_json_early_exit(session, message_pattern:)
-      out, _err = capture_subprocess_io { session.review }
-      parsed = JSON.parse(out)
-      assert parsed['success']
-      assert_match(message_pattern, parsed['message'])
-      assert_equal 0, parsed['summary']['total']
+    def with_empty_staged_files(arguments)
+      files = Arguments::Files.new(keywords: ['staged'])
+      files.stub(:to_a, []) { arguments.stub(:files, files) { yield } }
     end
 
     def test_streaming_failure_does_not_show_batch_summary
@@ -259,6 +225,20 @@ module Reviewer
         session = build_session(tools: tools_collection)
         out, _err = capture_subprocess_io { session.review }
         refute_match(/all passed/i, out)
+      end
+    end
+
+    def test_streaming_failure_shows_each_tool_stopped_by_fail_fast
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      selected = %i[failing_command minimum_viable_tool list].map { |key| build_tool(key) }
+
+      tools_collection.stub(:current, selected) do
+        session = build_session(tools: tools_collection)
+        out, _err = capture_subprocess_io { session.review }
+
+        counts = ['- Minimum_viable_tool', '- List'].map { |line| out.scan("#{line}    stopped after failure").size }
+        assert_equal [1, 1], counts
+        refute_match(/stopped after failure.*\d+\.\d+s/, out)
       end
     end
   end

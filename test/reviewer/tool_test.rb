@@ -146,12 +146,90 @@ module Reviewer
       assert_includes history.get(:enabled_tool, :last_failed_files), 'lib/reviewer/batch.rb'
     end
 
+    def test_record_run_replaces_old_files_after_pathless_failure
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_failed_files, ['lib/old.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.new(
+        tool_key: :enabled_tool, tool_name: 'Enabled Test Tool',
+        command_type: :review, command_string: 'ls',
+        success: false, exit_status: 1, duration: 0.5,
+        stdout: 'global failure', stderr: nil, skipped: nil, missing: nil
+      )
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_empty history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
+    def test_record_run_preserves_review_history_for_skipped_results
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+      history.set(:enabled_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.new(
+        tool_key: :enabled_tool, tool_name: 'Enabled Test Tool',
+        command_type: :review, command_string: nil,
+        success: true, exit_status: 0, duration: 0,
+        stdout: nil, stderr: nil, skipped: true, missing: nil
+      )
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_equal ['lib/reviewer/batch.rb'], history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
+    def test_record_run_preserves_review_history_for_not_run_results
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+      history.set(:enabled_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.not_run(tool: tool, command_type: :review)
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_equal ['lib/reviewer/batch.rb'], history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
+    def test_record_run_preserves_review_history_for_format_results
+      history = Reviewer.history
+      history.set(:enabled_tool, :last_status, :failed)
+      history.set(:enabled_tool, :last_failed_files, ['lib/reviewer/batch.rb'])
+      tool = build_tool(:enabled_tool, history: history)
+      result = Runner::Result.new(
+        tool_key: :enabled_tool, tool_name: 'Enabled Test Tool',
+        command_type: :format, command_string: 'ls',
+        success: true, exit_status: 0, duration: 0.5,
+        stdout: nil, stderr: nil, skipped: nil, missing: nil
+      )
+
+      tool.record_run(result)
+
+      assert_equal :failed, history.get(:enabled_tool, :last_status)
+      assert_equal ['lib/reviewer/batch.rb'], history.get(:enabled_tool, :last_failed_files)
+    ensure
+      history.set(:enabled_tool, :last_status, nil)
+      history.set(:enabled_tool, :last_failed_files, nil)
+    end
+
     def test_resolve_files_delegates_to_file_resolver
       tool = build_tool(:file_pattern_tool)
 
-      result = tool.resolve_files(['app/models/user.rb', 'app.js'])
+      result = tool.resolve_files(['lib/reviewer.rb', 'README.md'])
 
-      assert_equal ['app/models/user.rb'], result
+      assert_equal ['lib/reviewer.rb'], result
     end
 
     def test_resolve_files_returns_files_unchanged_when_no_pattern

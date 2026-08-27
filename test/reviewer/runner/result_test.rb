@@ -41,10 +41,23 @@ module Reviewer
         assert_nil @result.stderr
       end
 
+      def test_state_preserves_legacy_struct_member_positions
+        legacy_members = %i[
+          tool_key tool_name command_type command_string success exit_status duration
+          stdout stderr skipped missing summary_pattern summary_label
+        ]
+
+        assert_equal legacy_members + [:state], Result.members
+      end
+
       def test_to_h_maps_tool_keys
         hash = @result.to_h
         assert_equal :rubocop, hash[:tool]
         assert_equal 'RuboCop', hash[:name]
+      end
+
+      def test_to_h_includes_state
+        assert_equal :passed, @result.to_h[:state]
       end
 
       def test_to_h_maps_command_keys
@@ -146,6 +159,22 @@ module Reviewer
         refute @result.to_h.key?(:missing)
       end
 
+      def test_to_h_keeps_null_execution_fields_for_skipped_result
+        hash = build_via_from_runner(skipped: true).to_h
+
+        %i[command exit_status duration stdout stderr].each do |key|
+          assert hash.key?(key), "Expected #{key} to be present"
+          assert_nil hash[key]
+        end
+      end
+
+      def test_to_h_keeps_only_true_legacy_flags_for_skipped_result
+        hash = build_via_from_runner(skipped: true).to_h
+
+        assert hash[:skipped]
+        refute hash.key?(:missing)
+      end
+
       def test_success_predicate
         assert @result.success?
       end
@@ -158,6 +187,86 @@ module Reviewer
         )
 
         refute result.success?
+      end
+
+      def test_state_construction_derives_compatibility_values
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Tests', command_type: :review,
+          command_string: nil, state: :skipped, exit_status: nil,
+          duration: nil, stdout: nil, stderr: nil
+        )
+
+        refute result.success
+        assert result.skipped
+        assert_nil result.missing
+      end
+
+      def test_state_construction_normalizes_inherited_struct_values
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Tests', command_type: :review,
+          command_string: nil, state: :skipped, exit_status: nil,
+          duration: nil, stdout: nil, stderr: nil
+        )
+
+        expected = { success: false, skipped: true, missing: nil }
+        assert_equal expected, result.deconstruct_keys(expected.keys)
+        assert_equal(expected.values, expected.keys.map { |key| result[key] })
+      end
+
+      def test_not_run_factory_builds_an_unexecuted_result
+        result = Result.not_run(tool: build_tool(:enabled_tool), command_type: :review)
+
+        expected = [:enabled_tool, 'Enabled Test Tool', :review, :not_run]
+        assert_equal expected, [result.tool_key, result.tool_name, result.command_type, result.state]
+        assert_equal [true, false, false, nil, nil, true], [
+          result.not_run?, result.executed?, result.success,
+          result.skipped, result.missing, result.frozen?
+        ]
+
+        assert_null_execution_data(result)
+      end
+
+      def test_not_run_hash_omits_legacy_flags
+        hash = Result.not_run(tool: build_tool(:enabled_tool), command_type: :review).to_h
+
+        refute hash.key?(:skipped)
+        refute hash.key?(:missing)
+      end
+
+      def test_legacy_construction_derives_state
+        assert_equal :passed, @result.state
+      end
+
+      def test_rejects_state_that_conflicts_with_legacy_flags
+        assert_raises(ArgumentError) do
+          Result.new(
+            tool_key: :tests, tool_name: 'Tests', command_type: :review,
+            command_string: nil, state: :passed, success: true,
+            exit_status: nil, duration: nil, stdout: nil, stderr: nil,
+            skipped: true
+          )
+        end
+      end
+
+      def test_rejects_multiple_legacy_states
+        assert_raises(ArgumentError) do
+          Result.new(
+            tool_key: :tests, tool_name: 'Tests', command_type: :review,
+            command_string: nil, success: false, exit_status: nil,
+            duration: nil, stdout: nil, stderr: nil,
+            skipped: true, missing: true
+          )
+        end
+      end
+
+      def test_rejects_state_that_conflicts_with_legacy_success
+        assert_raises(ArgumentError) do
+          Result.new(
+            tool_key: :tests, tool_name: 'Tests', command_type: :review,
+            command_string: 'rake test', state: :passed, success: false,
+            exit_status: 1, duration: 1, stdout: nil, stderr: nil
+          )
+        end
       end
 
       def test_skipped_predicate
@@ -218,6 +327,99 @@ module Reviewer
         refute result.executed?
       end
 
+      def test_from_runner_builds_skipped_result
+        result = build_via_from_runner(skipped: true)
+
+        assert_equal :skipped, result.state
+        assert result.skipped
+        refute result.success
+        assert_null_execution_data(result)
+      end
+
+      def test_skipped_result_does_not_record_a_seed
+        history = Reviewer.history
+        history.set(:dynamic_seed_tool, :last_seed, nil)
+        context = default_context(history: history)
+
+        build_via_from_runner(skipped: true, tool_key: :dynamic_seed_tool, context: context)
+
+        assert_nil history.get(:dynamic_seed_tool, :last_seed)
+      ensure
+        history&.set(:dynamic_seed_tool, :last_seed, nil)
+      end
+
+      def test_from_runner_builds_missing_result
+        result = build_via_from_runner(missing: true)
+
+        assert_equal :missing, result.state
+        assert result.missing
+        refute result.success
+        assert_equal 127, result.exit_status
+        assert_equal 0, result.duration
+      end
+
+      def test_from_runner_builds_executed_result
+        result = build_via_from_runner
+
+        assert_equal :passed, result.state
+        assert_predicate result, :passed?
+        refute result.skipped
+        assert result.success
+        assert_equal 0, result.exit_status
+        assert_equal 3.5, result.duration
+        assert_equal 'stdout', result.stdout
+        assert_equal 'stderr', result.stderr
+      end
+
+      def test_from_runner_builds_failed_result
+        result = build_via_from_runner(success: false, exit_status: 1)
+
+        assert_equal :failed, result.state
+        assert_predicate result, :failed?
+        refute result.success
+        assert_equal 1, result.exit_status
+      end
+
+      RunnerDouble = Struct.new(:tool, :command, :shell, :skipped, :missing, :success, keyword_init: true) do
+        def skipped? = skipped
+        def missing? = missing
+        def success? = success
+      end
+
+      private
+
+      def assert_null_execution_data(result)
+        hash = result.to_h
+        %i[command exit_status duration stdout stderr].each do |key|
+          assert hash.key?(key), "Expected #{key} to be present"
+          assert_nil hash[key]
+        end
+      end
+
+      def build_via_from_runner(skipped: false, missing: false, success: true, exit_status: nil,
+                                tool_key: :enabled_tool, context: default_context)
+        tool = build_tool(tool_key)
+        command = Command.new(tool, :review, context: context)
+        shell = Shell.new
+
+        status = exit_status || (missing ? 127 : 0)
+        mock_status = MockProcessStatus.new(exitstatus: status)
+        mock_result = Shell::Result.new('stdout', 'stderr', mock_status)
+        mock_timer = Shell::Timer.new(prep: 1.0, main: 2.5)
+
+        shell.stub(:result, mock_result) do
+          shell.stub(:timer, mock_timer) do
+            runner = RunnerDouble.new(
+              tool: tool, command: command, shell: shell,
+              skipped: skipped, missing: missing, success: success
+            )
+            Result.from_runner(runner)
+          end
+        end
+      end
+    end
+
+    class DetailSummaryTest < Minitest::Test
       def test_detail_summary_for_tests
         result = Result.new(
           tool_key: :tests, tool_name: 'Minitest', command_type: :review,
@@ -310,72 +512,6 @@ module Reviewer
         )
 
         assert_nil result.detail_summary
-      end
-
-      def test_from_runner_builds_skipped_result
-        result = build_via_from_runner(skipped: true)
-
-        assert result.skipped
-        assert result.success
-        assert_equal 0, result.exit_status
-        assert_equal 0, result.duration
-        assert_nil result.command_string
-      end
-
-      def test_from_runner_builds_missing_result
-        result = build_via_from_runner(missing: true)
-
-        assert result.missing
-        refute result.success
-        assert_equal 127, result.exit_status
-        assert_equal 0, result.duration
-      end
-
-      def test_from_runner_builds_executed_result
-        result = build_via_from_runner
-
-        refute result.skipped
-        assert result.success
-        assert_equal 0, result.exit_status
-        assert_equal 3.5, result.duration
-        assert_equal 'stdout', result.stdout
-        assert_equal 'stderr', result.stderr
-      end
-
-      def test_from_runner_builds_failed_result
-        result = build_via_from_runner(success: false, exit_status: 1)
-
-        refute result.success
-        assert_equal 1, result.exit_status
-      end
-
-      RunnerDouble = Struct.new(:tool, :command, :shell, :skipped, :missing, :success, keyword_init: true) do
-        def skipped? = skipped
-        def missing? = missing
-        def success? = success
-      end
-
-      private
-
-      def build_via_from_runner(skipped: false, missing: false, success: true, exit_status: nil)
-        tool = build_tool(:enabled_tool)
-        command = Command.new(tool, :review, context: default_context)
-        shell = Shell.new
-
-        status = exit_status || (missing ? 127 : 0)
-        mock_status = MockProcessStatus.new(exitstatus: status)
-        mock_result = Shell::Result.new('stdout', 'stderr', mock_status)
-        mock_timer = Shell::Timer.new(prep: 1.0, main: 2.5)
-
-        shell.stub(:result, mock_result) do
-          shell.stub(:timer, mock_timer) do
-            runner = RunnerDouble.new(
-              tool: tool, command: command, shell: shell,
-              skipped: skipped, missing: missing, success: success
-            )
-            Result.from_runner(runner)
-          end
-        end
       end
     end
   end

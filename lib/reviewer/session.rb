@@ -47,11 +47,7 @@ module Reviewer
     def run_tools(command_type)
       return reject_unrecognized_selectors if unrecognized_selectors.any?
 
-      if json_output?
-        run_json(command_type)
-      else
-        run_text(command_type)
-      end
+      json_output? ? run_json(command_type) : run_text(command_type)
     end
 
     def run_json(command_type)
@@ -59,11 +55,12 @@ module Reviewer
       return emit_json_early_exit(message) if message
 
       current_tools = tools.current
-      return 0 if current_tools.empty?
+      return emit_json_early_exit('No matching tools found') if current_tools.empty?
 
       strategy = runner_strategy(current_tools)
       report = Batch.new(command_type, current_tools, strategy: strategy, context: context).run
-      puts report.to_json
+      empty_message = "No tools support the requested #{command_type} command"
+      puts JSON.pretty_generate(report.to_h(empty_message: empty_message))
       report.exit_code
     end
 
@@ -135,12 +132,7 @@ module Reviewer
     end
 
     def emit_json_early_exit(message)
-      puts JSON.pretty_generate(
-        success: true,
-        message: message,
-        summary: { total: 0, passed: 0, failed: 0, missing: 0, duration: 0 },
-        tools: []
-      )
+      puts JSON.pretty_generate(Report.empty(message: message))
       0
     end
 
@@ -192,12 +184,10 @@ module Reviewer
     end
 
     def display_text_report(report)
-      if arguments.format == :summary
-        Report::Formatter.new(report, output: output).print
-      elsif report.success?
-        ran_count = report.results.count(&:executed?)
-        batch_formatter.summary(ran_count, report.duration)
-      end
+      return Report::Formatter.new(report, output: output).print if arguments.format == :summary
+      return batch_formatter.not_run_tools(report.results.select(&:not_run?)) unless report.success?
+
+      batch_formatter.summary(report.results.count(&:executed?), report.duration)
     end
 
     def show_missing_tools(report, current_tools)

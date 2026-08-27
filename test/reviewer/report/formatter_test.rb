@@ -127,15 +127,15 @@ module Reviewer
         assert_match(/not installed/i, out)
       end
 
-      def test_missing_tool_excluded_from_failure_details
+      def test_all_missing_report_does_not_say_all_passed
         @report.add(build_missing_result(tool_key: :rubocop, tool_name: 'RuboCop'))
         @report.record_duration(0.5)
 
         formatter = Formatter.new(@report)
         out, _err = capture_subprocess_io { formatter.print }
 
-        # Should show "All passed" since the only non-missing tools all passed
-        assert_match(/all passed/i, out)
+        refute_match(/all passed/i, out)
+        assert_match(/1 missing/i, out)
       end
 
       def test_aligns_tool_names_and_durations_across_varied_lengths
@@ -170,11 +170,143 @@ module Reviewer
         refute_match(/RuboCop:/i, out)
       end
 
+      def test_failure_details_exclude_skipped_tools
+        @report.add(build_result(
+                      tool_key: :tests,
+                      success: false,
+                      exit_status: 1,
+                      stdout: 'test failure output'
+                    ))
+        @report.add(build_skipped_result(tool_key: :rubocop))
+
+        out, _err = capture_subprocess_io { Formatter.new(@report).print }
+
+        assert_match(/Tests:/i, out)
+        refute_match(/Rubocop:/i, out)
+      end
+
+      def test_skipped_tool_is_not_rendered_as_a_pass
+        @report.add(build_result(tool_key: :tests, success: true))
+        @report.add(build_skipped_result(tool_key: :rubocop))
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        rubocop_line = out.lines.find { |line| line.include?('Rubocop') }
+        refute_includes rubocop_line, Output::Formatting::CHECKMARK
+        assert_match(/no matching files/i, rubocop_line)
+      end
+
+      def test_skipped_tool_shows_no_timing
+        @report.add(build_skipped_result(tool_key: :rubocop))
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        rubocop_line = out.lines.find { |line| line.include?('Rubocop') }
+        refute_match(/\d+\.\d+s/, rubocop_line)
+      end
+
+      def test_summary_counts_skipped_separately_from_passed
+        2.times { |i| @report.add(build_result(tool_key: :"ran#{i}", success: true)) }
+        3.times { |i| @report.add(build_skipped_result(tool_key: :"skip#{i}")) }
+        @report.record_duration(1.5)
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        refute_match(/all passed/i, out)
+        assert_match(/2 passed/i, out)
+        assert_match(/3 skipped/i, out)
+      end
+
+      def test_summary_counts_missing_separately
+        @report.add(build_result(tool_key: :tests, success: true))
+        @report.add(build_skipped_result(tool_key: :rubocop))
+        @report.add(build_missing_result(tool_key: :reek))
+        @report.record_duration(1.5)
+
+        out, _err = capture_subprocess_io { Formatter.new(@report).print }
+
+        assert_match(/1 passed/i, out)
+        assert_match(/1 skipped/i, out)
+        assert_match(/1 missing/i, out)
+      end
+
+      def test_formats_not_run_tool_without_timing_or_failure_details
+        @report.add(build_result(
+                      tool_key: :tests,
+                      success: false,
+                      exit_status: 1,
+                      stdout: 'test failure output'
+                    ))
+        @report.add(Runner::Result.not_run(tool: build_tool(:enabled_tool), command_type: :review))
+
+        out, _err = capture_subprocess_io { Formatter.new(@report).print }
+        line = out.lines.find { |candidate| candidate.include?('Enabled Test Tool') }
+
+        assert_match(/^- .*Enabled Test Tool/, line)
+        assert_match(/stopped after failure/i, line)
+        refute_match(/\d+\.\d+s/, line)
+        assert_match(/1 not_run/i, out)
+        refute_match(/Enabled Test Tool:/i, out)
+      end
+
+      def test_formats_one_result_in_every_state
+        @report.add(build_result(tool_key: :passed, success: true))
+        @report.add(build_result(tool_key: :failed, success: false, exit_status: 1, stdout: 'failure'))
+        @report.add(build_skipped_result(tool_key: :skipped))
+        @report.add(build_missing_result(tool_key: :missing))
+        @report.add(Runner::Result.not_run(tool: build_tool(:enabled_tool), command_type: :review))
+
+        out, _err = capture_subprocess_io { Formatter.new(@report).print }
+
+        expected = <<~OUTPUT
+          ✓ Passed                 1.0s
+          ✗ Failed                 1.0s
+          - Skipped              no matching files
+          - Missing              not installed
+          - Enabled Test Tool    stopped after failure
+
+
+          Failed:
+          failure
+          1 passed, 1 failed, 1 skipped, 1 missing, 1 not_run (0.0s)
+        OUTPUT
+        assert_equal expected, out
+      end
+
+      def test_all_passed_still_shown_when_nothing_skipped
+        @report.add(build_result(tool_key: :tests, success: true))
+        @report.record_duration(1.5)
+        formatter = Formatter.new(@report)
+
+        out, _err = capture_subprocess_io { formatter.print }
+
+        assert_match(/all passed/i, out)
+      end
+
       private
 
       def duration_column_positions(output, *tool_names)
         lines = output.lines.map(&:chomp)
         tool_names.map { |name| lines.find { |l| l.include?(name) }.index(/\d+\.\d+s/) }
+      end
+
+      def build_skipped_result(tool_key:, tool_name: nil)
+        Runner::Result.new(
+          tool_key: tool_key,
+          tool_name: tool_name || tool_key.to_s.capitalize,
+          command_type: :review,
+          command_string: nil,
+          success: true,
+          exit_status: 0,
+          duration: 0,
+          stdout: nil,
+          stderr: nil,
+          skipped: true,
+          missing: nil
+        )
       end
 
       def build_result(tool_key:, success:, **options)

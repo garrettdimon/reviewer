@@ -42,7 +42,11 @@ module Reviewer
 
       def print_tool_line(result)
         if result.missing?
-          print_missing_tool(result)
+          print_unrun_tool(result, style: :warning, reason: 'not installed')
+        elsif result.skipped?
+          print_unrun_tool(result, style: :muted, reason: 'no matching files')
+        elsif result.not_run?
+          print_unrun_tool(result, style: :muted, reason: 'stopped after failure')
         else
           print_executed_tool(result)
         end
@@ -50,21 +54,19 @@ module Reviewer
         output.newline
       end
 
-      def print_missing_tool(result)
-        output.printer.print(:warning, "- #{result.tool_name.ljust(@name_width)}")
-        output.printer.print(:muted, '    not installed')
+      # A tool that was selected but did not run is neither a pass nor a failure, so it gets no
+      # status mark or timing. The reason explains whether the tool was skipped, missing, or stopped.
+      def print_unrun_tool(result, style:, reason:)
+        output.printer.print(style, "- #{result.tool_name.ljust(@name_width)}")
+        output.printer.print(:muted, "    #{reason}")
       end
 
       def print_executed_tool(result)
         style = status_style(result.success?)
         mark = status_mark(result.success?)
         output.printer.print(style, "#{mark} #{result.tool_name.ljust(@name_width)}")
-        print_timing(result)
-        print_details(result)
-      end
-
-      def print_timing(result)
         output.printer.print(:muted, "    #{format_duration(result.duration).rjust(6)}")
+        print_details(result)
       end
 
       def max_name_width
@@ -79,20 +81,28 @@ module Reviewer
       end
 
       def print_summary
-        if report.success?
-          print_success_summary
-        else
-          print_failure_summary
-        end
+        print_failure_summary unless report.success?
+        print_result_summary
       end
 
-      def print_success_summary
-        output.printer.print(:success, 'All passed')
-        output.printer.puts(:muted, " (#{format_duration(report.duration)})")
+      # "All passed" is reserved for reports containing only passed results. Other reports list
+      # every nonzero state count so the totals account for every selected runnable tool.
+      def print_result_summary
+        printer = output.printer
+        printer.print(report.success? ? :success : :failure, result_summary_label)
+        printer.puts(:muted, " (#{format_duration(report.duration)})")
+      end
+
+      def result_summary_label
+        return 'All passed' if report.results.all?(&:passed?)
+
+        report.summary.except(:total, :duration).filter_map do |state, count|
+          "#{count} #{state}" unless count.zero?
+        end.join(', ')
       end
 
       def print_failure_summary
-        failed_results = report.results.reject(&:success?).reject(&:missing?)
+        failed_results = report.results.select(&:failed?)
 
         failed_results.each do |result|
           output.newline

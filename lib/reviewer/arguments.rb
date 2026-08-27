@@ -74,7 +74,7 @@ module Reviewer
     def files
       @files ||= Arguments::Files.new(
         provided: options[:files],
-        keywords: keywords.reserved,
+        keywords: keywords.for_files,
         output: output,
         on_git_error: session_formatter.method(:git_error)
       )

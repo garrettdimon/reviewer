@@ -77,10 +77,9 @@ module Reviewer
         assert_nil Catalog.detect_for(:nonexistent_tool)
       end
 
-      def test_tests_entry_has_file_scoped_review_command
+      def test_tests_entry_has_file_configuration
         config = Catalog.config_for(:tests)
         assert_equal 'bundle exec rake test', config[:commands][:review]
-        assert_equal 'bundle exec ruby -Itest', config[:files][:review]
         assert_equal '*_test.rb', config[:files][:pattern]
         assert_equal 'minitest', config[:files][:map_to_tests]
       end
