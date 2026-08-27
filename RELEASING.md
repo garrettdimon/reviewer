@@ -151,13 +151,13 @@ incompatibly requires a major release.
 
 ### RubyGems Trusted Publishing
 
-1. Open [RubyGems pending trusted publishers](https://rubygems.org/profile/oidc/pending_trusted_publishers).
-2. Add a publisher with these values:
-   - **Gem name:** `reviewer`
+1. Open [Reviewer's trusted publishers](https://rubygems.org/gems/reviewer/trusted_publishers).
+2. Create a publisher for the existing gem with these values:
    - **Repository owner:** `garrettdimon`
    - **Repository name:** `reviewer`
    - **Workflow filename:** `release.yml`
    - **Environment:** `rubygems`
+   - **Workflow repository owner and name:** leave both blank
 
 ### GitHub Environment
 
