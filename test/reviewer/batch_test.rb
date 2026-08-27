@@ -242,19 +242,25 @@ module Reviewer
       assert_equal %i[skipped passed], @report.results.map(&:state)
     end
 
-    def test_reports_each_tool_stopped_after_a_failure # rubocop:disable Metrics/AbcSize
+    def test_reports_each_tool_stopped_after_a_failure
       tools = %i[failing_command minimum_viable_tool list].map { |key| build_tool(key) }
 
       capture_subprocess_io do
         @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: @context).run
       end
 
-      assert_equal %i[failing_command minimum_viable_tool list], @report.results.map(&:tool_key)
-      assert_equal %i[failed not_run not_run], @report.results.map(&:state)
-      unavailable = @report.results.drop(1).map do |result|
-        [result.executed?, result.command_string, result.exit_status, result.duration, result.stdout, result.stderr]
-      end
-      assert_equal [[false, nil, nil, nil, nil, nil], [false, nil, nil, nil, nil, nil]], unavailable
+      expected = [
+        { tool: :minimum_viable_tool, name: 'Minimum_viable_tool', command_type: :review,
+          command: nil, state: :not_run, success: false, exit_status: nil, duration: nil,
+          stdout: nil, stderr: nil },
+        { tool: :list, name: 'List', command_type: :review, command: nil, state: :not_run,
+          success: false, exit_status: nil, duration: nil, stdout: nil, stderr: nil }
+      ]
+
+      expected_states = [%i[failing_command failed], %i[minimum_viable_tool not_run], %i[list not_run]]
+      actual_states = @report.results.map { |result| [result.tool_key, result.state] }
+      assert_equal expected_states, actual_states
+      assert_equal expected, @report.results.drop(1).map(&:to_h)
     end
 
     def test_does_not_record_tools_stopped_after_a_failure

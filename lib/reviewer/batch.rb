@@ -30,17 +30,11 @@ module Reviewer
     #   batch in order to provide a total execution time.
     #
     # @return [Report] the report containing results for all commands run
-    # :reek:TooManyStatements -- one linear execution and fail-fast accounting loop
     def run
       runnable_tools = matching_tools
       elapsed_time = Benchmark.realtime do
         failed_index = runnable_tools.find_index { |tool| run_tool(tool).failed? }
-        if failed_index
-          runnable_tools.drop(failed_index + 1).each do |unrun_tool|
-            unrun_result = Runner::Result.not_run(tool: unrun_tool, command_type: command_type)
-            @report.add(unrun_result)
-          end
-        end
+        record_not_run(runnable_tools.drop(failed_index + 1)) if failed_index
       end
 
       @report.record_duration(elapsed_time)
@@ -48,6 +42,13 @@ module Reviewer
     end
 
     private
+
+    def record_not_run(tools)
+      tools.each do |tool|
+        result = Runner::Result.not_run(tool: tool, command_type: command_type)
+        @report.add(result)
+      end
+    end
 
     # Runs a single tool and records its result in the report.
     # @return [Runner::Result] the recorded result
