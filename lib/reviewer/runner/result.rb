@@ -46,32 +46,14 @@ module Reviewer
       keyword_init: true
     ) do
       # Freeze on initialization to maintain immutability like Data.define
-      # :reek:FeatureEnvy -- validates the supplied compatibility values against canonical state
-      # :reek:TooManyStatements -- compatibility is intentionally isolated in this initializer
-      def initialize(state: nil, success: nil, skipped: nil, missing: nil, **attributes) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
-        state ||= if skipped
-                    :skipped
-                  elsif missing
-                    :missing
-                  elsif success == true
-                    :passed
-                  elsif success == false
-                    :failed
-                  end
-
+      def initialize(state: nil, success: nil, skipped: nil, missing: nil, **attributes)
+        state ||= [[:skipped, skipped], [:missing, missing], [:passed, success == true], [:failed, success == false]]
+                  .find(&:last)&.first
         raise ArgumentError, "Unknown result state: #{state.inspect}" unless Result::STATES.include?(state)
 
-        conflicting_flags = (skipped && state != :skipped) ||
-                            (missing && state != :missing) ||
-                            (skipped && missing)
-        conflicting_success = (state == :passed && success == false) ||
-                              (state == :failed && success == true)
-        raise ArgumentError, 'Result state conflicts with legacy values' if conflicting_flags || conflicting_success
-
         super(**attributes, state: state, success: success, skipped: skipped, missing: missing)
-        self[:success] = passed?
-        self[:skipped] = true if skipped?
-        self[:missing] = true if missing?
+        validate_legacy_values
+        normalize_legacy_values
         freeze
       end
 
@@ -197,8 +179,33 @@ module Reviewer
       # Converts the result to a hash suitable for serialization
       #
       # @return [Hash] serialized result; skipped and not-run execution fields remain explicit nils
-      def to_h # rubocop:disable Metrics/AbcSize
-        attributes = {
+      def to_h
+        attributes = serialized_attributes
+
+        return attributes.compact unless skipped? || not_run?
+
+        attributes.compact.merge(attributes.slice(:command, :exit_status, :duration, :stdout, :stderr))
+      end
+
+      private
+
+      def validate_legacy_values
+        conflicting_flags = [[self[:skipped], :skipped], [self[:missing], :missing]]
+                            .select(&:first).map(&:last).any? { |value| value != state }
+        conflicting_success = { true => :failed, false => :passed }.fetch(self[:success]) { nil } == state
+        return unless conflicting_flags || conflicting_success
+
+        raise ArgumentError, 'Result state conflicts with legacy values'
+      end
+
+      def normalize_legacy_values
+        self[:success] = passed?
+        self[:skipped] = true if skipped?
+        self[:missing] = true if missing?
+      end
+
+      def serialized_attributes
+        {
           tool: tool_key,
           name: tool_name,
           command_type: command_type,
@@ -212,10 +219,6 @@ module Reviewer
           skipped: skipped,
           missing: missing
         }
-
-        return attributes.compact unless skipped? || not_run?
-
-        attributes.compact.merge(attributes.slice(:command, :exit_status, :duration, :stdout, :stderr))
       end
     end
 
