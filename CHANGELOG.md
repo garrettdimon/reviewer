@@ -2,10 +2,21 @@
 
 ## [1.1.0] - 2026-08-27
 
+Reviewer 1.1 makes review outcomes more precise and dependable for people and automated consumers.
+Every tool result now has an authoritative state, aggregate summaries account for every outcome, and
+schema-versioned JSON exposes complete run details without requiring agents or integrations to parse
+human-readable output or infer meaning from a success boolean.
+
+File-scoped runs now select valid files for each tool independently and preserve failed-review
+history across non-review runs. Structured Doctor reports make setup and diagnostics inspectable by
+people and agents, while `rvw init` begins its transition toward explicit, project-owned
+configuration.
+
 ### Upgrade notes
 - Unknown positional and `-t` selectors now stop before running tools and exit 2. Check scripts that relied on an unknown selector falling through to a batch run.
 - Reviewer now exits 0 for a successful review, 1 for a failed review, and 2 for an invocation error instead of forwarding a tool's exit status.
 - Skipped results now report `state: "skipped"`, `success: false`, and null execution fields. Integrations should use `state` to interpret each result.
+- `rvw init` remains available with its existing generation behavior for one deprecation cycle, but now prints a warning. Use `rvw doctor` to inspect project discoveries before creating or editing `.reviewer.yml`; existing configurations require no migration.
 
 ### Added
 - Top-level tags and the `failed` keyword to the capabilities payload
@@ -16,7 +27,7 @@
 ### Changed
 - Moved long-form guidance into version-controlled repository documentation; setup output and gem metadata now link to it
 - Doctor separates configured tools from sourced project discoveries in human and JSON reports
-- `rvw init` is deprecated while retaining its existing generation behavior for one transition cycle
+- `rvw init` now prints a deprecation warning directing setup work through `rvw doctor`
 - `rvw failed` preserves the last executed review across skipped tools, missing tools, formatting runs, and fail-fast tails; a successful retry clears the failure
 - File targeting applies each tool's scope independently, supports mixed file types, filters nonexistent paths, and passes shell-sensitive filenames without interpretation
 - Development dependencies are separated from optional dogfood tools; `bin/setup` enables the local dogfood bundle group
