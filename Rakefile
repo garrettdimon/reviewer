@@ -113,8 +113,10 @@ class DryRun
   end
 
   def show_contents
+    require "rubygems/package"
+
     puts "\nGem contents:"
-    system "tar -tf #{@gem_file}"
+    Gem::Package.new(@gem_file).contents.each { |path| puts path }
   end
 
   def show_size
