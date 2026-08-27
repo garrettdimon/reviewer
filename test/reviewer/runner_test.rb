@@ -71,7 +71,7 @@ module Reviewer
     end
 
     def test_does_not_skip_when_files_match_pattern
-      context = default_context(arguments: Arguments.new(%w[-f lib/foo.rb]))
+      context = default_context(arguments: Arguments.new(%w[-f test/fixtures/files/recipe_one.rb]))
       runner = Runner.new(build_tool(:file_pattern_tool), :review, context: context)
 
       refute runner.command.skip?
