@@ -39,7 +39,6 @@ module Reviewer
           runnable_tools.drop(failed_index + 1).each do |unrun_tool|
             unrun_result = Runner::Result.not_run(tool: unrun_tool, command_type: command_type)
             @report.add(unrun_result)
-            unrun_tool.record_run(unrun_result)
           end
         end
       end

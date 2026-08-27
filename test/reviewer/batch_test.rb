@@ -256,5 +256,23 @@ module Reviewer
       end
       assert_equal [[false, nil, nil, nil, nil, nil], [false, nil, nil, nil, nil, nil]], unavailable
     end
+
+    def test_does_not_record_tools_stopped_after_a_failure
+      unrun_tool = build_tool(:minimum_viable_tool)
+      record_called = false
+
+      unrun_tool.stub(:record_run, ->(_result) { record_called = true }) do
+        capture_subprocess_io do
+          Batch.new(
+            :review,
+            [build_tool(:failing_command), unrun_tool],
+            strategy: Runner::Strategies::Captured,
+            context: @context
+          ).run
+        end
+      end
+
+      refute record_called
+    end
   end
 end
