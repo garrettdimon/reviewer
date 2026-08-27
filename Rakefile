@@ -98,32 +98,39 @@ class DryRun
   end
 
   def run
-    build || abort('Gem build failed')
-    show_contents
-    show_size
-  ensure
-    cleanup if File.exist?(@gem_file)
+    require "tmpdir"
+
+    Dir.mktmpdir("reviewer-dry-run") do |directory|
+      @gem_path = File.join(directory, @gem_file)
+      build || abort('Gem build failed')
+      show_contents
+      show_size
+    ensure
+      cleanup if @gem_path && File.exist?(@gem_path)
+    end
   end
 
   private
 
   def build
     puts "Building #{@gem_file}..."
-    system 'gem build reviewer.gemspec --silent'
+    system 'gem', 'build', 'reviewer.gemspec', '--silent', '--output', @gem_path
   end
 
   def show_contents
+    require "rubygems/package"
+
     puts "\nGem contents:"
-    system "tar -tf #{@gem_file}"
+    Gem::Package.new(@gem_path).contents.each { |path| puts path }
   end
 
   def show_size
-    size = File.size(@gem_file)
+    size = File.size(@gem_path)
     puts "\nGem size: #{(size / 1024.0).round(1)} KB"
   end
 
   def cleanup
-    File.delete(@gem_file)
+    File.delete(@gem_path)
     puts "Cleaned up #{@gem_file}"
   end
 end
