@@ -157,8 +157,13 @@ tests:
     label: "\\1 tests"
 ```
 
-`summary.pattern` is matched case-insensitively. Numbered captures such as `\\1` in
-`summary.label` are replaced with values from the match.
+`summary.pattern` is matched case-insensitively. `summary.label` is required when a pattern is
+configured; numbered captures such as `\\1` are replaced with values from the match.
+
+When extraction succeeds, `--format summary` prints the configured label after the tool's timing and
+`--json` includes it as `detail_summary` in that tool's result. The JSON key is absent when the
+configuration is incomplete or standard output does not match. This project-defined label is display
+text for consumers to surface, not a structured value to parse.
 
 ## Complete example
 

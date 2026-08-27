@@ -93,6 +93,10 @@ fmt rubocop staged
 | `-j`, `--json`, or `--format json` | Structured JSON for automation |
 | `-r` or `--raw` | Direct passthrough output |
 
+When a tool's [summary configuration](configuration.md#summary-details) matches its standard output,
+its JSON result includes the project-defined display text as `detail_summary`. The key is absent
+when no summary is available.
+
 Use `rvw --capabilities` to print JSON describing configured tools, tags, keywords, and common
 agent workflows without running review commands.
 

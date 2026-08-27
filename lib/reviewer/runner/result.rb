@@ -119,7 +119,7 @@ module Reviewer
       #
       # @return [String, nil] a brief summary or nil if no detail can be extracted
       def detail_summary
-        return nil unless summary_pattern
+        return nil unless summary_pattern && summary_label
 
         match = stdout&.match(/#{summary_pattern}/i)
         return nil unless match
@@ -142,7 +142,8 @@ module Reviewer
           stdout: stdout,
           stderr: stderr,
           skipped: skipped,
-          missing: missing
+          missing: missing,
+          detail_summary: detail_summary
         }.compact # Excludes summary_pattern/summary_label (config, not results)
       end
     end
