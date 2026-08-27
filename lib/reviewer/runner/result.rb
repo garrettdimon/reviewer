@@ -33,7 +33,6 @@ module Reviewer
       :tool_name,
       :command_type,
       :command_string,
-      :state,
       :success,
       :exit_status,
       :duration,
@@ -43,6 +42,7 @@ module Reviewer
       :missing,
       :summary_pattern,
       :summary_label,
+      :state,
       keyword_init: true
     ) do
       # Freeze on initialization to maintain immutability like Data.define
@@ -67,6 +67,9 @@ module Reviewer
         raise ArgumentError, 'Result state conflicts with legacy values' if conflicting_flags || conflicting_success
 
         super(**attributes, state: state, success: success, skipped: skipped, missing: missing)
+        self[:success] = passed?
+        self[:skipped] = true if skipped?
+        self[:missing] = true if missing?
         freeze
       end
 

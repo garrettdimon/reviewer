@@ -41,6 +41,15 @@ module Reviewer
         assert_nil @result.stderr
       end
 
+      def test_state_preserves_legacy_struct_member_positions
+        legacy_members = %i[
+          tool_key tool_name command_type command_string success exit_status duration
+          stdout stderr skipped missing summary_pattern summary_label
+        ]
+
+        assert_equal legacy_members + [:state], Result.members
+      end
+
       def test_to_h_maps_tool_keys
         hash = @result.to_h
         assert_equal :rubocop, hash[:tool]
@@ -190,6 +199,18 @@ module Reviewer
         refute result.success
         assert result.skipped
         assert_nil result.missing
+      end
+
+      def test_state_construction_normalizes_inherited_struct_values
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Tests', command_type: :review,
+          command_string: nil, state: :skipped, exit_status: nil,
+          duration: nil, stdout: nil, stderr: nil
+        )
+
+        expected = { success: false, skipped: true, missing: nil }
+        assert_equal expected, result.deconstruct_keys(expected.keys)
+        assert_equal(expected.values, expected.keys.map { |key| result[key] })
       end
 
       def test_not_run_factory_builds_an_unexecuted_result
