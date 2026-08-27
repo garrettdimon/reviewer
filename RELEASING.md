@@ -171,9 +171,13 @@ every Gate 2 CI job listed above.
 
 ## Recovering from a Bad Tag
 
-Before deleting or replacing any tag, verify that RubyGems publication never occurred. Check the
-release workflow and the version list on RubyGems. If RubyGems accepted the version, do not delete,
-move, or reuse its tag; fix the problem through a new patch release.
+Before deleting or replacing any tag, verify that RubyGems publication never occurred. If the
+triggered Release workflow is queued or running, [cancel it](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/cancel-a-workflow-run)
+and wait until the run reaches a terminal state. Deleting the tag does not stop a workflow that has
+already started. Recheck the version list on RubyGems after the workflow stops.
+
+If RubyGems accepted the version, do not delete, move, or reuse its tag; fix the problem through a
+new patch release.
 
 Only when the workflow never published the gem may you remove the tag, correct the release through
 a pull request, and tag the corrected commit after all gates pass again:
