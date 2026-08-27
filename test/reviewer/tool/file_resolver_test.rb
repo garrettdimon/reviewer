@@ -18,9 +18,77 @@ module Reviewer
         settings = build_settings(files: { pattern: '*.rb' })
         resolver = FileResolver.new(settings)
 
-        result = resolver.resolve(['app/models/user.rb', 'app/assets/app.js', 'lib/tool.rb'])
+        result = resolver.resolve([
+                                    'lib/reviewer/tool/file_resolver.rb',
+                                    'README.md',
+                                    'test/reviewer/tool/file_resolver_test.rb'
+                                  ])
 
-        assert_equal ['app/models/user.rb', 'lib/tool.rb'], result
+        assert_equal ['lib/reviewer/tool/file_resolver.rb',
+                      'test/reviewer/tool/file_resolver_test.rb'], result
+      end
+
+      def test_omits_nonexistent_files_after_filtering
+        settings = build_settings(files: { pattern: 'lib/**/*.rb' })
+        resolver = FileResolver.new(settings)
+
+        result = resolver.resolve(['lib/reviewer.rb', 'lib/deleted.rb'])
+
+        assert_equal ['lib/reviewer.rb'], result
+      end
+
+      def test_matches_patterns_without_slashes_against_basename
+        settings = build_settings(files: { pattern: 'reviewer*.rb' })
+        resolver = FileResolver.new(settings)
+
+        result = resolver.resolve(['lib/reviewer.rb', 'lib/tool.rb'])
+
+        assert_equal ['lib/reviewer.rb'], result
+      end
+
+      def test_matches_patterns_with_slashes_against_repository_relative_paths
+        settings = build_settings(files: { pattern: 'lib/**/*.rb' })
+        resolver = FileResolver.new(settings)
+
+        result = resolver.resolve([
+                                    'lib/reviewer.rb',
+                                    'lib/reviewer/tool/file_resolver.rb',
+                                    'test/reviewer/tool/file_resolver_test.rb'
+                                  ])
+
+        assert_equal ['lib/reviewer.rb', 'lib/reviewer/tool/file_resolver.rb'], result
+      end
+
+      def test_matches_brace_alternatives_in_repository_relative_patterns
+        settings = build_settings(files: { pattern: '{lib,test}/**/*.rb' })
+        resolver = FileResolver.new(settings)
+
+        result = resolver.resolve([
+                                    'lib/reviewer.rb',
+                                    'test/reviewer_test.rb',
+                                    'exe/rvw'
+                                  ])
+
+        assert_equal ['lib/reviewer.rb', 'test/reviewer_test.rb'], result
+      end
+
+      def test_normalizes_dot_slash_for_matching_without_changing_the_result
+        settings = build_settings(files: { pattern: 'lib/**/*.rb' })
+        resolver = FileResolver.new(settings)
+
+        result = resolver.resolve(['./lib/reviewer.rb'])
+
+        assert_equal ['./lib/reviewer.rb'], result
+      end
+
+      def test_normalizes_repository_absolute_paths_without_changing_the_result
+        settings = build_settings(files: { pattern: 'lib/**/*.rb' })
+        resolver = FileResolver.new(settings)
+        absolute_path = File.join(Dir.pwd, 'lib/reviewer.rb')
+
+        result = resolver.resolve([absolute_path])
+
+        assert_equal [absolute_path], result
       end
 
       def test_maps_source_files_to_test_files_when_configured
@@ -87,7 +155,7 @@ module Reviewer
         settings = build_settings(files: { pattern: '*.rb' })
         resolver = FileResolver.new(settings)
 
-        refute resolver.skip?(['app/models/user.rb'])
+        refute resolver.skip?(['lib/reviewer.rb'])
       end
 
       private

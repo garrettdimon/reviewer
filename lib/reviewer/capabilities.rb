@@ -28,7 +28,7 @@ module Reviewer
       'unstaged' => 'Files with unstaged changes',
       'modified' => 'All changed files',
       'untracked' => 'New files not yet tracked',
-      'failed' => 'Tools that failed in the previous run'
+      'failed' => 'Tools whose last executed review failed and have not passed since'
     }.freeze
 
     KEYWORDS = Arguments::Keywords::RESERVED.to_h do |keyword|

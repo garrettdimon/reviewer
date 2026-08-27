@@ -21,7 +21,7 @@
 #    format:                   # Replaces `commands.format` for targeted files.
 #    flag:                     # Defaults to an empty string for bare paths.
 #    separator:                # Defaults to one space.
-#    pattern:                  # Filters targeted paths.
+#    pattern:                  # Slashless patterns match basenames; slashes match repository paths.
 #    map_to_tests:             # `minitest` or `rspec`.
 #  env:
 #    key: value
@@ -50,11 +50,11 @@ tool-name-key:
     format: 'bundle exec tool --format'
     max_exit_status: 1
   files:
-    review: 'bundle exec tool'
-    format: 'bundle exec tool --format'
-    flag: 'files'
+    review: 'bundle exec tool --files'
+    format: 'bundle exec tool --format --files'
+    flag: ''
     separator: ','
-    pattern: '*.rb'
+    pattern: '{lib,test}/**/*.rb'
     map_to_tests: minitest
   env:
     report: false

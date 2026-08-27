@@ -83,9 +83,11 @@ module Reviewer
       # @return [String] the configured separator or a space by default
       def files_separator = config.dig(:files, :separator) || ' '
 
-      # The glob pattern used to filter which files this tool should process
+      # The glob pattern used to filter which files this tool should process. Patterns without a
+      # slash match basenames; patterns with a slash match repository-relative paths and support
+      # brace alternatives.
       #
-      # @return [String, nil] the pattern (e.g., '*.rb') or nil if not configured
+      # @return [String, nil] the pattern (e.g., '*.rb' or '{lib,test}/**/*.rb') or nil
       def files_pattern = config.dig(:files, :pattern)
 
       # The test framework to use for mapping source files to test files

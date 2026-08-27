@@ -72,6 +72,37 @@ module Reviewer
       refute @report.to_h[:success]
     end
 
+    def test_to_h_includes_schema_version
+      @report.add(build_result(tool_key: :rubocop, success: true))
+      payload = @report.to_h
+
+      assert_equal 1, payload[:schema_version]
+      refute payload.key?(:state)
+      refute payload.key?(:message)
+      refute payload.key?(:error)
+    end
+
+    def test_empty_report_uses_the_empty_envelope
+      assert_equal(
+        {
+          schema_version: 1,
+          state: 'empty',
+          success: true,
+          message: 'No tools ran',
+          summary: {
+            total: 0, passed: 0, failed: 0, skipped: 0,
+            missing: 0, not_run: 0, duration: 0
+          },
+          tools: []
+        },
+        @report.to_h
+      )
+    end
+
+    def test_empty_report_accepts_a_context_specific_message
+      assert_equal 'No matching tools found', @report.to_h(empty_message: 'No matching tools found')[:message]
+    end
+
     def test_to_h_includes_summary_counts
       @report.add(build_result(tool_key: :rubocop, success: true, exit_status: 0))
       @report.add(build_result(tool_key: :tests, success: false, exit_status: 1))
@@ -83,6 +114,7 @@ module Reviewer
     end
 
     def test_to_h_includes_duration
+      @report.add(build_result(tool_key: :rubocop, success: true))
       @report.record_duration(8.5)
       assert_equal 8.5, @report.to_h[:summary][:duration]
     end
@@ -147,6 +179,14 @@ module Reviewer
       assert_equal 0, @report.exit_code
     end
 
+    def test_skipped_only_report_remains_successful
+      @report.add(build_skipped_result(tool_key: :rubocop))
+
+      assert_predicate @report, :success?
+      assert_equal 0, @report.exit_code
+      assert @report.to_h[:success]
+    end
+
     def test_to_h_summary_includes_missing_count
       @report.add(build_result(tool_key: :rubocop, success: true))
       @report.add(build_missing_result(tool_key: :reek))
@@ -177,6 +217,18 @@ module Reviewer
       @report.add(build_result(tool_key: :rubocop, success: true))
 
       assert_empty @report.missing_tools
+    end
+
+    def test_summary_counts_each_result_state_once
+      @report.add(build_result(tool_key: :tests, success: true))
+      @report.add(build_result(tool_key: :notes, success: false))
+      @report.add(build_skipped_result(tool_key: :rubocop))
+      @report.add(build_missing_result(tool_key: :reek))
+
+      expected = {
+        total: 4, passed: 1, failed: 1, skipped: 1, missing: 1, not_run: 0, duration: nil
+      }
+      assert_equal expected, @report.to_h[:summary]
     end
 
     private
@@ -210,6 +262,14 @@ module Reviewer
         stderr: nil,
         skipped: nil,
         missing: true
+      )
+    end
+
+    def build_skipped_result(tool_key:)
+      Runner::Result.new(
+        tool_key: tool_key, tool_name: tool_key.to_s.capitalize, command_type: :review,
+        command_string: nil, success: true, exit_status: 0, duration: 0,
+        stdout: nil, stderr: nil, skipped: true, missing: nil
       )
     end
   end

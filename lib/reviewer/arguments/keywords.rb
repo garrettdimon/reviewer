@@ -8,7 +8,15 @@ module Reviewer
     # @!attribute provided
     #   @return [Array<String>] the keywords extracted from the command-line arguments
     class Keywords
-      RESERVED = %w[staged unstaged modified untracked failed].freeze
+      # Keywords that resolve to a list of files. `Arguments::Files` implements one method per
+      # entry, so a keyword here without a matching method silently contributes nothing.
+      FOR_FILES = %w[staged unstaged modified untracked].freeze
+
+      # Keywords that select tools rather than files. `failed` reads `last_status` from history via
+      # `Tools#failed_from_history`; the per-tool file scope comes from `Command#stored_failed_files`.
+      FOR_TOOLS = %w[failed].freeze
+
+      RESERVED = (FOR_FILES + FOR_TOOLS).freeze
 
       attr_reader :provided
 
@@ -65,6 +73,13 @@ module Reviewer
       #
       # @return [Array<String>] intersection of provided arguments and reserved keywords
       def reserved = intersection_with(RESERVED)
+
+      # Extracts only the reserved keywords that resolve to files. Passing the full reserved set to
+      # `Arguments::Files` made `failed` look like a file keyword that matched nothing, which reads
+      # as "you scoped to files and there are none" and skips the run entirely.
+      #
+      # @return [Array<String>] intersection of provided arguments and file-resolving keywords
+      def for_files = intersection_with(FOR_FILES)
 
       # Extracts keywords that match configured tags for enabled tools
       #

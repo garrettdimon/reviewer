@@ -53,7 +53,7 @@ Pass a comma-separated list once and let each tool apply its configured file syn
 rvw -f lib/reviewer.rb,test/reviewer_test.rb
 ```
 
-File keywords resolve paths from Git:
+File selectors resolve paths from Git:
 
 | Keyword | Files |
 |---|---|
@@ -61,7 +61,11 @@ File keywords resolve paths from Git:
 | `unstaged` | Unstaged changes |
 | `modified` | Staged and unstaged changes compared with `HEAD` |
 | `untracked` | Untracked, non-ignored files |
-| `failed` | Tools, and when available files, from the previous failed run |
+
+`failed` selects tools whose last executed review failed and, when available, reuses each tool's
+stored failed file paths. A tool remains selected until an executed review records a pass. Skipped,
+missing, formatted, and not-run tools leave that review history unchanged, so a passing scoped run
+can coexist with tools still selected by `rvw failed`.
 
 Selections compose:
 
@@ -88,19 +92,90 @@ fmt rubocop staged
 
 | Option | Output |
 |---|---|
-| Default | Streams a single tool; captures batches and prints actionable output |
-| `--format summary` | One result line per tool plus totals |
+| Default | Streams a single tool; captures batches and reports any fail-fast tail |
+| `--format summary` | One result line per runnable tool plus explicit state totals |
 | `-j`, `--json`, or `--format json` | Structured JSON for automation |
 | `-r` or `--raw` | Direct passthrough output |
 
 Use `rvw --capabilities` to print JSON describing configured tools, tags, keywords, and common
 agent workflows without running review commands.
 
+## Consume review JSON
+
+Review JSON uses `schema_version: 1`. Each tool has one authoritative `state`; its `success` value is
+true only when that tool executed and passed. Top-level `success` remains the aggregate verdict, so
+it can be true when every represented tool was skipped, missing, or not run.
+
+State describes the terminal disposition Reviewer acts on. For executed failures, `exit_status`,
+`stdout`, and `stderr` carry the tool or process diagnostics that caused that failure.
+
+| Tool state | Meaning | Tool `success` | Exit effect |
+|---|---|---:|---|
+| `passed` | The command executed within its configured threshold | `true` | None |
+| `failed` | The command executed outside its configured threshold | `false` | Exit `1` |
+| `skipped` | Requested files did not match the tool | `false` | None |
+| `missing` | The executable was unavailable | `false` | None in 1.1 |
+| `not_run` | An earlier tool failed and fail-fast stopped the batch | `false` | None |
+
+This compact example shows the difference between tool and aggregate success:
+
+```json
+{
+  "schema_version": 1,
+  "success": true,
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 1,
+    "missing": 0,
+    "not_run": 0,
+    "duration": 0
+  },
+  "tools": [
+    {
+      "tool": "rubocop",
+      "name": "RuboCop",
+      "command_type": "review",
+      "command": null,
+      "state": "skipped",
+      "success": false,
+      "exit_status": null,
+      "duration": null,
+      "stdout": null,
+      "stderr": null,
+      "skipped": true
+    }
+  ]
+}
+```
+
+Every summary contains `total`, all five state counts, and `duration`; the state counts sum to
+`total`. Fail-fast still stops execution, but later runnable tools remain visible as `not_run`.
+
+| Envelope | Required top-level fields | Absent fields |
+|---|---|---|
+| Nonempty report | `schema_version`, `success`, `summary`, `tools` | `state`, `message`, `error` |
+| Empty report | `schema_version`, `state: "empty"`, `success: true`, `message`, zero summary, `tools: []` | `error` |
+| Selector error | `schema_version`, `state: "error"`, `error`, zero summary, `tools: []` | `success`, `message` |
+
+| Tool state | Execution fields | Compatibility flags |
+|---|---|---|
+| `passed`, `failed` | Command, status, and duration are populated; nil output fields are omitted | Omitted |
+| `missing` | Command is present, status is `127`, and nil output fields are omitted | `missing: true` |
+| `skipped`, `not_run` | Command, status, duration, stdout, and stderr are explicit JSON null | `skipped: true` only for `skipped` |
+
+Consumers should use `state` whenever `schema_version >= 1`. For older payloads, check `skipped`,
+then `missing`, then derive passed or failed from `success`. Compared with older payloads, a skipped
+tool now has `success: false`, and its unavailable execution fields are null instead of zero or
+omitted. Valid 1.x `Runner::Result.new` keyword calls and the legacy true-valued payload flags remain
+supported through the 1.x line.
+
 ## Exit statuses
 
 | Status | Meaning |
 |---|---|
-| `0` | Every executed tool passed; skipped and missing tools do not fail the run |
+| `0` | Every executed tool passed; skipped, missing, and not-run tools do not fail the run |
 | `1` | At least one executed tool failed |
 | `2` | The request used an unrecognized tool, tag, or keyword |
 

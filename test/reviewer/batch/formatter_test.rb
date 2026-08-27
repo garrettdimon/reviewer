@@ -89,6 +89,20 @@ module Reviewer
         assert_match(/2 not installed/i, out)
       end
 
+      def test_not_run_tools_show_stopped_tail_without_timing
+        results = [
+          Runner::Result.not_run(tool: build_tool(:minimum_viable_tool), command_type: :review),
+          Runner::Result.not_run(tool: build_tool(:list), command_type: :review)
+        ]
+
+        out, _err = capture_subprocess_io { @formatter.not_run_tools(results) }
+
+        assert_equal [
+          "- Minimum_viable_tool    stopped after failure\n",
+          "- List    stopped after failure\n"
+        ], out.lines
+      end
+
       private
 
       def build_missing_result(tool_key)

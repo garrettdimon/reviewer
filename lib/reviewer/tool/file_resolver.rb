@@ -12,15 +12,17 @@ module Reviewer
         @settings = settings
       end
 
-      # Resolves input files by mapping source files to test files (if configured) and
-      # filtering by the tool's file pattern
+      # Resolves input files by mapping source files to test files (if configured), filtering by
+      # the tool's file pattern, and omitting paths that do not exist
       # @param files [Array<String>] the input files to resolve
       #
       # @return [Array<String>] files after mapping and filtering
       def resolve(files)
-        return files unless pattern
+        return files unless settings.supports_files?
 
-        filter(map(files))
+        resolved = map(files)
+        resolved = filter(resolved) if pattern
+        resolved.select { |file| File.exist?(file) }
       end
 
       # Determines if the tool should be skipped because files were requested but none match
@@ -43,7 +45,14 @@ module Reviewer
       end
 
       def filter(files)
-        files.select { |file| File.fnmatch(pattern, File.basename(file)) }
+        files.select do |file|
+          if pattern.include?('/')
+            candidate = file.delete_prefix("#{Dir.pwd}/").delete_prefix('./')
+            File.fnmatch(pattern, candidate, File::FNM_PATHNAME | File::FNM_EXTGLOB)
+          else
+            File.fnmatch(pattern, File.basename(file))
+          end
+        end
       end
 
       def pattern

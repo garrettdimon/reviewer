@@ -11,21 +11,23 @@ module Reviewer
     # @!attribute [r] command_type
     #   @return [Symbol] the type of command run (:review, :format, etc.)
     # @!attribute [r] command_string
-    #   @return [String] the full command string that was executed
+    #   @return [String, nil] the full command string that was executed
+    # @!attribute [r] state
+    #   @return [Symbol] the canonical result state (:passed, :failed, :skipped, :missing, :not_run)
     # @!attribute [r] success
-    #   @return [Boolean] whether the command completed successfully
+    #   @return [Boolean] compatibility value derived from state; true only for passed results
     # @!attribute [r] exit_status
-    #   @return [Integer] the exit status code from the command
+    #   @return [Integer, nil] the exit status code from the command
     # @!attribute [r] duration
-    #   @return [Float] the execution time in seconds
+    #   @return [Float, nil] the execution time in seconds
     # @!attribute [r] stdout
     #   @return [String, nil] the standard output from the command
     # @!attribute [r] stderr
     #   @return [String, nil] the standard error from the command
     # @!attribute [r] skipped
-    #   @return [Boolean] whether the tool was skipped
+    #   @return [Boolean, nil] compatibility value that is true only for skipped results
     # @!attribute [r] missing
-    #   @return [Boolean] whether the tool's executable was not found
+    #   @return [Boolean, nil] compatibility value that is true only for missing results
     Result = Struct.new(
       :tool_key,
       :tool_name,
@@ -40,11 +42,18 @@ module Reviewer
       :missing,
       :summary_pattern,
       :summary_label,
+      :state,
       keyword_init: true
     ) do
       # Freeze on initialization to maintain immutability like Data.define
-      def initialize(...)
-        super
+      def initialize(state: nil, success: nil, skipped: nil, missing: nil, **attributes)
+        state ||= [[:skipped, skipped], [:missing, missing], [:passed, success == true], [:failed, success == false]]
+                  .find(&:last)&.first
+        raise ArgumentError, "Unknown result state: #{state.inspect}" unless Result::STATES.include?(state)
+
+        super(**attributes, state: state, success: success, skipped: skipped, missing: missing)
+        validate_legacy_values
+        normalize_legacy_values
         freeze
       end
 
@@ -62,6 +71,25 @@ module Reviewer
         end
       end
 
+      # Builds a result for a tool that fail-fast prevented from running.
+      # @param tool [Tool] the selected tool that did not run
+      # @param command_type [Symbol] the requested command type
+      #
+      # @return [Result] an immutable not-run result
+      def self.not_run(tool:, command_type:)
+        new(
+          tool_key: tool.key,
+          tool_name: tool.name,
+          command_type: command_type,
+          command_string: nil,
+          state: :not_run,
+          exit_status: nil,
+          duration: nil,
+          stdout: nil,
+          stderr: nil
+        )
+      end
+
       def self.base_attributes(runner)
         tool = runner.tool
         {
@@ -73,19 +101,23 @@ module Reviewer
       end
 
       def self.build_skipped(runner)
+        tool = runner.tool
         new(
-          **base_attributes(runner),
+          tool_key: tool.key,
+          tool_name: tool.name,
+          command_type: runner.command.type,
           command_string: nil,
-          success: true, exit_status: 0, duration: 0,
-          stdout: nil, stderr: nil, skipped: true
+          state: :skipped,
+          exit_status: nil, duration: nil, stdout: nil, stderr: nil
         )
       end
 
       def self.build_missing(runner)
         new(
           **base_attributes(runner),
-          success: false, exit_status: runner.shell.result.exit_status, duration: 0,
-          stdout: nil, stderr: nil, skipped: nil, missing: true
+          state: :missing,
+          exit_status: runner.shell.result.exit_status, duration: 0,
+          stdout: nil, stderr: nil
         )
       end
 
@@ -95,9 +127,10 @@ module Reviewer
         settings = runner.tool.settings
         new(
           **base_attributes(runner),
-          success: runner.success?, exit_status: shell_result.exit_status,
+          state: runner.success? ? :passed : :failed,
+          exit_status: shell_result.exit_status,
           duration: shell.timer.total_seconds,
-          stdout: shell_result.stdout, stderr: shell_result.stderr, skipped: nil,
+          stdout: shell_result.stdout, stderr: shell_result.stderr,
           summary_pattern: settings.summary_pattern,
           summary_label: settings.summary_label
         )
@@ -105,14 +138,30 @@ module Reviewer
 
       private_class_method :base_attributes, :build_skipped, :build_missing, :build_executed
 
-      alias_method :success?, :success
-      alias_method :skipped?, :skipped
-      alias_method :missing?, :missing
+      def passed? = state?(:passed)
+      def failed? = state?(:failed)
+      def not_run? = state?(:not_run)
+      alias_method :success, :passed?
 
-      # Whether this result represents a tool that actually ran (not skipped or missing)
+      def skipped
+        true if state?(:skipped)
+      end
+
+      def missing
+        true if state?(:missing)
+      end
+
+      def success? = success
+      def skipped? = skipped
+      def missing? = missing
+
+      def state?(value) = state == value
+      private :state?
+
+      # Whether this result represents a tool that actually ran
       #
       # @return [Boolean] true if the tool was executed
-      def executed? = !skipped? && !missing?
+      def executed? = passed? || failed?
 
       # Extracts a short summary detail from stdout for display purposes.
       # Each tool type may have its own summary format (test count, offense count, etc.)
@@ -129,13 +178,39 @@ module Reviewer
 
       # Converts the result to a hash suitable for serialization
       #
-      # @return [Hash] hash representation with nil values removed
+      # @return [Hash] serialized result; skipped and not-run execution fields remain explicit nils
       def to_h
+        attributes = serialized_attributes
+
+        return attributes.compact unless skipped? || not_run?
+
+        attributes.compact.merge(attributes.slice(:command, :exit_status, :duration, :stdout, :stderr))
+      end
+
+      private
+
+      def validate_legacy_values
+        conflicting_flags = [[self[:skipped], :skipped], [self[:missing], :missing]]
+                            .select(&:first).map(&:last).any? { |value| value != state }
+        conflicting_success = { true => :failed, false => :passed }.fetch(self[:success]) { nil } == state
+        return unless conflicting_flags || conflicting_success
+
+        raise ArgumentError, 'Result state conflicts with legacy values'
+      end
+
+      def normalize_legacy_values
+        self[:success] = passed?
+        self[:skipped] = true if skipped?
+        self[:missing] = true if missing?
+      end
+
+      def serialized_attributes
         {
           tool: tool_key,
           name: tool_name,
           command_type: command_type,
           command: command_string,
+          state: state,
           success: success,
           exit_status: exit_status,
           duration: duration,
@@ -143,8 +218,10 @@ module Reviewer
           stderr: stderr,
           skipped: skipped,
           missing: missing
-        }.compact # Excludes summary_pattern/summary_label (config, not results)
+        }
       end
     end
+
+    Result::STATES = %i[passed failed skipped missing not_run].freeze
   end
 end

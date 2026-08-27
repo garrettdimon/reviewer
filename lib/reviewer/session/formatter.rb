@@ -41,13 +41,14 @@ module Reviewer
       # @return [void]
       def unrecognized_keywords_json(unrecognized, suggestions)
         payload = {
+          schema_version: Report::SCHEMA_VERSION,
           state: 'error',
           error: {
             code: 'unrecognized_selector',
             message: "Unrecognized: #{unrecognized.join(', ')}",
             suggestions: suggestions
           },
-          summary: { total: 0, passed: 0, failed: 0, missing: 0, duration: 0 },
+          summary: Report.empty_summary,
           tools: []
         }
 

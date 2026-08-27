@@ -6,6 +6,36 @@ require_relative 'report/formatter'
 module Reviewer
   # Collects results from multiple tool runs and provides serialization
   class Report
+    SCHEMA_VERSION = 1
+
+    # Builds the zero-valued summary shared by empty and error envelopes.
+    # @return [Hash] all result-state counts and duration set to zero
+    def self.empty_summary
+      {
+        total: 0,
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        missing: 0,
+        not_run: 0,
+        duration: 0
+      }
+    end
+
+    # Builds an empty report envelope with a context-specific message.
+    # @param message [String] why no tool results are present
+    # @return [Hash] a schema-versioned empty envelope
+    def self.empty(message: 'No tools ran')
+      {
+        schema_version: SCHEMA_VERSION,
+        state: 'empty',
+        success: true,
+        message: message,
+        summary: empty_summary,
+        tools: []
+      }
+    end
+
     attr_reader :results, :duration
 
     def initialize
@@ -29,7 +59,7 @@ module Reviewer
       @duration = seconds
     end
 
-    # Whether all executed tools in the report succeeded (excludes missing and skipped)
+    # Whether all executed tools in the report succeeded
     #
     # @return [Boolean] true if all executed results are successful
     def success?
@@ -66,19 +96,31 @@ module Reviewer
       missing_results
     end
 
+    # Counts each result by its explicit state.
+    # @return [Hash] result counts and total duration
+    def summary
+      {
+        total: results.size,
+        passed: results.count(&:passed?),
+        failed: results.count(&:failed?),
+        skipped: results.count(&:skipped?),
+        missing: results.count(&:missing?),
+        not_run: results.count(&:not_run?),
+        duration: duration
+      }
+    end
+
     # Converts the report to a hash suitable for serialization
     #
+    # @param empty_message [String] message used when no results are present
     # @return [Hash] structured hash with summary and tool results
-    def to_h
+    def to_h(empty_message: 'No tools ran')
+      return self.class.empty(message: empty_message) if results.empty?
+
       {
+        schema_version: SCHEMA_VERSION,
         success: success?,
-        summary: {
-          total: results.size,
-          passed: results.count(&:success?),
-          failed: results.count { |result| !result.success? && !result.missing? },
-          missing: missing_results.size,
-          duration: duration
-        },
+        summary: summary,
         tools: results.map(&:to_h)
       }
     end
@@ -92,7 +134,7 @@ module Reviewer
 
     private
 
-    # Results for tools that actually executed (excludes skipped and missing)
+    # Results for tools that actually executed (passed or failed)
     #
     # @return [Array<Runner::Result>] executed results only
     def executed_results
