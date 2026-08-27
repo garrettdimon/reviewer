@@ -175,6 +175,14 @@ module Reviewer
       assert_equal 0, @report.exit_code
     end
 
+    def test_skipped_only_report_remains_successful
+      @report.add(build_skipped_result(tool_key: :rubocop))
+
+      assert_predicate @report, :success?
+      assert_equal 0, @report.exit_code
+      assert @report.to_h[:success]
+    end
+
     def test_to_h_summary_includes_missing_count
       @report.add(build_result(tool_key: :rubocop, success: true))
       @report.add(build_missing_result(tool_key: :reek))
