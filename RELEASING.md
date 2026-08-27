@@ -13,7 +13,8 @@ git fetch origin main
 git status --short
 git merge --ff-only origin/main
 candidate_sha=$(git rev-parse HEAD)
-git rev-parse origin/main
+test "$candidate_sha" = "$(git rev-parse origin/main)"
+test -z "$(git status --porcelain)"
 bundle check
 ```
 
