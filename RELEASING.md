@@ -123,12 +123,15 @@ Require all three publication results:
 3. [GitHub Releases](https://github.com/garrettdimon/reviewer/releases) contains the matching tag and
    changelog excerpt.
 
-Install the public gem and run a focused smoke test in a clean project:
+Install the public gem into a fresh temporary gem home so a same-version local build or cached gem
+cannot satisfy the check. Then run a focused smoke test in a clean project:
 
 ```bash
-gem install reviewer -v X.Y.Z --no-document
-rvw _X.Y.Z_ --version
-rvw _X.Y.Z_ TOOL -f path/to/file --json
+published_gem_home=$(mktemp -d)
+GEM_HOME="$published_gem_home" GEM_PATH="$published_gem_home" gem install reviewer -v X.Y.Z --no-document
+GEM_HOME="$published_gem_home" GEM_PATH="$published_gem_home" "$published_gem_home/bin/rvw" --version
+GEM_HOME="$published_gem_home" GEM_PATH="$published_gem_home" "$published_gem_home/bin/rvw" TOOL -f path/to/file --json
+rm -r "$published_gem_home"
 ```
 
 The published artifact must reproduce the accepted candidate's result.
