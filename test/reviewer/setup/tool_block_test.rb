@@ -50,10 +50,10 @@ module Reviewer
 
       def test_renders_file_scoped_review_command
         block = tool_block(:tests)
-        output = block.to_s
+        config = YAML.safe_load(block.to_s)
 
-        assert_includes output, '  files:'
-        assert_includes output, '    review: bundle exec ruby -Itest'
+        assert_equal Catalog.config_for(:tests).dig(:files, :review),
+                     config.dig('tests', 'files', 'review')
       end
 
       def test_renders_map_to_tests
