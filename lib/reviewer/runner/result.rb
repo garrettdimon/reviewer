@@ -124,7 +124,14 @@ module Reviewer
         match = stdout&.match(/#{summary_pattern}/i)
         return nil unless match
 
-        summary_label.gsub(/\\(\d+)/) { match[Regexp.last_match(1).to_i] }
+        summary_label.gsub(/\\(\d+)/) do
+          capture = match[Regexp.last_match(1).to_i]
+          return nil unless capture
+
+          capture
+        end
+      rescue RegexpError
+        nil
       end
 
       # Converts the result to a hash suitable for serialization
@@ -144,7 +151,7 @@ module Reviewer
           skipped: skipped,
           missing: missing,
           detail_summary: detail_summary
-        }.compact # Excludes summary_pattern/summary_label (config, not results)
+        }.compact
       end
     end
   end
