@@ -47,14 +47,10 @@ module Reviewer
     def run_tools(command_type)
       return reject_unrecognized_selectors if unrecognized_selectors.any?
 
-      if json_output?
-        run_json(command_type)
-      else
-        run_text(command_type)
-      end
+      json_output? ? run_json(command_type) : run_text(command_type)
     end
 
-    def run_json(command_type) # rubocop:disable Metrics/AbcSize
+    def run_json(command_type)
       message = json_early_exit_message
       return emit_json_early_exit(message) if message
 
@@ -64,8 +60,7 @@ module Reviewer
       strategy = runner_strategy(current_tools)
       report = Batch.new(command_type, current_tools, strategy: strategy, context: context).run
       empty_message = "No tools support the requested #{command_type} command"
-      payload = report.results.empty? ? Report.empty(message: empty_message) : report.to_h
-      puts JSON.pretty_generate(payload)
+      puts JSON.pretty_generate(report.to_h(empty_message: empty_message))
       report.exit_code
     end
 

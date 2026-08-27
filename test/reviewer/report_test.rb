@@ -99,6 +99,10 @@ module Reviewer
       )
     end
 
+    def test_empty_report_accepts_a_context_specific_message
+      assert_equal 'No matching tools found', @report.to_h(empty_message: 'No matching tools found')[:message]
+    end
+
     def test_to_h_includes_summary_counts
       @report.add(build_result(tool_key: :rubocop, success: true, exit_status: 0))
       @report.add(build_result(tool_key: :tests, success: false, exit_status: 1))

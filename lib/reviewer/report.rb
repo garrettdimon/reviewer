@@ -112,9 +112,10 @@ module Reviewer
 
     # Converts the report to a hash suitable for serialization
     #
+    # @param empty_message [String] message used when no results are present
     # @return [Hash] structured hash with summary and tool results
-    def to_h
-      return self.class.empty if results.empty?
+    def to_h(empty_message: 'No tools ran')
+      return self.class.empty(message: empty_message) if results.empty?
 
       {
         schema_version: SCHEMA_VERSION,
