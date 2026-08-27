@@ -91,7 +91,6 @@ module Reviewer
 
       # "All passed" is reserved for reports containing only passed results. Other reports list
       # every nonzero state count so the totals account for every selected runnable tool.
-      # :reek:FeatureEnvy -- formats Report's state counts for display
       # :reek:TooManyStatements -- one linear summary line with optional state counts
       def print_result_summary # rubocop:disable Metrics/AbcSize
         printer = output.printer

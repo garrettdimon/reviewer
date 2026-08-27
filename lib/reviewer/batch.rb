@@ -30,21 +30,17 @@ module Reviewer
     #   batch in order to provide a total execution time.
     #
     # @return [Report] the report containing results for all commands run
-    # :reek:NestedIterators -- fail-fast records each remaining tool in declared order
     # :reek:TooManyStatements -- one linear execution and fail-fast accounting loop
     def run
       runnable_tools = matching_tools
       elapsed_time = Benchmark.realtime do
-        runnable_tools.each_with_index do |tool, index|
-          result = run_tool(tool)
-          next unless result.failed?
-
-          runnable_tools.drop(index + 1).each do |unrun_tool|
+        failed_index = runnable_tools.find_index { |tool| run_tool(tool).failed? }
+        if failed_index
+          runnable_tools.drop(failed_index + 1).each do |unrun_tool|
             unrun_result = Runner::Result.not_run(tool: unrun_tool, command_type: command_type)
             @report.add(unrun_result)
             unrun_tool.record_run(unrun_result)
           end
-          break
         end
       end
 
