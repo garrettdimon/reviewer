@@ -168,12 +168,19 @@ module Reviewer
       #
       # @return [String, nil] a brief summary or nil if no detail can be extracted
       def detail_summary
-        return nil unless summary_pattern
+        return nil unless summary_pattern && summary_label
 
         match = stdout&.match(/#{summary_pattern}/i)
         return nil unless match
 
-        summary_label.gsub(/\\(\d+)/) { match[Regexp.last_match(1).to_i] }
+        summary_label.gsub(/\\(\d+)/) do
+          capture = match[Regexp.last_match(1).to_i]
+          return nil unless capture
+
+          capture
+        end
+      rescue RegexpError
+        nil
       end
 
       # Converts the result to a hash suitable for serialization
@@ -217,7 +224,8 @@ module Reviewer
           stdout: stdout,
           stderr: stderr,
           skipped: skipped,
-          missing: missing
+          missing: missing,
+          detail_summary: detail_summary
         }
       end
     end

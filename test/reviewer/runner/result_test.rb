@@ -327,49 +327,6 @@ module Reviewer
         refute result.executed?
       end
 
-      def test_detail_summary_for_tests
-        result = Result.new(
-          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
-          command_string: 'rake', success: true, exit_status: 0,
-          duration: 1.0, stdout: '571 tests with 1290 assertions', stderr: nil, skipped: nil,
-          summary_pattern: '(\d+)\s+tests?', summary_label: '\1 tests'
-        )
-
-        assert_equal '571 tests', result.detail_summary
-      end
-
-      def test_detail_summary_for_rubocop
-        result = Result.new(
-          tool_key: :rubocop, tool_name: 'RuboCop', command_type: :review,
-          command_string: 'rubocop', success: false, exit_status: 1,
-          duration: 1.0, stdout: '115 files inspected, 3 offenses detected', stderr: nil, skipped: nil,
-          summary_pattern: '(\d+)\s+offenses?', summary_label: '\1 offenses'
-        )
-
-        assert_equal '3 offenses', result.detail_summary
-      end
-
-      def test_detail_summary_returns_nil_when_no_pattern
-        result = Result.new(
-          tool_key: :reek, tool_name: 'Reek', command_type: :review,
-          command_string: 'reek', success: true, exit_status: 0,
-          duration: 1.0, stdout: '0 total warnings', stderr: nil, skipped: nil
-        )
-
-        assert_nil result.detail_summary
-      end
-
-      def test_detail_summary_returns_nil_when_no_match
-        result = Result.new(
-          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
-          command_string: 'rake', success: true, exit_status: 0,
-          duration: 1.0, stdout: nil, stderr: nil, skipped: nil,
-          summary_pattern: '(\d+)\s+tests?', summary_label: '\1 tests'
-        )
-
-        assert_nil result.detail_summary
-      end
-
       def test_from_runner_builds_skipped_result
         result = build_via_from_runner(skipped: true)
 
@@ -459,6 +416,102 @@ module Reviewer
             Result.from_runner(runner)
           end
         end
+      end
+    end
+
+    class DetailSummaryTest < Minitest::Test
+      def test_detail_summary_for_tests
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: '571 tests with 1290 assertions', stderr: nil, skipped: nil,
+          summary_pattern: '(\d+)\s+tests?', summary_label: '\1 tests'
+        )
+
+        assert_equal '571 tests', result.detail_summary
+      end
+
+      def test_detail_summary_for_rubocop
+        result = Result.new(
+          tool_key: :rubocop, tool_name: 'RuboCop', command_type: :review,
+          command_string: 'rubocop', success: false, exit_status: 1,
+          duration: 1.0, stdout: '115 files inspected, 3 offenses detected', stderr: nil, skipped: nil,
+          summary_pattern: '(\d+)\s+offenses?', summary_label: '\1 offenses'
+        )
+
+        assert_equal '3 offenses', result.detail_summary
+      end
+
+      def test_to_h_includes_only_extracted_detail_summaries
+        matching = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: '571 tests', stderr: nil, skipped: nil,
+          summary_pattern: '(\d+)\s+tests?', summary_label: '\1 tests'
+        )
+        unmatched = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: 'No test count available', stderr: nil, skipped: nil,
+          summary_pattern: '(\d+)\s+tests?', summary_label: '\1 tests'
+        )
+
+        assert_equal '571 tests', matching.to_h[:detail_summary]
+        refute unmatched.to_h.key?(:detail_summary)
+      end
+
+      def test_detail_summary_returns_nil_when_no_pattern
+        result = Result.new(
+          tool_key: :reek, tool_name: 'Reek', command_type: :review,
+          command_string: 'reek', success: true, exit_status: 0,
+          duration: 1.0, stdout: '0 total warnings', stderr: nil, skipped: nil
+        )
+
+        assert_nil result.detail_summary
+      end
+
+      def test_detail_summary_returns_nil_when_no_label
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: '571 tests', stderr: nil, skipped: nil,
+          summary_pattern: '(\d+)\s+tests?'
+        )
+
+        assert_nil result.detail_summary
+      end
+
+      def test_to_h_omits_detail_summary_when_pattern_is_invalid
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: '571 tests', stderr: nil, skipped: nil,
+          summary_pattern: '[', summary_label: '\1 tests'
+        )
+
+        refute result.to_h.key?(:detail_summary)
+      end
+
+      def test_to_h_omits_detail_summary_when_label_references_missing_capture
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: '571 tests', stderr: nil, skipped: nil,
+          summary_pattern: '\d+\s+tests?', summary_label: '\1 tests'
+        )
+
+        refute result.to_h.key?(:detail_summary)
+      end
+
+      def test_detail_summary_returns_nil_when_no_match
+        result = Result.new(
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', success: true, exit_status: 0,
+          duration: 1.0, stdout: nil, stderr: nil, skipped: nil,
+          summary_pattern: '(\d+)\s+tests?', summary_label: '\1 tests'
+        )
+
+        assert_nil result.detail_summary
       end
     end
   end
