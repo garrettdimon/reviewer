@@ -1,20 +1,29 @@
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-27
+
+### Upgrade notes
+- Unknown positional and `-t` selectors now stop before running tools and exit 2. Check scripts that relied on an unknown selector falling through to a batch run.
+- Reviewer now exits 0 for a successful review, 1 for a failed review, and 2 for an invocation error instead of forwarding a tool's exit status.
+- Skipped results now report `state: "skipped"`, `success: false`, and null execution fields. Integrations should use `state` to interpret each result.
+
+### Added
+- Top-level tags and the `failed` keyword to the capabilities payload
+- Schema-versioned JSON with authoritative result states, complete state totals, empty and error envelopes, and tool-provided `detail_summary` values
+- Structured Doctor output for configuration findings, configured tools, project discoveries, environment checks, and summary totals
+- Repository-relative and brace-alternative matching for `files.pattern`
+
 ### Changed
 - Moved long-form guidance into version-controlled repository documentation; setup output and gem metadata now link to it
 - Doctor separates configured tools from sourced project discoveries in human and JSON reports
 - `rvw init` is deprecated while retaining its existing generation behavior for one transition cycle
-- Skipped results now report `success: false` and null unavailable execution fields
-
-### Added
-- Repository-relative and brace-alternative matching for `files.pattern`
-- Explicit tool result states, fail-fast `not_run` results, schema-versioned JSON, and empty/error envelopes
+- `rvw failed` preserves the last executed review across skipped tools, missing tools, formatting runs, and fail-fast tails; a successful retry clears the failure
+- File targeting applies each tool's scope independently, supports mixed file types, filters nonexistent paths, and passes shell-sensitive filenames without interpretation
+- Development dependencies are separated from optional dogfood tools; `bin/setup` enables the local dogfood bundle group
 
 ### Fixed
 - Generated Reek configuration now distinguishes full-project and file-scoped review commands
 - Generated Minitest configuration now executes every file in a scoped review
-- File-scoped commands now omit nonexistent resolved paths
-- File-scoped commands now shell-escape resolved paths before execution
 - Result summaries now total every state accurately and avoid claiming all-missing runs passed
 - Recognized empty JSON requests now return a documented envelope instead of no output
 
