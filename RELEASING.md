@@ -117,9 +117,11 @@ Never move or reuse a version tag after RubyGems has accepted that version.
 
 Require all three publication results:
 
-1. The GitHub Actions `Release` workflow succeeds.
-2. RubyGems lists the new Reviewer version.
-3. GitHub Releases contains the matching tag and changelog excerpt.
+1. The [GitHub Actions `Release` workflow](https://github.com/garrettdimon/reviewer/actions/workflows/release.yml)
+   succeeds.
+2. [RubyGems](https://rubygems.org/gems/reviewer) lists the new Reviewer version.
+3. [GitHub Releases](https://github.com/garrettdimon/reviewer/releases) contains the matching tag and
+   changelog excerpt.
 
 Install the public gem and run a focused smoke test in a clean project:
 
@@ -144,9 +146,25 @@ incompatibly requires a major release.
 
 ## One-Time Publishing Setup
 
-RubyGems trusted publishing must identify the `reviewer` gem, the `garrettdimon/reviewer`
-repository, `.github/workflows/release.yml`, and the `rubygems` GitHub environment. The repository's
-`main` ruleset must require every Gate 2 CI job listed above.
+### RubyGems Trusted Publishing
+
+1. Open [RubyGems pending trusted publishers](https://rubygems.org/profile/oidc/pending_trusted_publishers).
+2. Add a publisher with these values:
+   - **Gem name:** `reviewer`
+   - **Repository owner:** `garrettdimon`
+   - **Repository name:** `reviewer`
+   - **Workflow filename:** `release.yml`
+   - **Environment:** `rubygems`
+
+### GitHub Environment
+
+In the repository settings, create an environment named `rubygems`. Add required reviewers when
+publication should require a second approval.
+
+### Repository Ruleset
+
+In repository Settings > Rules > Rulesets, configure the `main` ruleset to require pull requests and
+every Gate 2 CI job listed above.
 
 ## Recovering from a Bad Tag
 
