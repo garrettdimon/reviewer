@@ -59,6 +59,8 @@ module Reviewer
                     :failed
                   end
 
+        raise ArgumentError, "Unknown result state: #{state.inspect}" unless Result::STATES.include?(state)
+
         conflicting_flags = (skipped && state != :skipped) ||
                             (missing && state != :missing) ||
                             (skipped && missing)
@@ -216,5 +218,7 @@ module Reviewer
         attributes.compact.merge(attributes.slice(:command, :exit_status, :duration, :stdout, :stderr))
       end
     end
+
+    Result::STATES = %i[passed failed skipped missing not_run].freeze
   end
 end

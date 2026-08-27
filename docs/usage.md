@@ -106,6 +106,9 @@ Review JSON uses `schema_version: 1`. Each tool has one authoritative `state`; i
 true only when that tool executed and passed. Top-level `success` remains the aggregate verdict, so
 it can be true when every represented tool was skipped, missing, or not run.
 
+State describes the terminal disposition Reviewer acts on. For executed failures, `exit_status`,
+`stdout`, and `stderr` carry the tool or process diagnostics that caused that failure.
+
 | Tool state | Meaning | Tool `success` | Exit effect |
 |---|---|---:|---|
 | `passed` | The command executed within its configured threshold | `true` | None |
