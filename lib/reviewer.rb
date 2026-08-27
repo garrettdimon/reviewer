@@ -130,7 +130,7 @@ module Reviewer
             unstaged                     Files with unstaged changes
             modified                     All changed files (staged + unstaged)
             untracked                    New files not yet tracked by git
-            failed                       Re-run only tools that failed last time
+            failed                       Re-run tools whose last executed review failed
 
         Options:
         #{slop_options}
@@ -140,7 +140,7 @@ module Reviewer
             rvw staged                   Review staged files across all tools
             rvw -t security modified     Run security-tagged tools on changed files
             rvw tests -f test/user_test.rb   Run tests on a specific file
-            rvw failed                   Re-run what failed last time
+            rvw failed                   Re-run tools whose last executed review failed
             fmt rubocop                  Auto-fix with RuboCop
       HELP
     end
