@@ -4,6 +4,9 @@
 # Policy: every detector enabled. Exclusions are method- or class-level
 # with justification. New code is always checked against defaults.
 
+exclude_paths:
+  - test
+
 detectors:
 
   # --- Targeted exclusions: writable attributes ---

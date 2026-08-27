@@ -242,6 +242,16 @@ module Reviewer
       assert_nil command.run_summary
     end
 
+    def test_tracked_reek_does_not_bake_full_scope_into_scoped_command
+      arguments = Arguments.new(%w[-f lib/reviewer.rb,test/reviewer/command_test.rb])
+      command = Reviewer::Command.new(tracked_tool(:reek), :review,
+                                      context: default_context(arguments: arguments))
+
+      expected = 'bundle exec reek --config .reek.yml --force-exclusion ' \
+                 '--color --documentation lib/reviewer.rb test/reviewer/command_test.rb'
+      assert_equal expected, command.string
+    end
+
     def test_context_provides_history_for_seed
       history = Reviewer.history
       history.set(:dynamic_seed_tool, :last_seed, 99_999)
@@ -252,6 +262,13 @@ module Reviewer
       assert_equal 99_999, command.seed
     ensure
       history.set(:dynamic_seed_tool, :last_seed, nil)
+    end
+
+    private
+
+    def tracked_tool(key)
+      config = Configuration::Loader.configuration(file: Pathname('.reviewer.yml'))
+      Tool.new(key, config: config.fetch(key), history: Reviewer.history)
     end
   end
 end

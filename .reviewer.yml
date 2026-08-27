@@ -47,6 +47,7 @@ reek:
     install: "bundle exec gem install reek"
     review: "bundle exec reek --config .reek.yml lib/"
   files:
+    review: "bundle exec reek --config .reek.yml --force-exclusion"
     flag: ""
     separator: " "
     pattern: "*.rb"
