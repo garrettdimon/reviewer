@@ -106,7 +106,7 @@ authorization immediately before running it:
 
 ```bash
 release_sha=$(git rev-parse HEAD)
-git merge-base --is-ancestor "$release_sha" origin/main
+test "$release_sha" = "$(git rev-parse origin/main)"
 git tag vX.Y.Z "$release_sha"
 git push origin vX.Y.Z
 ```
