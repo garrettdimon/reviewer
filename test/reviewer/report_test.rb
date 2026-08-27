@@ -215,21 +215,16 @@ module Reviewer
       assert_empty @report.missing_tools
     end
 
-    def test_summary_counts_each_result_state_once # rubocop:disable Metrics/AbcSize
+    def test_summary_counts_each_result_state_once
       @report.add(build_result(tool_key: :tests, success: true))
       @report.add(build_result(tool_key: :notes, success: false))
       @report.add(build_skipped_result(tool_key: :rubocop))
       @report.add(build_missing_result(tool_key: :reek))
 
-      summary = @report.to_h[:summary]
-
-      assert_equal 4, summary[:total]
-      assert_equal 1, summary[:passed]
-      assert_equal 1, summary[:failed]
-      assert_equal 1, summary[:skipped]
-      assert_equal 1, summary[:missing]
-      assert_equal 0, summary[:not_run]
-      assert_equal summary[:total], summary.values_at(:passed, :failed, :skipped, :missing, :not_run).sum
+      expected = {
+        total: 4, passed: 1, failed: 1, skipped: 1, missing: 1, not_run: 0, duration: nil
+      }
+      assert_equal expected, @report.to_h[:summary]
     end
 
     private

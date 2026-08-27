@@ -65,12 +65,8 @@ module Reviewer
         style = status_style(result.success?)
         mark = status_mark(result.success?)
         output.printer.print(style, "#{mark} #{result.tool_name.ljust(@name_width)}")
-        print_timing(result)
-        print_details(result)
-      end
-
-      def print_timing(result)
         output.printer.print(:muted, "    #{format_duration(result.duration).rjust(6)}")
+        print_details(result)
       end
 
       def max_name_width
@@ -91,18 +87,18 @@ module Reviewer
 
       # "All passed" is reserved for reports containing only passed results. Other reports list
       # every nonzero state count so the totals account for every selected runnable tool.
-      # :reek:TooManyStatements -- one linear summary line with optional state counts
-      def print_result_summary # rubocop:disable Metrics/AbcSize
+      def print_result_summary
         printer = output.printer
-        counts = report.summary
-        state_counts = counts.filter_map do |state, count|
-          "#{count} #{state}" unless %i[total duration].include?(state) || count.zero?
-        end
-
-        all_passed = counts[:passed] == counts[:total]
-        style = report.success? ? :success : :failure
-        printer.print(style, all_passed ? 'All passed' : state_counts.join(', '))
+        printer.print(report.success? ? :success : :failure, result_summary_label)
         printer.puts(:muted, " (#{format_duration(report.duration)})")
+      end
+
+      def result_summary_label
+        return 'All passed' if report.results.all?(&:passed?)
+
+        report.summary.except(:total, :duration).filter_map do |state, count|
+          "#{count} #{state}" unless count.zero?
+        end.join(', ')
       end
 
       def print_failure_summary
