@@ -49,7 +49,9 @@ class ReleaseTest < Minitest::Test
     @packaged_paths ||= begin
       stdout, stderr, status = Open3.capture3('bundle', 'exec', 'rake', 'release:dry_run')
       assert status.success?, stderr
-      stdout[/Gem contents:\n(.*?)\nGem size:/m, 1].to_s.lines.map(&:chomp)
+      listing = stdout[/Gem contents:\n(.*?)\nGem size:/m, 1]
+      refute_nil listing, "release:dry_run printed no package listing:\n#{stdout}"
+      listing.lines.map(&:chomp)
     end
   end
 end
