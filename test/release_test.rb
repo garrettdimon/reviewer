@@ -23,6 +23,24 @@ class ReleaseTest < Minitest::Test
     end
   end
 
+  def test_release_check_reports_a_mismatch_exactly_when_head_differs
+    origin_main = `git rev-parse --verify --quiet origin/main`.strip
+    errors = release_check_errors
+
+    # A checkout without origin/main is a different error, not a mismatch
+    if origin_main.empty?
+      assert_includes errors, 'Cannot resolve origin/main. Run `git fetch origin main`.'
+    else
+      synced = `git rev-parse HEAD`.strip == origin_main
+
+      assert_equal !synced, errors.include?('HEAD does not match origin/main')
+    end
+  end
+
+  def test_release_check_accepts_a_dated_changelog_section_with_notes
+    refute_includes release_check_errors.join("\n"), 'CHANGELOG'
+  end
+
   def test_dry_run_preserves_an_existing_gem
     gem_file = "reviewer-#{Reviewer::VERSION}.gem"
     existing_gem = File.binread(gem_file) if File.exist?(gem_file)
@@ -45,6 +63,18 @@ class ReleaseTest < Minitest::Test
 
   # Paths between the contents header and the size footer, so an incidental
   # mention elsewhere in the output cannot satisfy or defeat an assertion
+  def release_check_errors
+    @release_check_errors ||= begin
+      stdout, stderr, _status = Open3.capture3('bundle', 'exec', 'rake', 'release:check')
+
+      # Without this the task could die before reporting and every caller
+      # would read the empty list as "no errors"
+      assert_match(/Checking release readiness/, stdout, stderr)
+
+      stdout.lines.map(&:chomp).filter_map { |line| line[/\A  - (.+)\z/, 1] }
+    end
+  end
+
   def packaged_paths
     @packaged_paths ||= begin
       stdout, stderr, status = Open3.capture3('bundle', 'exec', 'rake', 'release:dry_run')

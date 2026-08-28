@@ -417,6 +417,16 @@ module Reviewer
           end
         end
       end
+
+      def test_results_with_the_same_state_are_equal
+        attributes = {
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', state: :passed
+        }
+
+        assert_equal Result.new(**attributes),
+                     Result.new(**attributes, skipped: false, missing: false)
+      end
     end
 
     class DetailSummaryTest < Minitest::Test

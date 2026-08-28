@@ -141,19 +141,9 @@ module Reviewer
       def passed? = state?(:passed)
       def failed? = state?(:failed)
       def not_run? = state?(:not_run)
-      alias_method :success, :passed?
-
-      def skipped
-        true if state?(:skipped)
-      end
-
-      def missing
-        true if state?(:missing)
-      end
-
-      def success? = success
-      def skipped? = skipped
-      def missing? = missing
+      def success? = state?(:passed)
+      def skipped? = state?(:skipped)
+      def missing? = state?(:missing)
 
       def state?(value) = state == value
       private :state?
@@ -205,10 +195,13 @@ module Reviewer
         raise ArgumentError, 'Result state conflicts with legacy values'
       end
 
+      # Assigns unconditionally so the stored members are a pure function of
+      # state. A partial assignment left the caller's argument in place, so two
+      # results with identical states compared unequal through Struct#==.
       def normalize_legacy_values
         self[:success] = passed?
-        self[:skipped] = true if skipped?
-        self[:missing] = true if missing?
+        self[:skipped] = (true if skipped?)
+        self[:missing] = (true if missing?)
       end
 
       def serialized_attributes

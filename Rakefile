@@ -58,6 +58,7 @@ class ReleaseChecker
     check_changelog
     check_git_clean
     check_main_branch
+    check_synced_with_origin
     @errors
   end
 
@@ -71,9 +72,35 @@ class ReleaseChecker
 
   def check_changelog
     changelog = File.read('CHANGELOG.md')
-    return if changelog.include?("[#{@version}]")
+    unless changelog.match?(/^## \[#{Regexp.escape(@version)}\] - \d{4}-\d{2}-\d{2}$/)
+      @errors << "CHANGELOG.md has no dated entry for version #{@version}"
+      return
+    end
 
-    @errors << "CHANGELOG.md has no entry for version #{@version}"
+    return unless release_notes(changelog).empty?
+
+    # An empty section publishes a GitHub Release with a blank body, which
+    # cannot be corrected without moving a tag RubyGems has already accepted
+    @errors << "CHANGELOG.md has an empty section for version #{@version}"
+  end
+
+  # The lines the release workflow extracts for the GitHub Release body
+  def release_notes(changelog)
+    changelog[/^## \[#{Regexp.escape(@version)}\][^\n]*\n(.*?)(?=^## \[|\z)/m, 1].to_s.strip
+  end
+
+  # check_main_branch only compares the branch name, so a stale or ahead local
+  # main passes it while pointing at a commit CI never saw
+  def check_synced_with_origin
+    origin_main = `git rev-parse --verify --quiet origin/main`.strip
+    if origin_main.empty?
+      @errors << 'Cannot resolve origin/main. Run `git fetch origin main`.'
+      return
+    end
+
+    return if `git rev-parse HEAD`.strip == origin_main
+
+    @errors << 'HEAD does not match origin/main'
   end
 
   def check_git_clean
