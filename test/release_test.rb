@@ -24,9 +24,17 @@ class ReleaseTest < Minitest::Test
   end
 
   def test_release_check_reports_a_mismatch_exactly_when_head_differs
-    synced = `git rev-parse HEAD`.strip == `git rev-parse origin/main`.strip
+    origin_main = `git rev-parse --verify --quiet origin/main`.strip
+    errors = release_check_errors
 
-    assert_equal !synced, release_check_errors.include?('HEAD does not match origin/main')
+    # A checkout without origin/main is a different error, not a mismatch
+    if origin_main.empty?
+      assert_includes errors, 'Cannot resolve origin/main. Run `git fetch origin main`.'
+    else
+      synced = `git rev-parse HEAD`.strip == origin_main
+
+      assert_equal !synced, errors.include?('HEAD does not match origin/main')
+    end
   end
 
   def test_release_check_accepts_a_dated_changelog_section_with_notes

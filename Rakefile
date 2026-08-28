@@ -92,7 +92,7 @@ class ReleaseChecker
   # check_main_branch only compares the branch name, so a stale or ahead local
   # main passes it while pointing at a commit CI never saw
   def check_synced_with_origin
-    origin_main = `git rev-parse origin/main 2>/dev/null`.strip
+    origin_main = `git rev-parse --verify --quiet origin/main`.strip
     if origin_main.empty?
       @errors << 'Cannot resolve origin/main. Run `git fetch origin main`.'
       return
