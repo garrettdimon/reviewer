@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['bug_tracker_uri'] = 'https://github.com/garrettdimon/reviewer/issues'
-  spec.metadata['changelog_uri'] = 'https://github.com/garrettdimon/reviewer/CHANGELOG.md'
+  spec.metadata['changelog_uri'] = 'https://github.com/garrettdimon/reviewer/blob/main/CHANGELOG.md'
   spec.metadata['documentation_uri'] = 'https://github.com/garrettdimon/reviewer/blob/main/docs/README.md'
   spec.metadata['source_code_uri'] = 'https://github.com/garrettdimon/reviewer'
   spec.metadata['rubygems_mfa_required'] = 'true'
