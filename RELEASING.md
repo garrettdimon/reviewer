@@ -42,16 +42,18 @@ The release pull request contains metadata and release documentation only:
 
 1. Set `Reviewer::VERSION` in `lib/reviewer/version.rb`.
 2. Refresh `Gemfile.lock` so its local `reviewer` specification has the same version.
-3. Leave a new empty `[Unreleased]` section in `CHANGELOG.md` and move the accepted changes into a
+3. Correct gem metadata and packaging that the release will publish, so a defect is not shipped
+   for another cycle.
+4. Leave a new empty `[Unreleased]` section in `CHANGELOG.md` and move the accepted changes into a
    dated `[X.Y.Z] - YYYY-MM-DD` section.
-4. Put compatibility and upgrade notes before the feature and fix lists.
-5. Update this guide when the release workflow itself changes.
+5. Put compatibility and upgrade notes before the feature and fix lists.
+6. Update this guide when the release workflow itself changes.
 
 Preview the versioned package and run Reviewer against the staged release changes:
 
 ```bash
 bundle exec rake release:dry_run
-git add lib/reviewer/version.rb Gemfile.lock CHANGELOG.md RELEASING.md
+git add lib/reviewer/version.rb Gemfile.lock CHANGELOG.md RELEASING.md reviewer.gemspec .gitignore
 bundle exec rvw staged
 ```
 
