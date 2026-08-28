@@ -1,6 +1,6 @@
 ## [Unreleased]
 
-## [1.1.0] - 2026-08-27
+## [1.1.0] - 2026-08-28
 
 Reviewer 1.1 makes review outcomes more precise and dependable for people and automated consumers.
 Every tool result now has an authoritative state, aggregate summaries account for every outcome, and
@@ -33,6 +33,7 @@ configuration.
 - Development dependencies are separated from optional dogfood tools; `bin/setup` enables the local dogfood bundle group
 
 ### Fixed
+- `rvw init` generates a configuration instead of exiting with an `ArgumentError` backtrace
 - Generated Reek configuration now distinguishes full-project and file-scoped review commands
 - Generated Minitest configuration now executes every file in a scoped review
 - Result summaries now total every state accurately and avoid claiming all-missing runs passed
