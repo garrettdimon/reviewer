@@ -11,8 +11,9 @@ class WarningsTest < Minitest::Test
 
     assert status.success?, stderr
 
-    # Scoped to this library so a dependency's warnings cannot fail the build
-    own_warnings = stderr.lines.grep(%r{lib/reviewer/.*warning:})
+    # Scoped to this library so a dependency's warnings cannot fail the build.
+    # Covers the lib/reviewer.rb entrypoint as well as everything beneath it.
+    own_warnings = stderr.lines.grep(%r{lib/reviewer(?:\.rb|/).*warning:})
 
     assert_empty own_warnings, "Loading Reviewer emitted warnings:\n#{own_warnings.join}"
   end
