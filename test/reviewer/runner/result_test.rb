@@ -515,4 +515,15 @@ module Reviewer
       end
     end
   end
+  describe 'value semantics' do
+    it 'equates results whose state matches regardless of legacy arguments' do
+      attributes = {
+        tool_key: :t, tool_name: 'T', command_type: :review,
+        command_string: 'c', state: :passed
+      }
+
+      assert_equal Reviewer::Runner::Result.new(**attributes),
+                   Reviewer::Runner::Result.new(**attributes, skipped: false, missing: false)
+    end
+  end
 end
