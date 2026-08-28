@@ -14,6 +14,9 @@ Participation in the project follows the [Code of Conduct](../CODE_OF_CONDUCT.md
 
 ## Development setup
 
+This guide describes the [repository checkout](https://github.com/garrettdimon/reviewer), not the
+installed gem. The commands below run from a clone.
+
 Reviewer requires Ruby 3.2 or newer. Clone the repository, then install the development and dogfood
 dependencies:
 
@@ -47,7 +50,7 @@ Keep each pull request to one logical change. Explain why the change is needed, 
 test evidence, and update user-facing documentation when behavior or configuration changes.
 
 Do not mix release preparation into a feature or fix. Maintainers release Reviewer using the
-[release guide](../RELEASING.md).
+[release guide](https://github.com/garrettdimon/reviewer/blob/main/RELEASING.md).
 
 ## API documentation
 

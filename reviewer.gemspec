@@ -23,10 +23,16 @@ Gem::Specification.new do |spec|
   spec.metadata['source_code_uri'] = 'https://github.com/garrettdimon/reviewer'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
-  # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
+  # Package only what a consumer needs. An allowlist keeps development files out
+  # of the gem by default, so new tooling config cannot leak into a release.
+  packaged_root_files = %w[
+    README.md CHANGELOG.md LICENSE.txt CODE_OF_CONDUCT.md
+    .reviewer.example.yml reviewer.gemspec
+  ]
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{\A(?:test|spec|features)/}) }
+    `git ls-files -z`.split("\x0").select do |f|
+      f.start_with?('lib/', 'exe/', 'docs/') || packaged_root_files.include?(f)
+    end
   end
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
