@@ -23,8 +23,10 @@ class ReleaseTest < Minitest::Test
     end
   end
 
-  def test_release_check_requires_head_to_match_origin_main
-    assert_includes release_check_errors, 'HEAD does not match origin/main'
+  def test_release_check_reports_a_mismatch_exactly_when_head_differs
+    synced = `git rev-parse HEAD`.strip == `git rev-parse origin/main`.strip
+
+    assert_equal !synced, release_check_errors.include?('HEAD does not match origin/main')
   end
 
   def test_release_check_accepts_a_dated_changelog_section_with_notes
@@ -55,7 +57,12 @@ class ReleaseTest < Minitest::Test
   # mention elsewhere in the output cannot satisfy or defeat an assertion
   def release_check_errors
     @release_check_errors ||= begin
-      stdout, _stderr, _status = Open3.capture3('bundle', 'exec', 'rake', 'release:check')
+      stdout, stderr, _status = Open3.capture3('bundle', 'exec', 'rake', 'release:check')
+
+      # Without this the task could die before reporting and every caller
+      # would read the empty list as "no errors"
+      assert_match(/Checking release readiness/, stdout, stderr)
+
       stdout.lines.map(&:chomp).filter_map { |line| line[/\A  - (.+)\z/, 1] }
     end
   end
