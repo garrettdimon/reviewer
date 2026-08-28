@@ -23,6 +23,14 @@ class ReleaseTest < Minitest::Test
     end
   end
 
+  def test_release_check_requires_head_to_match_origin_main
+    assert_includes release_check_errors, 'HEAD does not match origin/main'
+  end
+
+  def test_release_check_accepts_a_dated_changelog_section_with_notes
+    refute_includes release_check_errors.join("\n"), 'CHANGELOG'
+  end
+
   def test_dry_run_preserves_an_existing_gem
     gem_file = "reviewer-#{Reviewer::VERSION}.gem"
     existing_gem = File.binread(gem_file) if File.exist?(gem_file)
@@ -45,6 +53,13 @@ class ReleaseTest < Minitest::Test
 
   # Paths between the contents header and the size footer, so an incidental
   # mention elsewhere in the output cannot satisfy or defeat an assertion
+  def release_check_errors
+    @release_check_errors ||= begin
+      stdout, _stderr, _status = Open3.capture3('bundle', 'exec', 'rake', 'release:check')
+      stdout.lines.map(&:chomp).filter_map { |line| line[/\A  - (.+)\z/, 1] }
+    end
+  end
+
   def packaged_paths
     @packaged_paths ||= begin
       stdout, stderr, status = Open3.capture3('bundle', 'exec', 'rake', 'release:dry_run')
