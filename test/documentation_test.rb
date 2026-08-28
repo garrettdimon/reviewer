@@ -143,7 +143,7 @@ class DocumentationTest < Minitest::Test
     refute metadata.key?('wiki_uri')
     assert_equal 'https://github.com/garrettdimon/reviewer', metadata['homepage_uri']
     assert_equal 'https://github.com/garrettdimon/reviewer/issues', metadata['bug_tracker_uri']
-    assert_equal 'https://github.com/garrettdimon/reviewer/CHANGELOG.md', metadata['changelog_uri']
+    assert_equal 'https://github.com/garrettdimon/reviewer/blob/main/CHANGELOG.md', metadata['changelog_uri']
     assert_equal 'https://github.com/garrettdimon/reviewer', metadata['source_code_uri']
   end
 
