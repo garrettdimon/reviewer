@@ -417,6 +417,16 @@ module Reviewer
           end
         end
       end
+
+      def test_results_with_the_same_state_are_equal
+        attributes = {
+          tool_key: :tests, tool_name: 'Minitest', command_type: :review,
+          command_string: 'rake', state: :passed
+        }
+
+        assert_equal Result.new(**attributes),
+                     Result.new(**attributes, skipped: false, missing: false)
+      end
     end
 
     class DetailSummaryTest < Minitest::Test
@@ -513,17 +523,6 @@ module Reviewer
 
         assert_nil result.detail_summary
       end
-    end
-  end
-  describe 'value semantics' do
-    it 'equates results whose state matches regardless of legacy arguments' do
-      attributes = {
-        tool_key: :t, tool_name: 'T', command_type: :review,
-        command_string: 'c', state: :passed
-      }
-
-      assert_equal Reviewer::Runner::Result.new(**attributes),
-                   Reviewer::Runner::Result.new(**attributes, skipped: false, missing: false)
     end
   end
 end
