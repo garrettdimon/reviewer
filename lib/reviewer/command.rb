@@ -77,6 +77,8 @@ module Reviewer
     #
     # @return [Boolean] true if files were requested but resolution left none for this tool
     def skip?
+      return true if explicit_files.any? && !tool.supports_files?
+
       tool.skip_files?(requested_files)
     end
 
@@ -97,15 +99,14 @@ module Reviewer
     #
     # @return [Array<String>] files from -f flag, keywords like 'staged', or stored failed files
     def requested_files
-      @requested_files ||= begin
-        explicit = arguments.files.to_a
-        if explicit.empty? && arguments.keywords.failed?
-          stored_failed_files
-        else
-          explicit
-        end
-      end
+      @requested_files ||= if explicit_files.empty? && arguments.keywords.failed?
+                             stored_failed_files
+                           else
+                             explicit_files
+                           end
     end
+
+    def explicit_files = @explicit_files ||= arguments.files.to_a
 
     # Retrieves failed files stored from the last executed review for this tool
     #

@@ -229,16 +229,16 @@ module Reviewer
       assert @report.results.last.success
     end
 
-    def test_skipped_tool_followed_by_passing_tool
-      arguments = Arguments.new(%w[-f README.md])
+    def test_file_scoped_batch_skips_unsupported_tool_and_runs_supported_tool
+      arguments = Arguments.new(%w[-f lib/reviewer.rb])
       context = default_context(arguments: arguments)
-      tools = [build_tool(:file_pattern_tool), build_tool(:list)]
+      tools = [build_tool(:list), build_tool(:file_targeting_list)]
 
       capture_subprocess_io do
         @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: context).run
       end
 
-      assert_equal %i[file_pattern_tool list], @report.results.map(&:tool_key)
+      assert_equal %i[list file_targeting_list], @report.results.map(&:tool_key)
       assert_equal %i[skipped passed], @report.results.map(&:state)
     end
 

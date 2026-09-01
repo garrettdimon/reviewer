@@ -63,9 +63,10 @@ File selectors resolve paths from Git:
 | `untracked` | Untracked, non-ignored files |
 
 `failed` selects tools whose last executed review failed and, when available, reuses each tool's
-stored failed file paths. A tool remains selected until an executed review records a pass. Skipped,
-missing, formatted, and not-run tools leave that review history unchanged, so a passing scoped run
-can coexist with tools still selected by `rvw failed`.
+stored failed file paths. File-aware tools retry those paths; tools without file support retry their
+full command. A tool remains selected until an executed review records a pass. Skipped, missing,
+formatted, and not-run tools leave that review history unchanged, so a passing scoped run can coexist
+with tools still selected by `rvw failed`.
 
 Selections compose:
 
@@ -74,6 +75,9 @@ rvw rubocop staged
 rvw -t ruby modified
 rvw tests -f test/reviewer_test.rb
 ```
+
+File-scoped requests skip tools without a `files:` configuration instead of running their
+full-project command. Bare `rvw` remains the full configured review.
 
 The [configuration reference](configuration.md#file-targeting) describes filtering, file-scoped
 commands, and Minitest/RSpec source-to-test mapping.

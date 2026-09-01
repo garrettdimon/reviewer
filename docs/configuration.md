@@ -106,8 +106,9 @@ rubocop:
 | `files.pattern` | Keeps matching paths before the command runs |
 | `files.map_to_tests` | Maps Ruby source paths to existing `minitest` or `rspec` test paths |
 
-Only tools with a `files:` block receive resolved file arguments; tools without one run their
-configured command unchanged.
+Only tools with a `files:` block receive resolved file arguments. File-scoped requests skip tools
+without one so `rvw staged`, `rvw modified`, and `rvw -f ...` cannot expand into full-project checks.
+Bare `rvw` still runs every tool in the default batch.
 
 Slashless patterns match each path's basename. Patterns containing `/` match normalized
 repository-relative paths with pathname semantics. In path patterns, `**/` crosses directory

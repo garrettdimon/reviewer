@@ -117,6 +117,34 @@ module Reviewer
       refute command.skip?
     end
 
+    def test_skip_returns_true_when_tool_cannot_target_requested_files
+      context = default_context(arguments: Arguments.new(%w[-f README.md]))
+
+      command = Reviewer::Command.new(build_tool(:enabled_tool), :review, context: context)
+
+      assert command.skip?
+    end
+
+    def test_staged_scope_skips_tool_that_cannot_target_files
+      tool = build_tool(:enabled_tool)
+
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          FileUtils.touch('README.md')
+          system('git', 'init', '--quiet')
+          system('git', 'add', 'README.md')
+
+          command = Reviewer::Command.new(
+            tool,
+            :review,
+            context: default_context(arguments: Arguments.new(%w[staged]))
+          )
+
+          assert command.skip?
+        end
+      end
+    end
+
     def test_skip_returns_false_when_files_match_pattern
       context = default_context(arguments: Arguments.new(%w[-f lib/reviewer.rb]))
 
@@ -181,6 +209,18 @@ module Reviewer
       assert_includes command.target_files, 'lib/reviewer/command.rb'
     ensure
       Reviewer.history.set(:file_pattern_tool, :last_failed_files, nil)
+    end
+
+    def test_failed_retry_runs_full_command_when_tool_cannot_target_stored_files
+      Reviewer.history.set(:list, :last_failed_files, ['lib/reviewer/command.rb'])
+      context = default_context(arguments: Arguments.new(%w[failed]))
+
+      command = Reviewer::Command.new(build_tool(:list), :review, context: context)
+
+      refute command.skip?
+      assert_equal 'ls -l', command.string
+    ensure
+      Reviewer.history.set(:list, :last_failed_files, nil)
     end
 
     def test_ignores_stored_files_when_explicit_files_provided
