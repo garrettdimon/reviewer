@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Skip tools without file support during explicit file-scoped runs.
+
 ## [1.1.0] - 2026-08-28
 
 Reviewer 1.1 makes review outcomes more precise and dependable for people and automated consumers.

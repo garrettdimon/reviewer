@@ -76,8 +76,9 @@ rvw -t ruby modified
 rvw tests -f test/reviewer_test.rb
 ```
 
-File-scoped requests skip tools without a `files:` configuration instead of running their
-full-project command. Bare `rvw` remains the full configured review.
+Explicit `-f`, `staged`, `unstaged`, `modified`, and `untracked` requests skip tools without a
+`files:` configuration instead of running their full-project command. Bare `rvw` remains the full
+configured review.
 
 The [configuration reference](configuration.md#file-targeting) describes filtering, file-scoped
 commands, and Minitest/RSpec source-to-test mapping.
