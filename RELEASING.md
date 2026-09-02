@@ -113,6 +113,9 @@ git tag vX.Y.Z "$release_sha"
 git push origin vX.Y.Z
 ```
 
+The workflow independently rejects a tag that does not match `Reviewer::VERSION` or lacks a dated,
+nonempty changelog section. The same validated section becomes the GitHub Release notes.
+
 Never move or reuse a version tag after RubyGems has accepted that version.
 
 ## Verify the Published Artifact

@@ -32,6 +32,18 @@ namespace :release do
     end
   end
 
+  desc 'Print validated release notes for a version tag'
+  task :notes do
+    require_relative 'lib/reviewer/version'
+    tag = ENV.fetch('RELEASE_TAG') { abort 'RELEASE_TAG is required' }
+    checker = ReleaseChecker.new(Reviewer::VERSION)
+    errors = checker.validate_tag(tag)
+
+    abort errors.join("\n") if errors.any?
+
+    puts checker.release_notes
+  end
+
   desc 'Run all pre-release checks (tests, audit, release:check)'
   task preflight: %i[test audit check] do
     puts "\nAll preflight checks passed. Ready to release."
@@ -47,8 +59,9 @@ end
 
 # Validates release readiness
 class ReleaseChecker
-  def initialize(version)
+  def initialize(version, changelog: File.read('CHANGELOG.md'))
     @version = version
+    @changelog = changelog
     @errors = []
   end
 
@@ -62,6 +75,18 @@ class ReleaseChecker
     @errors
   end
 
+  def validate_tag(tag)
+    check_version_format
+    @errors << "Tag '#{tag}' does not match version #{@version}" unless tag == "v#{@version}"
+    check_changelog
+    @errors
+  end
+
+  # The lines the release workflow extracts for the GitHub Release body
+  def release_notes
+    @changelog[/^## \[#{Regexp.escape(@version)}\][^\n]*\n(.*?)(?=^## \[|\z)/m, 1].to_s.strip
+  end
+
   private
 
   def check_version_format
@@ -71,22 +96,16 @@ class ReleaseChecker
   end
 
   def check_changelog
-    changelog = File.read('CHANGELOG.md')
-    unless changelog.match?(/^## \[#{Regexp.escape(@version)}\] - \d{4}-\d{2}-\d{2}$/)
+    unless @changelog.match?(/^## \[#{Regexp.escape(@version)}\] - \d{4}-\d{2}-\d{2}$/)
       @errors << "CHANGELOG.md has no dated entry for version #{@version}"
       return
     end
 
-    return unless release_notes(changelog).empty?
+    return unless release_notes.empty?
 
     # An empty section publishes a GitHub Release with a blank body, which
     # cannot be corrected without moving a tag RubyGems has already accepted
     @errors << "CHANGELOG.md has an empty section for version #{@version}"
-  end
-
-  # The lines the release workflow extracts for the GitHub Release body
-  def release_notes(changelog)
-    changelog[/^## \[#{Regexp.escape(@version)}\][^\n]*\n(.*?)(?=^## \[|\z)/m, 1].to_s.strip
   end
 
   # check_main_branch only compares the branch name, so a stale or ahead local
