@@ -244,8 +244,12 @@ cannot satisfy the check. Run the smoke test from its own temporary project so i
 release checkout's configuration:
 
 ```bash
+(
+set -euo pipefail
 smoke_root=$(mktemp -d)
-trap 'rm -rf -- "$smoke_root"' EXIT HUP INT TERM
+readonly smoke_root
+trap 'rm -rf -- "$smoke_root"' EXIT
+trap 'exit 1' HUP INT TERM
 published_gem_home="$smoke_root/gems"
 smoke_project="$smoke_root/project"
 mkdir -p "$published_gem_home" "$smoke_project"
@@ -296,6 +300,7 @@ abort 'Unexpected skipped count' unless payload.dig('summary', 'skipped') == 1
 abort 'Wrong file arguments' unless JSON.parse(File.read(File.join(project, 'files.json'))) == ['target.rb']
 abort 'Broad tool executed' if File.exist?(File.join(project, 'broad-ran'))
 RUBY
+)
 ```
 
 The published artifact must reproduce the accepted candidate's result. Cleanup runs after success
