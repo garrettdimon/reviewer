@@ -1,196 +1,157 @@
 # Releasing Reviewer
 
-Reviewer releases have three gates: accept one exact commit from `origin/main`, prepare release
-metadata through a pull request, then publish by pushing a version tag from the merged release
-commit. A tag push starts publication and must not happen until the first two gates are complete.
+Reviewer is released from a verified `main` commit. A version tag starts publication, so merging a
+release pull request and pushing its tag are separate maintainer decisions.
 
-## Gate 1: Accept the Candidate
+Use `X.Y.Z` below for the intended version and `vX.Y.Z` for its tag. Record the accepted commit,
+commands, and results with the release pull request.
 
-Fetch `main`, fast-forward the local checkout, and record the candidate commit:
+## 1. Accept a Candidate
+
+Start from a clean checkout and fast-forward `main`:
 
 ```bash
-git fetch origin main
-git status --short
-git merge --ff-only origin/main
-candidate_sha=$(git rev-parse HEAD)
-test "$candidate_sha" = "$(git rev-parse origin/main)"
-test -z "$(git status --porcelain)"
-bundle check
+test -z "$(git status --porcelain)" &&
+  git fetch origin main &&
+  git switch main &&
+  git merge --ff-only origin/main &&
+  test -z "$(git status --porcelain)" &&
+  candidate_sha=$(git rev-parse HEAD) &&
+  test "$candidate_sha" = "$(git rev-parse origin/main)" &&
+  bundle check
 ```
 
-The worktree must be clean, and `candidate_sha` must equal `origin/main`. Verify that exact commit
-before changing the version:
+Set `FOCUSED_TEST` to a behavior-test file for the changes being released. Run additional focused
+test files separately, then validate the release machinery and package:
 
-1. Run focused contract tests for the release's changed behavior.
-2. Exercise the checkout's `exe/rvw` and `exe/fmt` commands through representative CLI scenarios.
-3. Run the checkout's `exe/rvw` in clean projects that use different test and analysis tools.
-4. Preview the current package with `bundle exec rake release:dry_run`.
+```bash
+test -n "${FOCUSED_TEST:-}" &&
+  bundle exec ruby -Itest "$FOCUSED_TEST" &&
+  bundle exec ruby -Itest test/release_test.rb &&
+  bundle exec rake release:dry_run
+```
 
-Record the commands and results with the candidate SHA. If `origin/main` changes, discard the prior
-acceptance decision and repeat this gate for the new commit. A failure belongs in a focused defect
-pull request; do not combine runtime fixes with release preparation.
+If validation fails, fix the defect through a separate pull request. If `origin/main` advances,
+restart candidate acceptance from its new tip.
 
-## Gate 2: Prepare the Release Pull Request
+## 2. Prepare the Release Pull Request
 
-Create a release branch from the accepted commit:
+Create the release branch from the accepted commit:
 
 ```bash
 git switch -c release/X.Y.Z "$candidate_sha"
 ```
 
-The release pull request contains metadata and release documentation only:
+Change only the release metadata:
 
 1. Set `Reviewer::VERSION` in `lib/reviewer/version.rb`.
 2. Refresh `Gemfile.lock` so its local `reviewer` specification has the same version.
-3. Correct gem metadata and packaging that the release will publish, so a defect is not shipped
-   for another cycle.
-4. Leave a new empty `[Unreleased]` section in `CHANGELOG.md` and move the accepted changes into a
-   dated `[X.Y.Z] - YYYY-MM-DD` section.
-5. Put compatibility and upgrade notes before the feature and fix lists.
-6. Update this guide when the release workflow itself changes.
+3. Leave an empty `[Unreleased]` section in `CHANGELOG.md` and add a dated release section.
+4. Include upgrade instructions only when users must take action.
 
-Preview the versioned package and run Reviewer against the staged release changes:
+Do not include runtime fixes, release infrastructure, or unrelated documentation. Change this guide
+only when the reusable release process itself changes, in a separate pull request.
+
+Validate and stage the release metadata:
 
 ```bash
 bundle exec rake release:dry_run
-git add lib/reviewer/version.rb Gemfile.lock CHANGELOG.md RELEASING.md reviewer.gemspec .gitignore
+RELEASE_TAG=vX.Y.Z bundle exec rake release:notes
+git add lib/reviewer/version.rb Gemfile.lock CHANGELOG.md
 bundle exec rvw staged
 ```
 
-Commit and push the release branch, then open a pull request into `main`. Do not push or force-push
-release preparation directly to `main`. The pull request must pass these jobs from
-`.github/workflows/main.yml`:
+If the staged check changes files, re-stage them and rerun it. Commit and push the branch, then open
+a pull request into `main`. Require every pull-request check to pass and resolve review findings.
+Only the maintainer merges the release pull request.
 
-- `Security`
-- `Changelog`
-- `Version`
-- `Test (Ruby 3.2)`
-- `Test (Ruby 3.3)`
-- `Test (Ruby 3.4)`
-- `Test (Ruby 4.0)`
+## 3. Verify and Publish
 
-The maintainer reviews and merges the release pull request. Opening the pull request does not
-authorize an agent to merge it.
-
-## Gate 3: Publish from `main`
-
-After the release pull request is merged, update a clean local `main`:
+After the release pull request is merged, update `main` and record the exact release commit:
 
 ```bash
-git fetch origin main
-git switch main
-git pull --ff-only
-git status --short
+test -z "$(git status --porcelain)" &&
+  git fetch origin main &&
+  git switch main &&
+  git merge --ff-only origin/main &&
+  test -z "$(git status --porcelain)" &&
+  release_sha=$(git rev-parse HEAD) &&
+  test "$release_sha" = "$(git rev-parse origin/main)"
 ```
 
-Run the full preflight and preview the final package:
+Require a successful `main` workflow whose head SHA is exactly `release_sha`. Then run the
+maintainer gates:
 
 ```bash
 bundle exec rake release:preflight
 bundle exec rake release:dry_run
+RELEASE_TAG=vX.Y.Z bundle exec rake release:notes
 ```
 
-`release:preflight` runs the full tests, dependency audit, and `release:check`. It belongs here
-because `release:check` requires the current branch to be `main`. This is a release-manager step;
-agents restricted to focused tests must stop and hand it to the maintainer.
+Before tagging, confirm that:
 
-Before tagging, confirm all of the following for the checked-out commit:
+- `Reviewer::VERSION` and the changelog match `vX.Y.Z`.
+- RubyGems does not already contain version `X.Y.Z`.
+- `vX.Y.Z` does not exist locally or on `origin`.
+- RubyGems trusted publishing still targets this repository, `release.yml`, and the `rubygems`
+  environment.
 
-- `Reviewer::VERSION` matches the intended tag.
-- `CHANGELOG.md` has a dated and complete section for the version.
-- `HEAD` equals `origin/main` and the required CI jobs passed for that commit.
-- RubyGems does not already contain the version.
-- The version tag does not exist locally or remotely.
-
-Pushing the tag triggers `.github/workflows/release.yml`, which publishes the gem and then creates
-the GitHub Release. Treat the tag push as the irreversible publication trigger and require explicit
-authorization immediately before running it:
+Immediately before publication, obtain explicit maintainer authorization. Fetch `origin/main` again
+and create the tag only if the verified commit is still current:
 
 ```bash
-release_sha=$(git rev-parse HEAD)
+(
+set -euo pipefail
+tag=vX.Y.Z
+git fetch origin main
+test "$(git rev-parse HEAD)" = "$release_sha"
 test "$release_sha" = "$(git rev-parse origin/main)"
-git tag vX.Y.Z "$release_sha"
-git push origin vX.Y.Z
+test -z "$(git status --porcelain)"
+git tag "$tag" "$release_sha"
+tag_ref_sha=$(git rev-parse "refs/tags/$tag")
+tag_target_sha=$(git rev-parse "refs/tags/$tag^{}")
+git push origin "refs/tags/$tag:refs/tags/$tag"
+printf 'release=%s tag-ref=%s tag-target=%s\n' "$release_sha" "$tag_ref_sha" "$tag_target_sha"
+)
 ```
 
-The workflow independently rejects a tag that does not match `Reviewer::VERSION` or lacks a dated,
-nonempty changelog section. The same validated section becomes the GitHub Release notes.
+Pushing the tag starts `.github/workflows/release.yml`, which publishes the gem and creates the
+GitHub Release. Record the printed identities with the release evidence. Agents do not create or
+push a release tag without explicit authorization.
 
-Never move or reuse a version tag after RubyGems has accepted that version.
+## 4. Verify the Public Release
 
-## Verify the Published Artifact
+Require all of the following:
 
-Require all three publication results:
+- The `Release` workflow succeeded for the version tag.
+- RubyGems serves the intended version.
+- The GitHub Release exists and contains the validated changelog notes.
+- The gem installs into a fresh, isolated gem home and reports the intended version.
+- A focused smoke test demonstrates the release's customer-facing behavior.
 
-1. The [GitHub Actions `Release` workflow](https://github.com/garrettdimon/reviewer/actions/workflows/release.yml)
-   succeeds.
-2. [RubyGems](https://rubygems.org/gems/reviewer) lists the new Reviewer version.
-3. [GitHub Releases](https://github.com/garrettdimon/reviewer/releases) contains the matching tag and
-   changelog excerpt.
+Record the public URLs and smoke-test result with the release evidence.
 
-Install the public gem into a fresh temporary gem home so a same-version local build or cached gem
-cannot satisfy the check. Then run a focused smoke test in a clean project:
+## Recovery
 
-```bash
-published_gem_home=$(mktemp -d)
-GEM_HOME="$published_gem_home" GEM_PATH="$published_gem_home" gem install reviewer -v X.Y.Z --no-document
-GEM_HOME="$published_gem_home" GEM_PATH="$published_gem_home" "$published_gem_home/bin/rvw" --version
-GEM_HOME="$published_gem_home" GEM_PATH="$published_gem_home" "$published_gem_home/bin/rvw" TOOL -f path/to/file --json
-rm -r "$published_gem_home"
-```
+If publication fails, stop all tag changes and wait for the workflow to reach a terminal state.
+Check RubyGems before taking corrective action.
 
-The published artifact must reproduce the accepted candidate's result.
+- If RubyGems published the version, preserve the tag and prepare a new patch release.
+- If RubyGems never published the version, remove the tag only with explicit maintainer
+  authorization and only after confirming the local and remote tag identities match the failed
+  release.
+- Correct the problem through a pull request and repeat every release gate.
 
-## Versioning Policy
+Never move or reuse a version tag that RubyGems accepted.
 
-Follow [Semantic Versioning](https://semver.org/):
+## Versioning
 
-- **MAJOR** (`X.0.0`): incompatible public API or configuration changes
-- **MINOR** (`X.Y.0`): backward-compatible features and deprecations
-- **PATCH** (`X.Y.Z`): backward-compatible fixes
+Follow [Semantic Versioning](https://semver.org/): use patch releases for backward-compatible fixes,
+minor releases for backward-compatible features, and major releases for incompatible changes.
 
-Dropping Ruby support, removing public APIs, or changing default configuration behavior
-incompatibly requires a major release.
+## One-Time Setup
 
-## One-Time Publishing Setup
-
-### RubyGems Trusted Publishing
-
-1. Open [Reviewer's trusted publishers](https://rubygems.org/gems/reviewer/trusted_publishers).
-2. Create a publisher for the existing gem with these values:
-   - **Repository owner:** `garrettdimon`
-   - **Repository name:** `reviewer`
-   - **Workflow filename:** `release.yml`
-   - **Environment:** `rubygems`
-   - **Workflow repository owner and name:** leave both blank
-
-### GitHub Environment
-
-In the repository settings, create an environment named `rubygems`. Add required reviewers when
-publication should require a second approval.
-
-### Repository Ruleset
-
-In repository Settings > Rules > Rulesets, configure the `main` ruleset to require pull requests and
-every Gate 2 CI job listed above.
-
-## Recovering from a Bad Tag
-
-Before deleting or replacing any tag, verify that RubyGems publication never occurred. If the
-triggered Release workflow is queued or running, [cancel it](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/cancel-a-workflow-run)
-and wait until the run reaches a terminal state. Deleting the tag does not stop a workflow that has
-already started. Recheck the version list on RubyGems after the workflow stops.
-
-If RubyGems accepted the version, do not delete, move, or reuse its tag; fix the problem through a
-new patch release.
-
-Only when the workflow never published the gem may you remove the tag, correct the release through
-a pull request, and tag the corrected commit after all gates pass again:
-
-```bash
-git tag -d vX.Y.Z
-git push origin :refs/tags/vX.Y.Z
-```
-
-If release metadata is wrong on `main`, open another pull request. Do not amend or force-push
-protected branch history.
+- Configure RubyGems trusted publishing for `garrettdimon/reviewer`, workflow `release.yml`, and
+  environment `rubygems`.
+- Create the matching GitHub `rubygems` environment and configure any required reviewers.
+- Protect `main` with pull requests and the repository's required CI checks.

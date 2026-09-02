@@ -1,8 +1,11 @@
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-02
+
 ### Fixed
 
-- Keep explicit file-scoped runs focused, and reject empty file options instead of running broadly.
+- Keep explicit and Git-derived file-scoped runs focused by skipping tools that cannot accept files,
+  while preserving bare runs and failed retries; reject empty file options instead of running broadly.
 
 ## [1.1.0] - 2026-08-28
 
