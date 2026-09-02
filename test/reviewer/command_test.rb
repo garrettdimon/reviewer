@@ -131,8 +131,8 @@ module Reviewer
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
           FileUtils.touch('README.md')
-          system('git', 'init', '--quiet')
-          system('git', 'add', 'README.md')
+          system('git', 'init', '--quiet', exception: true)
+          system('git', 'add', 'README.md', exception: true)
 
           command = Reviewer::Command.new(
             tool,

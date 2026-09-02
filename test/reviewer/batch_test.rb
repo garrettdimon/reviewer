@@ -242,6 +242,19 @@ module Reviewer
       assert_equal %i[skipped passed], @report.results.map(&:state)
     end
 
+    def test_pattern_mismatch_skip_is_followed_by_a_passing_tool
+      arguments = Arguments.new(%w[-f README.md])
+      context = default_context(arguments: arguments)
+      tools = [build_tool(:file_pattern_tool), build_tool(:file_targeting_list)]
+
+      capture_subprocess_io do
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: context).run
+      end
+
+      assert_equal %i[file_pattern_tool file_targeting_list], @report.results.map(&:tool_key)
+      assert_equal %i[skipped passed], @report.results.map(&:state)
+    end
+
     def test_reports_each_tool_stopped_after_a_failure
       tools = %i[failing_command minimum_viable_tool list].map { |key| build_tool(key) }
 

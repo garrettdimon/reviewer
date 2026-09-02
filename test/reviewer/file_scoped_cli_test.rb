@@ -111,6 +111,10 @@ module Reviewer
                  expected: [invocation('file_aware', 'unstaged_only.rb')], skipped: 1)
 
       seed_failures(directory)
+      assert_run(directory, %w[failed staged],
+                 expected: [invocation('file_aware', 'both.rb', 'staged_only.rb')], skipped: 1)
+
+      seed_failures(directory)
       assert_run(directory, %w[failed],
                  expected: [invocation('broad'), invocation('file_aware', 'staged_only.rb')])
     end
