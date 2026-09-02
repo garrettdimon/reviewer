@@ -97,15 +97,14 @@ module Reviewer
     def handle_early_exits
       return show_help if arguments.help?
       return show_version if arguments.version?
+      return yield if arguments.invalid_files_option?
       return Setup.run(configuration: configuration) if subcommand?(:init)
       return run_doctor if subcommand?(:doctor)
       return run_capabilities if capabilities_flag?
-      return run_first_time_setup if first_time_setup?
+      return run_first_time_setup unless configuration.file.exist?
 
       yield
     end
-
-    def first_time_setup? = !arguments.invalid_files_option? && !configuration.file.exist?
 
     def subcommand?(name) = ARGV.first == name.to_s
     def capabilities_flag? = ARGV.include?('--capabilities') || ARGV.include?('-c')

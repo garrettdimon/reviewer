@@ -254,6 +254,29 @@ module Reviewer
       assert_match(/"keywords"/, out)
     end
 
+    def test_missing_files_option_precedes_capabilities
+      out, _err = with_argv('-f', '--capabilities') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end
+      end
+
+      assert_match(/requires at least one file or path/, out)
+      refute_match(/"version"/, out)
+    end
+
+    def test_json_missing_files_option_precedes_short_capabilities
+      out, _err = with_argv('-f', '-c', '--json') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end
+      end
+
+      assert_equal missing_files_payload, JSON.parse(out)
+    end
+
     private
 
     def with_argv(*args)
