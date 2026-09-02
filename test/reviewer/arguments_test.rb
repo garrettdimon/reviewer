@@ -63,6 +63,12 @@ module Reviewer
       assert Arguments.new(%w[-jfr]).invalid_files_option?
     end
 
+    def test_rejects_a_whitespace_only_files_option
+      assert Arguments.new(['-f', '   ']).invalid_files_option?
+      assert Arguments.new(['--files=   ']).invalid_files_option?
+      assert Arguments.new(['-f', ' , ']).invalid_files_option?
+    end
+
     def test_rejects_an_empty_files_option_among_repeated_values
       assert Arguments.new(['-f', 'app/a.rb', '-f']).invalid_files_option?
       assert Arguments.new(['-f', '', '-f', 'app/a.rb']).invalid_files_option?
@@ -94,6 +100,8 @@ module Reviewer
     def test_rejects_a_files_option_followed_by_another_known_option
       assert Arguments.new(%w[-f --json]).invalid_files_option?
       assert Arguments.new(%w[-f --tags ruby]).invalid_files_option?
+      assert Arguments.new(%w[-f -j=true]).invalid_files_option?
+      assert Arguments.new(%w[-f --json=true]).invalid_files_option?
     end
 
     def test_exposes_leftover_arguments_as_keywords
@@ -176,6 +184,17 @@ module Reviewer
     def test_json_format_survives_a_missing_files_value
       assert_equal :json, Arguments.new(%w[-f --format json]).format
       assert_equal :json, Arguments.new(%w[-f --format=json]).format
+    end
+
+    def test_json_boolean_value_survives_a_missing_files_value
+      assert Arguments.new(%w[-f -j=true]).json?
+      assert Arguments.new(%w[-f --json=true]).json?
+      refute Arguments.new(%w[-f -j=false]).json?
+      refute Arguments.new(%w[-f --json=false]).json?
+    end
+
+    def test_compact_file_value_is_not_reinterpreted_as_json
+      refute Arguments.new(%w[-fproject.rb -f]).json?
     end
 
     def test_repeated_formats_keep_last_value_precedence

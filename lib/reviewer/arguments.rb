@@ -44,14 +44,8 @@ module Reviewer
       @output = output
       @raw_options = options.to_a.dup
       @invalid_files_option = false
-      previous_file_count = 0
-      files_callback = lambda do |files|
-        file_count = Array(files).length
-        @invalid_files_option = true if file_count <= previous_file_count
-        previous_file_count = file_count
-      end
       @parser = Slop::Options.new
-      Options.configure(@parser, files_callback: files_callback)
+      Options.configure(@parser, files_callback: files_validation_callback)
       @options = @parser.parse(options)
     end
 
@@ -161,6 +155,18 @@ module Reviewer
 
     private
 
+    def files_validation_callback
+      previous_file_count = 0
+      lambda do |files|
+        current_files = Array(files)
+        file_count = current_files.length
+        new_files = current_files.drop(previous_file_count)
+        @invalid_files_option = true if file_count <= previous_file_count ||
+                                        new_files.all? { |file| file.strip.empty? }
+        previous_file_count = file_count
+      end
+    end
+
     def raw_option_tokens = @raw_option_tokens ||= @raw_options.take_while { |token| token != '--' }
 
     def known_option_token?(token)
@@ -178,10 +184,24 @@ module Reviewer
     end
 
     def short_option_token?(token)
+      short_option_with_value?(token) || smashed_short_option_token?(token) || grouped_short_option_token?(token)
+    end
+
+    def short_option_with_value?(token)
+      flag, value = token.split('=', 2)
+      value && exact_option_token?(flag)
+    end
+
+    def smashed_short_option_token?(token)
       return false unless token.match?(/\A-[^-]{2,}\z/)
 
       first = parser_options.find { |option| option.flags.include?(token[0, 2]) }
-      return true if first&.expects_argument?
+      first&.expects_argument? || false
+    end
+
+    def grouped_short_option_token?(token)
+      return false unless token.match?(/\A-[^-]{2,}\z/)
+      return false if parser_options.find { |option| option.flags.include?(token[0, 2]) }&.expects_argument?
 
       token.delete_prefix('-').chars.all? { |character| short_flags.include?("-#{character}") }
     end
@@ -198,7 +218,10 @@ module Reviewer
     def json_option_token?(token)
       return true if %w[-j --json].include?(token)
 
-      token.match?(/\A-[^-]{2,}\z/) && short_option_token?(token) && token.include?('j')
+      flag, value = token.split('=', 2)
+      return value != 'false' if value && %w[-j --json].include?(flag)
+
+      grouped_short_option_token?(token) && token.include?('j')
     end
 
     def recovered_format
