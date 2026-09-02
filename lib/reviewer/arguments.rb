@@ -42,6 +42,7 @@ module Reviewer
     # @return [self]
     def initialize(options = ARGV, output: Output.new)
       @output = output
+      @raw_options = options.to_a.dup
       @options = Slop.parse(options) { |opts| Options.configure(opts) }
     end
 
@@ -103,7 +104,22 @@ module Reviewer
     # Whether to output results as JSON
     #
     # @return [Boolean] true if JSON output mode is requested
-    def json? = options[:json]
+    def json? = options[:json] || @raw_options.intersect?(%w[-j --json])
+
+    # Whether a files option was supplied without a usable value
+    #
+    # @return [Boolean] true when any -f/--files occurrence is empty
+    def invalid_files_option?
+      @raw_options.each_index.any? do |index|
+        option = @raw_options[index]
+
+        if %w[-f --files].include?(option)
+          invalid_file_value?(@raw_options[index + 1], reject_option: true)
+        elsif option.start_with?('-f=', '--files=')
+          invalid_file_value?(option.split('=', 2).last)
+        end
+      end
+    end
 
     # The output format for results
     #
@@ -111,10 +127,11 @@ module Reviewer
     def format
       return :json if json?
 
-      value = options[:format].to_sym
+      raw_value = provided_format || options[:format]
+      value = raw_value.to_sym
       return value if KNOWN_FORMATS.include?(value)
 
-      session_formatter.invalid_format(options[:format], KNOWN_FORMATS)
+      session_formatter.invalid_format(raw_value, KNOWN_FORMATS)
       :streaming
     end
 
@@ -132,6 +149,23 @@ module Reviewer
       return Runner::Strategies::Captured unless streaming?
 
       multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+    end
+
+    private
+
+    def invalid_file_value?(value, reject_option: false)
+      return true if value.nil? || (reject_option && value.start_with?('-'))
+
+      value.split(',').all? { |path| path.strip.empty? }
+    end
+
+    def provided_format
+      @raw_options.each_with_index do |option, index|
+        return @raw_options[index + 1] if option == '--format'
+        return option.split('=', 2).last if option.start_with?('--format=')
+      end
+
+      nil
     end
   end
 end

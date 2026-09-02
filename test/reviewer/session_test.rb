@@ -33,6 +33,18 @@ module Reviewer
       end
     end
 
+    def test_invalid_files_option_exits_without_selecting_tools
+      tools_collection = Tools.new(config_file: Reviewer.configuration.file)
+      arguments = Arguments.new(%w[-f])
+      session = build_session(arguments: arguments, tools: tools_collection)
+
+      tools_collection.stub(:current, -> { flunk 'tools were selected' }) do
+        output, = capture_subprocess_io { assert_equal Session::USAGE_ERROR, session.review }
+
+        assert_match(/The --files option requires at least one file or path\./, output)
+      end
+    end
+
     def test_format_returns_exit_status
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:enabled_tool)]) do

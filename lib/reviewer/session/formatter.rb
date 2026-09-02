@@ -8,6 +8,8 @@ module Reviewer
     class Formatter
       include Output::Formatting
 
+      MISSING_FILES_MESSAGE = 'The --files option requires at least one file or path.'
+
       attr_reader :output, :printer
       private :output, :printer
 
@@ -48,6 +50,29 @@ module Reviewer
             message: "Unrecognized: #{unrecognized.join(', ')}",
             suggestions: suggestions
           },
+          summary: Report.empty_summary,
+          tools: []
+        }
+
+        printer.write_raw("#{JSON.pretty_generate(payload)}\n")
+      end
+
+      # Displays a usage error when -f/--files has no value
+      #
+      # @return [void]
+      def missing_files_option
+        printer.puts(:warning, MISSING_FILES_MESSAGE)
+        output.newline
+      end
+
+      # Renders the machine-readable form of the missing files usage error
+      #
+      # @return [void]
+      def missing_files_option_json
+        payload = {
+          schema_version: Report::SCHEMA_VERSION,
+          state: 'error',
+          error: { code: 'missing_files', message: MISSING_FILES_MESSAGE },
           summary: Report.empty_summary,
           tools: []
         }

@@ -180,13 +180,28 @@ tool now has `success: false`, and its unavailable execution fields are null ins
 omitted. Valid 1.x `Runner::Result.new` keyword calls and the legacy true-valued payload flags remain
 supported through the 1.x line.
 
+## File-scoped behavior
+
+| Request | Tools with `files:` | Tools without `files:` |
+|---|---|---|
+| `rvw` | Run without a file filter | Run without a file filter |
+| `rvw -f app/a.rb` | Run with `app/a.rb` | Skip |
+| `rvw staged untracked` | Run with the deduplicated union | Skip |
+| `rvw staged` with no staged files | Do not run | Do not run |
+| `rvw failed` | Use stored failed paths when available | Retry without a file filter |
+| `rvw failed -f app/a.rb` | Use `app/a.rb` instead of stored paths | Skip |
+
+Repeated `-f` options and Git selectors compose. Every `-f` or `--files` occurrence requires at
+least one path; an empty or missing value exits 2 without running any tool. A valid Git selector
+that finds no files is instead a successful no-op because the selector itself was complete.
+
 ## Exit statuses
 
 | Status | Meaning |
 |---|---|
 | `0` | Every executed tool passed; skipped, missing, and not-run tools do not fail the run |
 | `1` | At least one executed tool failed |
-| `2` | The request used an unrecognized tool, tag, or keyword |
+| `2` | The request used an unrecognized selector or an empty `-f`/`--files` option |
 
 A tool may pass with a nonzero process status when its `commands.max_exit_status` allows it. Reviewer
 returns its own status above instead of forwarding the tool's process status.

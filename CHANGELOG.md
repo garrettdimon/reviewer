@@ -2,7 +2,7 @@
 
 ### Fixed
 
-- Skip tools without file support during explicit file-scoped runs.
+- Keep explicit file-scoped runs focused, and reject empty file options instead of running broadly.
 
 ## [1.1.0] - 2026-08-28
 

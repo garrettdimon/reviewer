@@ -108,7 +108,9 @@ rubocop:
 
 Only tools with a `files:` block receive resolved file arguments. File-scoped requests skip tools
 without one so `rvw staged`, `rvw modified`, and `rvw -f ...` cannot expand into full-project checks.
-Bare `rvw` still runs every tool in the default batch.
+Bare `rvw` still runs every tool in the default batch. See the
+[file-scoped behavior matrix](usage.md#file-scoped-behavior) for explicit scopes, composed Git
+selectors, and failed-run precedence.
 
 Slashless patterns match each path's basename. Patterns containing `/` match normalized
 repository-relative paths with pathname semantics. In path patterns, `**/` crosses directory

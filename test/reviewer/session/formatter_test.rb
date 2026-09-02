@@ -40,6 +40,24 @@ module Reviewer
         )
         assert_empty parsed['tools']
       end
+
+      def test_missing_files_option
+        out, _err = capture_subprocess_io { formatter.missing_files_option }
+
+        assert_match(/The --files option requires at least one file or path\./, out)
+      end
+
+      def test_missing_files_option_json_uses_the_error_envelope # rubocop:disable Metrics/AbcSize
+        out, _err = capture_subprocess_io { formatter.missing_files_option_json }
+        parsed = JSON.parse(out)
+
+        assert_equal 1, parsed['schema_version']
+        assert_equal 'error', parsed['state']
+        assert_equal 'missing_files', parsed.dig('error', 'code')
+        assert_equal 'The --files option requires at least one file or path.', parsed.dig('error', 'message')
+        assert_equal Report.empty_summary.transform_keys(&:to_s), parsed['summary']
+        assert_empty parsed['tools']
+      end
     end
   end
 end

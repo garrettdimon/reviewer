@@ -50,6 +50,35 @@ module Reviewer
       assert_equal ['./app/**/*.rb', './test/**/*.rb'], arguments.files.raw
     end
 
+    def test_rejects_a_files_option_without_a_value
+      assert Arguments.new(%w[-f]).invalid_files_option?
+      assert Arguments.new(%w[--files]).invalid_files_option?
+    end
+
+    def test_rejects_an_empty_files_option
+      assert Arguments.new(['-f', '']).invalid_files_option?
+      assert Arguments.new(['--files=']).invalid_files_option?
+    end
+
+    def test_rejects_an_empty_files_option_among_repeated_values
+      assert Arguments.new(['-f', 'app/a.rb', '-f']).invalid_files_option?
+      assert Arguments.new(['-f', '', '-f', 'app/a.rb']).invalid_files_option?
+    end
+
+    def test_accepts_every_supported_files_option_form
+      arguments = [
+        %w[-f app/a.rb],
+        %w[--files app/a.rb],
+        %w[-f=app/a.rb],
+        %w[--files=app/a.rb],
+        %w[-fapp/a.rb],
+        %w[-f app/a.rb,app/b.rb],
+        %w[-f app/a.rb -f app/b.rb]
+      ]
+
+      arguments.each { |args| refute Arguments.new(args).invalid_files_option?, args.inspect }
+    end
+
     def test_exposes_leftover_arguments_as_keywords
       args = %w[staged -t ruby invalid]
       arguments = Arguments.new(args)
@@ -120,6 +149,16 @@ module Reviewer
       arguments = Arguments.new(%w[-j -t ruby staged])
       assert arguments.json?
       assert_equal %w[ruby], arguments.tags.raw
+    end
+
+    def test_json_flag_survives_a_missing_files_value
+      assert Arguments.new(%w[-f --json]).json?
+      assert Arguments.new(%w[-f -j]).json?
+    end
+
+    def test_json_format_survives_a_missing_files_value
+      assert_equal :json, Arguments.new(%w[-f --format json]).format
+      assert_equal :json, Arguments.new(%w[-f --format=json]).format
     end
 
     # --format flag tests

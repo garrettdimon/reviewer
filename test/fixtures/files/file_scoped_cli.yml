@@ -1,0 +1,12 @@
+broad:
+  name: Broad
+  commands:
+    review: ruby record_invocation.rb broad
+
+file_aware:
+  name: File Aware
+  commands:
+    review: ruby record_invocation.rb file_aware
+  files:
+    flag: ''
+    separator: ' '
