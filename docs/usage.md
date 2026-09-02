@@ -195,9 +195,11 @@ supported through the 1.x line.
 | `rvw failed staged` | Use the newly resolved staged paths instead of stored paths | Skip |
 | `rvw failed -f app/a.rb` | Use `app/a.rb` instead of stored paths | Skip |
 
-Repeated `-f` options and Git selectors compose. Every `-f` or `--files` occurrence requires at
-least one path; an empty or missing value exits 2 without running any tool. A valid Git selector
-that finds no files is instead a successful no-op because the selector itself was complete.
+Repeated `-f` options and Git selectors compose. For review and format execution, every `-f` or
+`--files` occurrence requires at least one path; an empty or missing value exits 2 without running
+any tool. Informational `--help` and `--version` requests, plus the `init` and `doctor` control
+commands, exit before file-scope validation. A valid Git selector that finds no files is instead a
+successful no-op because the selector itself was complete.
 
 ## Exit statuses
 
