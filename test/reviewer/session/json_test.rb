@@ -79,22 +79,14 @@ module Reviewer
       end
     end
 
-    def test_json_invalid_files_option_uses_the_error_envelope # rubocop:disable Metrics/AbcSize
+    def test_json_invalid_files_option_uses_the_error_envelope
       arguments = Arguments.new(['--json', '--files='])
       tools = Tools.new(arguments: arguments, config_file: Reviewer.configuration.file)
 
       output, = capture_subprocess_io do
         assert_equal Session::USAGE_ERROR, build_session(arguments: arguments, tools: tools).review
       end
-      payload = JSON.parse(output)
-
-      assert_equal 1, payload['schema_version']
-      assert_equal 'error', payload['state']
-      refute payload.key?('success')
-      assert_equal 'missing_files', payload.dig('error', 'code')
-      assert_equal 'The --files option requires at least one file or path.', payload.dig('error', 'message')
-      assert_equal empty_summary, payload['summary']
-      assert_empty payload['tools']
+      assert_equal missing_files_payload, JSON.parse(output)
     end
 
     private
@@ -119,6 +111,19 @@ module Reviewer
       {
         'total' => 0, 'passed' => 0, 'failed' => 0, 'skipped' => 0,
         'missing' => 0, 'not_run' => 0, 'duration' => 0
+      }
+    end
+
+    def missing_files_payload
+      {
+        'schema_version' => 1,
+        'state' => 'error',
+        'error' => {
+          'code' => 'missing_files',
+          'message' => 'The --files option requires at least one file or path.'
+        },
+        'summary' => empty_summary,
+        'tools' => []
       }
     end
 
