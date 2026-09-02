@@ -84,7 +84,7 @@ class ReleaseChecker
 
   # The lines the release workflow extracts for the GitHub Release body
   def release_notes
-    @changelog[/^## \[#{Regexp.escape(@version)}\][^\n]*\n(.*?)(?=^## \[|\z)/m, 1].to_s.strip
+    release_section&.[](1).to_s.strip
   end
 
   private
@@ -96,7 +96,7 @@ class ReleaseChecker
   end
 
   def check_changelog
-    unless @changelog.match?(/^## \[#{Regexp.escape(@version)}\] - \d{4}-\d{2}-\d{2}$/)
+    unless release_section
       @errors << "CHANGELOG.md has no dated entry for version #{@version}"
       return
     end
@@ -106,6 +106,10 @@ class ReleaseChecker
     # An empty section publishes a GitHub Release with a blank body, which
     # cannot be corrected without moving a tag RubyGems has already accepted
     @errors << "CHANGELOG.md has an empty section for version #{@version}"
+  end
+
+  def release_section
+    @changelog.match(/^## \[#{Regexp.escape(@version)}\] - \d{4}-\d{2}-\d{2}\n(.*?)(?=^## \[|\z)/m)
   end
 
   # check_main_branch only compares the branch name, so a stale or ahead local

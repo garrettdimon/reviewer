@@ -64,6 +64,23 @@ class ReleaseTest < Minitest::Test
     assert_equal 'Right notes', checker.release_notes
   end
 
+  def test_release_notes_use_the_dated_heading_that_was_validated
+    changelog = <<~CHANGELOG
+      ## [1.1.1] draft
+
+      Unvalidated notes
+
+      ## [1.1.1] - 2026-09-02
+
+      Validated notes
+    CHANGELOG
+
+    checker = ReleaseChecker.new('1.1.1', changelog: changelog)
+
+    assert_empty checker.validate_tag('v1.1.1')
+    assert_equal 'Validated notes', checker.release_notes
+  end
+
   def test_release_notes_task_prints_the_validated_notes
     stdout, stderr, status = Open3.capture3(
       { 'RELEASE_TAG' => "v#{Reviewer::VERSION}" },
