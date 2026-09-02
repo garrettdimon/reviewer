@@ -11,14 +11,14 @@ commands, and results with the release pull request.
 Start from a clean checkout and fast-forward `main`:
 
 ```bash
-test -z "$(git status --porcelain)"
-git fetch origin main
-git switch main
-git merge --ff-only origin/main
-test -z "$(git status --porcelain)"
-candidate_sha=$(git rev-parse HEAD)
-test "$candidate_sha" = "$(git rev-parse origin/main)"
-bundle check
+test -z "$(git status --porcelain)" &&
+  git fetch origin main &&
+  git switch main &&
+  git merge --ff-only origin/main &&
+  test -z "$(git status --porcelain)" &&
+  candidate_sha=$(git rev-parse HEAD) &&
+  test "$candidate_sha" = "$(git rev-parse origin/main)" &&
+  bundle check
 ```
 
 Run the focused tests for the changes being released, then validate the release machinery and
