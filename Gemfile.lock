@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    reviewer (1.1.0)
+    reviewer (1.1.1)
       benchmark (~> 0.5)
       pstore (~> 0.2)
       rainbow (~> 3.1)
