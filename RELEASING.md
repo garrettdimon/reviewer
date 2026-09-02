@@ -188,7 +188,9 @@ response = Net::HTTP.start(uri.host, uri.port, use_ssl: true,
 abort "RubyGems lookup failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
 versions = JSON.parse(response.body)
-valid = versions.is_a?(Array) && versions.all? { |entry| entry.is_a?(Hash) && entry.key?('number') }
+valid = versions.is_a?(Array) && !versions.empty? && versions.all? do |entry|
+  entry.is_a?(Hash) && entry['number'].is_a?(String) && !entry['number'].empty?
+end
 abort 'RubyGems lookup failed: unexpected response' unless valid
 abort "RubyGems version already exists: #{version}" if versions.any? { |entry| entry['number'] == version }
 
