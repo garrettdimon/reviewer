@@ -108,6 +108,7 @@ module Reviewer
     def first_time_setup? = !arguments.invalid_files_option? && !configuration.file.exist?
 
     def subcommand?(name) = ARGV.first == name.to_s
+
     def capabilities_flag?
       !arguments.invalid_files_option? && (ARGV.include?('--capabilities') || ARGV.include?('-c'))
     end
