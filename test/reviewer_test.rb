@@ -78,6 +78,34 @@ module Reviewer
       end
     end
 
+    def test_missing_files_option_precedes_first_time_setup
+      with_missing_config do
+        out, _err = with_argv('-f') do
+          capture_subprocess_io do
+            error = assert_raises(SystemExit) { Reviewer.review }
+            assert_equal Session::USAGE_ERROR, error.status
+          end
+        end
+
+        assert_match(/requires at least one file or path/, out)
+        refute_match(/setting up Reviewer/i, out)
+      end
+    end
+
+    def test_json_missing_files_option_precedes_first_time_setup
+      with_missing_config do
+        out, _err = with_argv('-f', '--json') do
+          capture_subprocess_io do
+            error = assert_raises(SystemExit) { Reviewer.review }
+            assert_equal Session::USAGE_ERROR, error.status
+          end
+        end
+        payload = JSON.parse(out)
+
+        assert_equal missing_files_payload, payload
+      end
+    end
+
     def test_runs_setup_when_config_missing_and_user_says_yes
       with_missing_config do
         stub_prompt = build_tty_prompt("y\n")
@@ -245,6 +273,19 @@ module Reviewer
       tty_input = StringIO.new(input_text)
       tty_input.define_singleton_method(:tty?) { true }
       Prompt.new(input: tty_input, output: StringIO.new)
+    end
+
+    def missing_files_payload
+      {
+        'schema_version' => 1,
+        'state' => 'error',
+        'error' => {
+          'code' => 'missing_files',
+          'message' => 'The --files option requires at least one file or path.'
+        },
+        'summary' => Report.empty_summary.transform_keys(&:to_s),
+        'tools' => []
+      }
     end
   end
 end
