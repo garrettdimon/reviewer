@@ -107,11 +107,7 @@ module Reviewer
     # Whether to output results as JSON
     #
     # @return [Boolean] true if JSON output mode is requested
-    def json?
-      return options[:json] unless invalid_files_option?
-
-      options[:json] || raw_option_tokens.any? { |token| json_option_token?(token) }
-    end
+    def json? = display_options[:json]
 
     # Whether a files option was supplied without a usable value
     #
@@ -129,11 +125,10 @@ module Reviewer
     def format
       return :json if json?
 
-      raw_value = invalid_files_option? ? recovered_format || options[:format] : options[:format]
-      value = raw_value.to_sym
+      value = display_options[:format].to_sym
       return value if KNOWN_FORMATS.include?(value)
 
-      session_formatter.invalid_format(raw_value, KNOWN_FORMATS)
+      session_formatter.invalid_format(display_options[:format], KNOWN_FORMATS)
       :streaming
     end
 
@@ -155,6 +150,8 @@ module Reviewer
 
     private
 
+    def raw_option_tokens = @raw_option_tokens ||= @raw_options.take_while { |token| token != '--' }
+
     def files_validation_callback
       previous_file_count = 0
       lambda do |files|
@@ -167,72 +164,36 @@ module Reviewer
       end
     end
 
-    def raw_option_tokens = @raw_option_tokens ||= @raw_options.take_while { |token| token != '--' }
+    def display_options = invalid_files_option? ? recovered_options : options
 
-    def known_option_token?(token)
-      return false unless token&.start_with?('-')
-
-      exact_option_token?(token) || long_option_token?(token) || short_option_token?(token)
+    def recovered_options
+      @recovered_options ||= Slop.parse(normalized_options) { |opts| Options.configure(opts) }
     end
 
-    def exact_option_token?(token) = parser_options.any? { |option| option.flags.include?(token) }
+    def normalized_options
+      parsing_options = true
+      @raw_options.each_with_index.flat_map do |token, index|
+        parsing_options = false if token == '--'
+        missing_value = parsing_options && files_option_awaiting_value?(token) &&
+                        known_option_token?(@raw_options[index + 1])
 
-    def long_option_token?(token)
-      parser_options.any? do |option|
-        option.flags.any? { |flag| flag.start_with?('--') && token.start_with?("#{flag}=") }
+        missing_value ? [token, ''] : [token]
       end
     end
 
-    def short_option_token?(token)
-      short_option_with_value?(token) || smashed_short_option_token?(token) || grouped_short_option_token?(token)
+    def known_option_token?(token)
+      return false unless token&.start_with?('-') && token != '--'
+
+      Slop.parse([token]) { |opts| Options.configure(opts) }
+      true
+    rescue Slop::UnknownOption
+      false
     end
-
-    def short_option_with_value?(token)
-      flag, value = token.split('=', 2)
-      value && exact_option_token?(flag)
-    end
-
-    def smashed_short_option_token?(token)
-      return false unless token.match?(/\A-[^-]{2,}\z/)
-
-      first = parser_options.find { |option| option.flags.include?(token[0, 2]) }
-      first&.expects_argument? || false
-    end
-
-    def grouped_short_option_token?(token)
-      return false unless token.match?(/\A-[^-]{2,}\z/)
-      return false if parser_options.find { |option| option.flags.include?(token[0, 2]) }&.expects_argument?
-
-      token.delete_prefix('-').chars.all? { |character| short_flags.include?("-#{character}") }
-    end
-
-    def parser_options = @parser_options ||= @parser.to_a
-    def short_flags = @short_flags ||= parser_options.flat_map(&:flags).grep(/\A-[^-]\z/)
 
     def files_option_awaiting_value?(token)
       return true if %w[-f --files].include?(token)
 
-      token.match?(/\A-[^-]+f\z/) && short_option_token?(token)
-    end
-
-    def json_option_token?(token)
-      return true if %w[-j --json].include?(token)
-
-      flag, value = token.split('=', 2)
-      return value != 'false' if value && %w[-j --json].include?(flag)
-
-      grouped_short_option_token?(token) && token.include?('j')
-    end
-
-    def recovered_format
-      raw_option_tokens.each_with_index.filter_map do |option, index|
-        if option == '--format'
-          raw_option_tokens[index + 1]
-        elsif option.start_with?('--format=')
-          option.split('=', 2).last
-        end
-      end
-                       .last
+      token.match?(/\A-[^-]+f\z/) && known_option_token?(token)
     end
   end
 end
