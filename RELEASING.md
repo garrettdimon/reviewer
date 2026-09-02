@@ -21,12 +21,14 @@ test -z "$(git status --porcelain)" &&
   bundle check
 ```
 
-Run the focused tests for the changes being released, then validate the release machinery and
-package:
+Set `FOCUSED_TEST` to a behavior-test file for the changes being released. Run additional focused
+test files separately, then validate the release machinery and package:
 
 ```bash
-bundle exec ruby -Itest test/release_test.rb
-bundle exec rake release:dry_run
+test -n "${FOCUSED_TEST:-}" &&
+  bundle exec ruby -Itest "$FOCUSED_TEST" &&
+  bundle exec ruby -Itest test/release_test.rb &&
+  bundle exec rake release:dry_run
 ```
 
 If validation fails, fix the defect through a separate pull request. If `origin/main` advances,
