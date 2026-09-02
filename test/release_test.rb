@@ -81,6 +81,19 @@ class ReleaseTest < Minitest::Test
     assert_equal 'Validated notes', checker.release_notes
   end
 
+  def test_release_tag_rejects_an_impossible_changelog_date
+    changelog = <<~CHANGELOG
+      ## [1.1.1] - 2026-99-99
+
+      Invalid date
+    CHANGELOG
+
+    checker = ReleaseChecker.new('1.1.1', changelog: changelog)
+
+    assert_includes checker.validate_tag('v1.1.1'), 'CHANGELOG.md has no dated entry for version 1.1.1'
+    assert_empty checker.release_notes
+  end
+
   def test_release_notes_task_prints_the_validated_notes
     stdout, stderr, status = Open3.capture3(
       { 'RELEASE_TAG' => "v#{Reviewer::VERSION}" },

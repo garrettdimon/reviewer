@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bundler/gem_tasks'
+require 'date'
 require 'rake/testtask'
 
 Rake::TestTask.new(:test) do |t|
@@ -84,7 +85,7 @@ class ReleaseChecker
 
   # The lines the release workflow extracts for the GitHub Release body
   def release_notes
-    release_section&.[](1).to_s.strip
+    release_section&.[](2).to_s.strip
   end
 
   private
@@ -109,7 +110,10 @@ class ReleaseChecker
   end
 
   def release_section
-    @changelog.match(/^## \[#{Regexp.escape(@version)}\] - \d{4}-\d{2}-\d{2}\n(.*?)(?=^## \[|\z)/m)
+    section = @changelog.match(/^## \[#{Regexp.escape(@version)}\] - (\d{4}-\d{2}-\d{2})\n(.*?)(?=^## \[|\z)/m)
+    section if section && Date.iso8601(section[1])
+  rescue Date::Error
+    nil
   end
 
   # check_main_branch only compares the branch name, so a stale or ahead local
