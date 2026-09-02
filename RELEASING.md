@@ -65,7 +65,14 @@ Preview the versioned package and run Reviewer against the staged release change
 bundle exec rake release:dry_run
 RELEASE_TAG=vX.Y.Z bundle exec rake release:notes
 git add lib/reviewer/version.rb Gemfile.lock CHANGELOG.md RELEASING.md
-test "$(git diff --cached --name-only)" = "$(printf '%s\n' CHANGELOG.md Gemfile.lock RELEASING.md lib/reviewer/version.rb)"
+staged_paths=$(git diff --cached --name-only) || exit
+required_paths=$(printf '%s\n' CHANGELOG.md Gemfile.lock lib/reviewer/version.rb)
+with_guide_paths=$(printf '%s\n' CHANGELOG.md Gemfile.lock RELEASING.md lib/reviewer/version.rb)
+if test "$staged_paths" != "$required_paths" && test "$staged_paths" != "$with_guide_paths"; then
+  echo "Unexpected staged paths:" >&2
+  printf '%s\n' "$staged_paths" >&2
+  exit 1
+fi
 bundle exec rvw staged
 ```
 
