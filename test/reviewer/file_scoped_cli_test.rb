@@ -32,7 +32,7 @@ module Reviewer
       FileUtils.cp(FIXTURES.join('file_scoped_cli.yml'), File.join(directory, '.reviewer.yml'))
       FileUtils.cp(FIXTURES.join('file_scoped_cli.gitignore'), File.join(directory, '.gitignore'))
       FileUtils.cp(FIXTURES.join('record_invocation.rb'), directory)
-      %w[staged_only.rb unstaged_only.rb both.rb -generated.rb].each do |file|
+      %w[staged_only.rb unstaged_only.rb both.rb -generated.rb main.tf profile.pdf].each do |file|
         FileUtils.touch(File.join(directory, file))
       end
     end
@@ -60,6 +60,10 @@ module Reviewer
                  expected: [invocation('file_aware', 'staged_only.rb', 'untracked.rb')], skipped: 1)
       assert_run(directory, %w[-f -generated.rb],
                  expected: [invocation('file_aware', '-generated.rb')], skipped: 1)
+      assert_run(directory, %w[-fprofile.pdf],
+                 expected: [invocation('file_aware', 'profile.pdf')], skipped: 1)
+      assert_run(directory, %w[-fmain.tf --format summary],
+                 expected: [invocation('file_aware', 'main.tf')], skipped: 1)
       assert_git_selectors(directory)
       assert_run(directory, %w[broad -f staged_only.rb], expected: [], skipped: 1)
     end

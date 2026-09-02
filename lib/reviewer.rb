@@ -110,7 +110,7 @@ module Reviewer
     def subcommand?(name) = ARGV.first == name.to_s
 
     def capabilities_flag?
-      !arguments.invalid_files_option? && (ARGV.include?('--capabilities') || ARGV.include?('-c'))
+      !arguments.invalid_files_option? && arguments.capabilities?
     end
 
     def show_help

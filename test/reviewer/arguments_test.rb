@@ -97,16 +97,28 @@ module Reviewer
       end
     end
 
-    def test_accepts_compact_file_values_ending_in_f_before_output_options
-      json_arguments = Arguments.new(%w[-fprofile.pdf --json])
-      summary_arguments = Arguments.new(%w[-fmain.tf --format summary])
+    def test_accepts_compact_file_value_ending_in_f_before_json
+      arguments = Arguments.new(%w[-fprofile.pdf --json])
 
-      refute json_arguments.invalid_files_option?
-      assert_equal %w[profile.pdf], json_arguments.files.raw
-      assert json_arguments.json?
-      refute summary_arguments.invalid_files_option?
-      assert_equal %w[main.tf], summary_arguments.files.raw
-      assert_equal :summary, summary_arguments.format
+      refute arguments.invalid_files_option?
+      assert_equal %w[profile.pdf], arguments.files.raw
+      assert arguments.json?
+    end
+
+    def test_compact_file_value_does_not_leak_a_format_value
+      arguments = Arguments.new(%w[-fmain.tf --format summary])
+
+      assert_equal %w[main.tf], arguments.files.raw
+      assert_equal :summary, arguments.format
+      assert_empty arguments.keywords.raw
+    end
+
+    def test_compact_file_value_does_not_leak_a_tag_value
+      arguments = Arguments.new(%w[-fmain.tf --tags ruby])
+
+      assert_equal %w[main.tf], arguments.files.raw
+      assert_equal %w[ruby], arguments.tags.raw
+      assert_empty arguments.keywords.raw
     end
 
     def test_rejects_a_files_option_followed_by_another_known_option
@@ -281,10 +293,13 @@ module Reviewer
       refute_match(/Unknown format/, out)
     end
 
-    def test_capabilities_flag_accepted_without_error
-      # --capabilities is handled by Reviewer before Arguments, so it's a no-op here
-      arguments = Arguments.new(%w[-c])
-      refute_nil arguments
+    def test_exposes_capabilities_options
+      assert Arguments.new(%w[--capabilities]).capabilities?
+      assert Arguments.new(%w[-c]).capabilities?
+    end
+
+    def test_does_not_parse_capabilities_after_the_option_terminator
+      refute Arguments.new(%w[-- --capabilities]).capabilities?
     end
   end
 

@@ -45,6 +45,16 @@ module Reviewer
       end
     end
 
+    def test_invalid_files_option_suppresses_secondary_format_errors
+      arguments = Arguments.new(%w[-f --format verbose])
+      session = build_session(arguments: arguments)
+
+      output, = capture_subprocess_io { assert_equal Session::USAGE_ERROR, session.review }
+
+      assert_match(/The --files option requires at least one file or path\./, output)
+      refute_match(/Unknown format/, output)
+    end
+
     def test_format_returns_exit_status
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       tools_collection.stub(:current, [build_tool(:enabled_tool)]) do

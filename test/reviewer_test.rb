@@ -311,4 +311,60 @@ module Reviewer
       }
     end
   end
+
+  class ArgumentPrecedenceTest < Minitest::Test
+    def setup
+      ARGV.clear
+      Reviewer.instance_variable_set(:@arguments, nil)
+    end
+
+    def test_help_precedes_a_missing_files_error
+      output = with_argv('-f', '--help') { capture_subprocess_io { Reviewer.review }.first }
+
+      assert_match(/Usage: rvw/, output)
+      refute_match(/requires at least one file or path/, output)
+    end
+
+    def test_version_precedes_a_missing_files_error
+      output = with_argv('-f', '--version') { capture_subprocess_io { Reviewer.review }.first }
+
+      assert_match(/#{Reviewer::VERSION}/, output)
+      refute_match(/requires at least one file or path/, output)
+    end
+
+    def test_missing_files_option_precedes_capabilities_in_either_order
+      output = with_argv('--capabilities', '-f') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end.first
+      end
+
+      assert_match(/requires at least one file or path/, output)
+      refute_match(/"version"/, output)
+    end
+
+    def test_capabilities_after_the_option_terminator_are_positional
+      output = with_argv('--', '--capabilities') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end.first
+      end
+
+      assert_match(/Unrecognized: --capabilities/, output)
+      refute_match(/"version"/, output)
+    end
+
+    private
+
+    def with_argv(*args)
+      ARGV.replace(args)
+      Reviewer.instance_variable_set(:@arguments, nil)
+      yield
+    ensure
+      ARGV.clear
+      Reviewer.instance_variable_set(:@arguments, nil)
+    end
+  end
 end

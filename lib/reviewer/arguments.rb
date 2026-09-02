@@ -46,7 +46,7 @@ module Reviewer
       @invalid_files_option = false
       @parser = Slop::Options.new
       Options.configure(@parser, files_callback: files_validation_callback)
-      @options = @parser.parse(options)
+      @options = @parser.parse(normalized_options)
     end
 
     private
@@ -107,17 +107,17 @@ module Reviewer
     # Whether to output results as JSON
     #
     # @return [Boolean] true if JSON output mode is requested
-    def json? = display_options[:json]
+    def json? = options[:json]
+
+    # Whether the --capabilities flag was passed
+    #
+    # @return [Boolean] true if capabilities were requested
+    def capabilities? = options[:capabilities]
 
     # Whether a files option was supplied without a usable value
     #
     # @return [Boolean] true when any -f/--files occurrence is empty
-    def invalid_files_option?
-      @invalid_files_option || raw_option_tokens.each_index.any? do |index|
-        files_option_awaiting_value?(raw_option_tokens[index]) &&
-          known_option_token?(raw_option_tokens[index + 1])
-      end
-    end
+    def invalid_files_option? = @invalid_files_option
 
     # The output format for results
     #
@@ -125,10 +125,10 @@ module Reviewer
     def format
       return :json if json?
 
-      value = display_options[:format].to_sym
+      value = options[:format].to_sym
       return value if KNOWN_FORMATS.include?(value)
 
-      session_formatter.invalid_format(display_options[:format], KNOWN_FORMATS)
+      session_formatter.invalid_format(options[:format], KNOWN_FORMATS) unless invalid_files_option?
       :streaming
     end
 
@@ -150,8 +150,6 @@ module Reviewer
 
     private
 
-    def raw_option_tokens = @raw_option_tokens ||= @raw_options.take_while { |token| token != '--' }
-
     def files_validation_callback
       previous_file_count = 0
       lambda do |files|
@@ -164,21 +162,22 @@ module Reviewer
       end
     end
 
-    def display_options = invalid_files_option? ? recovered_options : options
-
-    def recovered_options
-      @recovered_options ||= Slop.parse(normalized_options) { |opts| Options.configure(opts) }
-    end
-
     def normalized_options
       parsing_options = true
       @raw_options.each_with_index.flat_map do |token, index|
         parsing_options = false if token == '--'
         missing_value = parsing_options && files_option_awaiting_value?(token) &&
                         known_option_token?(@raw_options[index + 1])
+        normalized_token = parsing_options ? normalize_compact_files_option(token) : token
 
-        missing_value ? [token, ''] : [token]
+        missing_value ? [normalized_token, ''] : [normalized_token]
       end
+    end
+
+    def normalize_compact_files_option(token)
+      return token unless token.start_with?('-f') && token.length > 2 && !token.start_with?('-f=')
+
+      "-f=#{token.delete_prefix('-f')}"
     end
 
     def known_option_token?(token)
