@@ -349,11 +349,23 @@ already started. Recheck the version list on RubyGems after the workflow stops.
 If RubyGems accepted the version, do not delete, move, or reuse its tag; fix the problem through a
 new patch release.
 
-Only when the workflow never published the gem may you consider removing the tag. Before deletion,
-query the exact remote ref and require its ref object and peeled commit to match the values recorded
-when the tag was pushed. A missing ref, lookup failure, or identity mismatch stops recovery:
+Only when the workflow never published the gem may you consider removing the tag. Restore the exact
+tag name, ref object, and peeled commit recorded when the tag was pushed:
 
 ```bash
+tag=vX.Y.Z
+tag_ref_sha=RECORDED_TAG_REF_SHA
+tag_target_sha=RECORDED_TAG_TARGET_SHA
+```
+
+Obtain explicit maintainer authorization immediately before deletion. Then verify the remote tag's
+identity, delete it with an identity lease, prove the remote ref is absent, and only then delete the
+local tag. A missing ref, lookup failure, identity mismatch, deletion failure, or unexpected absence
+check status stops recovery:
+
+```bash
+(
+set -euo pipefail
 remote_refs=$(git ls-remote --tags origin "refs/tags/$tag" "refs/tags/$tag^{}")
 remote_ref_sha=$(printf '%s\n' "$remote_refs" | awk -v ref="refs/tags/$tag" '$2 == ref { print $1 }')
 remote_target_sha=$(printf '%s\n' "$remote_refs" | awk -v ref="refs/tags/$tag^{}" '$2 == ref { print $1 }')
@@ -361,15 +373,18 @@ test -n "$remote_ref_sha"
 test -n "$remote_target_sha" || remote_target_sha=$remote_ref_sha
 test "$remote_ref_sha" = "$tag_ref_sha"
 test "$remote_target_sha" = "$tag_target_sha"
-```
 
-Obtain explicit maintainer authorization immediately before deletion. Delete the remote tag with an
-identity lease, confirm the exact remote ref is absent with the fail-closed check above, then delete
-the local tag:
-
-```bash
 git push --force-with-lease="refs/tags/$tag:$tag_ref_sha" origin ":refs/tags/$tag"
+if git ls-remote --exit-code --refs --tags origin "refs/tags/$tag" >/dev/null; then
+  echo "Remote tag still exists: $tag" >&2
+  exit 1
+else
+  check_status=$?
+  test "$check_status" -eq 2 || exit "$check_status"
+fi
+
 git tag -d "$tag"
+)
 ```
 
 Correct the problem through a pull request and repeat every release gate. If release metadata is
