@@ -70,13 +70,13 @@ Only the maintainer merges the release pull request.
 After the release pull request is merged, update `main` and record the exact release commit:
 
 ```bash
-test -z "$(git status --porcelain)"
-git fetch origin main
-git switch main
-git merge --ff-only origin/main
-test -z "$(git status --porcelain)"
-release_sha=$(git rev-parse HEAD)
-test "$release_sha" = "$(git rev-parse origin/main)"
+test -z "$(git status --porcelain)" &&
+  git fetch origin main &&
+  git switch main &&
+  git merge --ff-only origin/main &&
+  test -z "$(git status --porcelain)" &&
+  release_sha=$(git rev-parse HEAD) &&
+  test "$release_sha" = "$(git rev-parse origin/main)"
 ```
 
 Require a successful `main` workflow whose head SHA is exactly `release_sha`. Then run the
