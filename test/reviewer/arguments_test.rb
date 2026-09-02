@@ -97,6 +97,18 @@ module Reviewer
       end
     end
 
+    def test_accepts_compact_file_values_ending_in_f_before_output_options
+      json_arguments = Arguments.new(%w[-fprofile.pdf --json])
+      summary_arguments = Arguments.new(%w[-fmain.tf --format summary])
+
+      refute json_arguments.invalid_files_option?
+      assert_equal %w[profile.pdf], json_arguments.files.raw
+      assert json_arguments.json?
+      refute summary_arguments.invalid_files_option?
+      assert_equal %w[main.tf], summary_arguments.files.raw
+      assert_equal :summary, summary_arguments.format
+    end
+
     def test_rejects_a_files_option_followed_by_another_known_option
       assert Arguments.new(%w[-f --json]).invalid_files_option?
       assert Arguments.new(%w[-f --tags ruby]).invalid_files_option?

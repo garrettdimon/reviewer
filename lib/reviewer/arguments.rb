@@ -192,6 +192,7 @@ module Reviewer
 
     def files_option_awaiting_value?(token)
       return true if %w[-f --files].include?(token)
+      return false if token.start_with?('-f')
 
       token.match?(/\A-[^-]+f\z/) && known_option_token?(token)
     end
