@@ -293,7 +293,7 @@ project = ARGV.fetch(0)
 payload = JSON.parse(File.read(File.join(project, 'result.json')))
 tools = payload.fetch('tools').to_h { |tool| [tool.fetch('tool'), tool] }
 
-abort 'Review did not succeed' unless payload['success']
+abort 'Review did not succeed' unless payload['success'] == true
 abort 'File-aware tool did not pass' unless tools.dig('file_aware', 'state') == 'passed'
 abort 'Broad tool was not skipped' unless tools.dig('broad', 'state') == 'skipped'
 abort 'Unexpected skipped count' unless payload.dig('summary', 'skipped') == 1
