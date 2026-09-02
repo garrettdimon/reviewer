@@ -208,14 +208,16 @@ the GitHub Release. Treat the tag push as the irreversible publication trigger a
 authorization immediately before running it:
 
 ```bash
-git fetch origin main
-release_sha=$(git rev-parse HEAD)
-test "$release_sha" = "$(git rev-parse origin/main)"
-test -z "$(git status --porcelain)"
-git tag "$tag" "$release_sha"
-tag_ref_sha=$(git rev-parse "refs/tags/$tag")
-tag_target_sha=$(git rev-parse "refs/tags/$tag^{}")
-git push origin "refs/tags/$tag:refs/tags/$tag"
+tag=vX.Y.Z
+git fetch origin main &&
+  release_sha=$(git rev-parse HEAD) &&
+  origin_main_sha=$(git rev-parse origin/main) &&
+  test "$release_sha" = "$origin_main_sha" &&
+  test -z "$(git status --porcelain)" &&
+  git tag "$tag" "$release_sha" &&
+  tag_ref_sha=$(git rev-parse "refs/tags/$tag") &&
+  tag_target_sha=$(git rev-parse "refs/tags/$tag^{}") &&
+  git push origin "refs/tags/$tag:refs/tags/$tag"
 ```
 
 Record `release_sha`, `tag_ref_sha`, and `tag_target_sha` with the release evidence. Existing modern
