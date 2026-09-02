@@ -2,6 +2,8 @@
 
 require 'test_helper'
 require 'open3'
+require 'yaml'
+load File.expand_path('../Rakefile', __dir__)
 
 class ReleaseTest < Minitest::Test
   def test_dry_run_lists_the_packaged_files
@@ -39,6 +41,93 @@ class ReleaseTest < Minitest::Test
 
   def test_release_check_accepts_a_dated_changelog_section_with_notes
     refute_includes release_check_errors.join("\n"), 'CHANGELOG'
+  end
+
+  def test_release_tag_must_match_the_version
+    checker = ReleaseChecker.new('1.1.1')
+
+    assert_includes checker.validate_tag('v1.1.0'), "Tag 'v1.1.0' does not match version 1.1.1"
+  end
+
+  def test_release_notes_match_the_exact_version_heading
+    changelog = <<~CHANGELOG
+      ## [1x1x1] - 2026-09-01
+
+      Wrong notes
+
+      ## [1.1.1] - 2026-09-02
+
+      Right notes
+    CHANGELOG
+
+    checker = ReleaseChecker.new('1.1.1', changelog: changelog)
+    assert_equal 'Right notes', checker.release_notes
+  end
+
+  def test_release_notes_use_the_dated_heading_that_was_validated
+    changelog = <<~CHANGELOG
+      ## [1.1.1] draft
+
+      Unvalidated notes
+
+      ## [1.1.1] - 2026-09-02
+
+      Validated notes
+    CHANGELOG
+
+    checker = ReleaseChecker.new('1.1.1', changelog: changelog)
+
+    assert_empty checker.validate_tag('v1.1.1')
+    assert_equal 'Validated notes', checker.release_notes
+  end
+
+  def test_release_tag_rejects_an_impossible_changelog_date
+    changelog = <<~CHANGELOG
+      ## [1.1.1] - 2026-99-99
+
+      Invalid date
+    CHANGELOG
+
+    checker = ReleaseChecker.new('1.1.1', changelog: changelog)
+
+    assert_includes checker.validate_tag('v1.1.1'), 'CHANGELOG.md has no dated entry for version 1.1.1'
+    assert_empty checker.release_notes
+  end
+
+  def test_release_notes_task_prints_the_validated_notes
+    stdout, stderr, status = Open3.capture3(
+      { 'RELEASE_TAG' => "v#{Reviewer::VERSION}" },
+      'bundle', 'exec', 'rake', 'release:notes'
+    )
+
+    assert status.success?, stderr
+    assert_equal ReleaseChecker.new(Reviewer::VERSION).release_notes, stdout.strip
+  end
+
+  # GitHub Actions cannot run locally, so this protects the workflow's security boundary structurally.
+  def test_release_workflow_pins_actions
+    actions = release_workflow.fetch('jobs').values.flat_map do |job|
+      job.fetch('steps').filter_map { |step| step['uses'] }
+    end
+
+    assert actions.all? { |action| action.match?(/\A[^@]+@[0-9a-f]{40}\z/) }, actions.inspect
+  end
+
+  def test_release_workflow_limits_permissions
+    workflow = release_workflow
+
+    assert_equal({}, workflow.fetch('permissions'))
+    assert_equal({ 'contents' => 'read' }, workflow.dig('jobs', 'validate', 'permissions'))
+    assert_equal({ 'id-token' => 'write', 'contents' => 'read' }, workflow.dig('jobs', 'publish', 'permissions'))
+    assert_equal({ 'contents' => 'write' }, workflow.dig('jobs', 'github-release', 'permissions'))
+  end
+
+  def test_release_workflow_does_not_interpolate_github_values_in_shell
+    shell_commands = release_workflow.fetch('jobs').values.flat_map do |job|
+      job.fetch('steps').filter_map { |step| step['run'] }
+    end
+
+    refute(shell_commands.any? { |command| command.include?('${{ github.') })
   end
 
   def test_dry_run_preserves_an_existing_gem
@@ -83,5 +172,9 @@ class ReleaseTest < Minitest::Test
       refute_nil listing, "release:dry_run printed no package listing:\n#{stdout}"
       listing.lines.map(&:chomp)
     end
+  end
+
+  def release_workflow
+    @release_workflow ||= YAML.load_file('.github/workflows/release.yml')
   end
 end

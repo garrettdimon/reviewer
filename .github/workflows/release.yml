@@ -5,18 +5,24 @@ on:
     tags:
       - 'v*'
 
+permissions: {}
+
 jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       with:
         fetch-depth: 0
     - name: Verify tag is on main branch
+      env:
+        TAG_COMMIT: ${{ github.sha }}
       run: |
-        TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref }})
-        if ! git merge-base --is-ancestor $TAG_COMMIT origin/main; then
+        git fetch origin main
+        if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/main; then
           echo "::error::Release tags must point to a commit on the main branch."
           echo "::error::This ensures the code has passed CI before release."
           exit 1
@@ -28,20 +34,33 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     environment: rubygems
+    outputs:
+      release-notes: ${{ steps.metadata.outputs.release-notes }}
     permissions:
       id-token: write
       contents: read
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
     - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: '3.4'
         bundler-cache: true
+    - name: Validate release metadata
+      id: metadata
+      env:
+        RELEASE_TAG: ${{ github.ref_name }}
+      run: |
+        delimiter="reviewer_release_notes_$(openssl rand -hex 16)"
+        {
+          echo "release-notes<<$delimiter"
+          bundle exec rake release:notes
+          echo "$delimiter"
+        } >> "$GITHUB_OUTPUT"
     - name: Build gem
       run: gem build reviewer.gemspec
     - name: Push to RubyGems
-      uses: rubygems/release-gem@v1
+      uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
   github-release:
     name: GitHub Release
@@ -50,38 +69,19 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v4
     - name: Extract version from tag
       id: version
-      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-    - name: Extract changelog for version
-      id: changelog
-      run: |
-        # Extract the section for this version from CHANGELOG.md
-        version="${{ steps.version.outputs.version }}"
-        changelog=$(awk -v ver="$version" '
-          /^## \[/ {
-            if (found) exit
-            if ($0 ~ "\\[" ver "\\]") found=1
-            next
-          }
-          found { print }
-        ' CHANGELOG.md)
-
-        # Handle multi-line output
-        {
-          echo "content<<EOF"
-          echo "$changelog"
-          echo "EOF"
-        } >> $GITHUB_OUTPUT
+      env:
+        RELEASE_TAG: ${{ github.ref_name }}
+      run: echo "version=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
       with:
         name: v${{ steps.version.outputs.version }}
         body: |
           ## Changes
 
-          ${{ steps.changelog.outputs.content }}
+          ${{ needs.publish.outputs.release-notes }}
 
           ## Installation
 
