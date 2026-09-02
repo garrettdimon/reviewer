@@ -50,7 +50,7 @@ Change only the release metadata:
 4. Include upgrade instructions only when users must take action.
 
 Do not include runtime fixes, release infrastructure, or unrelated documentation. Change this guide
-only when the reusable release process itself changes, preferably in a separate pull request.
+only when the reusable release process itself changes, in a separate pull request.
 
 Validate and stage the release metadata:
 
