@@ -113,6 +113,25 @@ class ReleaseTest < Minitest::Test
     assert actions.all? { |action| action.match?(/\A[^@]+@[0-9a-f]{40}\z/) }, actions.inspect
   end
 
+  # Action runtimes come from external metadata, so approved revisions are a structural contract.
+  def test_workflows_use_supported_node_24_actions
+    supported_revisions = {
+      'actions/checkout' => '3d3c42e5aac5ba805825da76410c181273ba90b1', # v7.0.1
+      'softprops/action-gh-release' => 'e598afbe1493e6b1bafb1f389cabb956eab91231' # v3.0.3
+    }
+
+    Dir['.github/workflows/*.yml'].each do |path|
+      YAML.load_file(path).fetch('jobs').each_value do |job|
+        job.fetch('steps').filter_map { |step| step['uses'] }.each do |action|
+          name, revision = action.split('@', 2)
+          next unless supported_revisions.key?(name)
+
+          assert_equal supported_revisions.fetch(name), revision, "#{path} uses an unsupported #{name} revision"
+        end
+      end
+    end
+  end
+
   def test_release_workflow_limits_permissions
     workflow = release_workflow
 
