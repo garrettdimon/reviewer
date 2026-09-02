@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Keep explicit file-scoped runs focused, and reject empty file options instead of running broadly.
+
 ## [1.1.0] - 2026-08-28
 
 Reviewer 1.1 makes review outcomes more precise and dependable for people and automated consumers.

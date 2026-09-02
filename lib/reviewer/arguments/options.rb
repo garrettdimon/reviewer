@@ -15,9 +15,10 @@ module Reviewer
       #
       # @return [void]
       # :reek:TooManyStatements -- a flag declaration list, not branching logic
-      def configure(opts)
+      def configure(opts, files_callback: nil)
         # Narrowing what gets reviewed
-        opts.array '-f', '--files', 'a list of comma-separated files or paths', delimiter: ',', default: []
+        opts.array '-f', '--files', 'a list of comma-separated files or paths',
+                   delimiter: ',', default: [], &files_callback
         opts.array '-t', '--tags', 'a list of comma-separated tags', delimiter: ',', default: []
 
         # Selecting how results are displayed

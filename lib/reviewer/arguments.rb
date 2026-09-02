@@ -42,7 +42,11 @@ module Reviewer
     # @return [self]
     def initialize(options = ARGV, output: Output.new)
       @output = output
-      @options = Slop.parse(options) { |opts| Options.configure(opts) }
+      @raw_options = options.to_a.dup
+      @invalid_files_option = false
+      @parser = Slop::Options.new
+      Options.configure(@parser, files_callback: files_validation_callback)
+      @options = @parser.parse(normalized_options)
     end
 
     private
@@ -105,6 +109,16 @@ module Reviewer
     # @return [Boolean] true if JSON output mode is requested
     def json? = options[:json]
 
+    # Whether the --capabilities flag was passed
+    #
+    # @return [Boolean] true if capabilities were requested
+    def capabilities? = options[:capabilities]
+
+    # Whether a files option was supplied without a usable value
+    #
+    # @return [Boolean] true when any -f/--files occurrence is empty
+    def invalid_files_option? = @invalid_files_option
+
     # The output format for results
     #
     # @return [Symbol] the output format (:streaming, :summary, or :json)
@@ -114,7 +128,7 @@ module Reviewer
       value = options[:format].to_sym
       return value if KNOWN_FORMATS.include?(value)
 
-      session_formatter.invalid_format(options[:format], KNOWN_FORMATS)
+      session_formatter.invalid_format(options[:format], KNOWN_FORMATS) unless invalid_files_option?
       :streaming
     end
 
@@ -132,6 +146,54 @@ module Reviewer
       return Runner::Strategies::Captured unless streaming?
 
       multiple_tools ? Runner::Strategies::Captured : Runner::Strategies::Passthrough
+    end
+
+    private
+
+    def files_validation_callback
+      previous_file_count = 0
+      lambda do |files|
+        current_files = Array(files)
+        file_count = current_files.length
+        new_files = current_files.drop(previous_file_count)
+        @invalid_files_option = true if file_count <= previous_file_count ||
+                                        new_files.all? { |file| file.strip.empty? }
+        previous_file_count = file_count
+      end
+    end
+
+    def normalized_options
+      parsing_options = true
+      @raw_options.each_with_index.flat_map do |token, index|
+        parsing_options = false if token == '--'
+        missing_value = parsing_options && files_option_awaiting_value?(token) &&
+                        known_option_token?(@raw_options[index + 1])
+        normalized_token = parsing_options ? normalize_compact_files_option(token) : token
+
+        missing_value ? [normalized_token, ''] : [normalized_token]
+      end
+    end
+
+    def normalize_compact_files_option(token)
+      return token unless token.start_with?('-f') && token.length > 2 && !token.start_with?('-f=')
+
+      "-f=#{token.delete_prefix('-f')}"
+    end
+
+    def known_option_token?(token)
+      return false unless token&.start_with?('-') && token != '--'
+
+      Slop.parse([token]) { |opts| Options.configure(opts) }
+      true
+    rescue Slop::UnknownOption
+      false
+    end
+
+    def files_option_awaiting_value?(token)
+      return true if %w[-f --files].include?(token)
+      return false if token.start_with?('-f')
+
+      token.match?(/\A-[^-]+f\z/) && known_option_token?(token)
     end
   end
 end

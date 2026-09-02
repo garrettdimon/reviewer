@@ -63,9 +63,10 @@ File selectors resolve paths from Git:
 | `untracked` | Untracked, non-ignored files |
 
 `failed` selects tools whose last executed review failed and, when available, reuses each tool's
-stored failed file paths. A tool remains selected until an executed review records a pass. Skipped,
-missing, formatted, and not-run tools leave that review history unchanged, so a passing scoped run
-can coexist with tools still selected by `rvw failed`.
+stored failed file paths. File-aware tools retry those paths; tools without file support retry their
+full command. A tool remains selected until an executed review records a pass. Skipped, missing,
+formatted, and not-run tools leave that review history unchanged, so a passing scoped run can coexist
+with tools still selected by `rvw failed`.
 
 Selections compose:
 
@@ -74,6 +75,10 @@ rvw rubocop staged
 rvw -t ruby modified
 rvw tests -f test/reviewer_test.rb
 ```
+
+Explicit `-f`, `staged`, `unstaged`, `modified`, and `untracked` requests skip tools without a
+`files:` configuration instead of running their full-project command. Bare `rvw` remains the full
+configured review.
 
 The [configuration reference](configuration.md#file-targeting) describes filtering, file-scoped
 commands, and Minitest/RSpec source-to-test mapping.
@@ -117,7 +122,7 @@ State describes the terminal disposition Reviewer acts on. For executed failures
 |---|---|---:|---|
 | `passed` | The command executed within its configured threshold | `true` | None |
 | `failed` | The command executed outside its configured threshold | `false` | Exit `1` |
-| `skipped` | Requested files did not match the tool | `false` | None |
+| `skipped` | The tool cannot accept the file scope, or no requested files matched | `false` | None |
 | `missing` | The executable was unavailable | `false` | None in 1.1 |
 | `not_run` | An earlier tool failed and fail-fast stopped the batch | `false` | None |
 
@@ -161,7 +166,10 @@ Every summary contains `total`, all five state counts, and `duration`; the state
 |---|---|---|
 | Nonempty report | `schema_version`, `success`, `summary`, `tools` | `state`, `message`, `error` |
 | Empty report | `schema_version`, `state: "empty"`, `success: true`, `message`, zero summary, `tools: []` | `error` |
-| Selector error | `schema_version`, `state: "error"`, `error`, zero summary, `tools: []` | `success`, `message` |
+| Usage error | `schema_version`, `state: "error"`, `error`, zero summary, `tools: []` | `success`, `message` |
+
+Usage errors include `error.code: "unrecognized_selector"` for an unknown tool, tag, or keyword and
+`error.code: "missing_files"` for an empty or missing `-f`/`--files` value.
 
 | Tool state | Execution fields | Compatibility flags |
 |---|---|---|
@@ -175,13 +183,31 @@ tool now has `success: false`, and its unavailable execution fields are null ins
 omitted. Valid 1.x `Runner::Result.new` keyword calls and the legacy true-valued payload flags remain
 supported through the 1.x line.
 
+## File-scoped behavior
+
+| Request | Tools with `files:` | Tools without `files:` |
+|---|---|---|
+| `rvw` | Run without a file filter | Run without a file filter |
+| `rvw -f app/a.rb` | Run with `app/a.rb` | Skip |
+| `rvw staged untracked` | Run with the deduplicated union | Skip |
+| `rvw staged` with no staged files | Do not run | Do not run |
+| `rvw failed` | Use stored failed paths when available; otherwise retry without a file filter | Retry without a file filter |
+| `rvw failed staged` | Use the newly resolved staged paths instead of stored paths | Skip |
+| `rvw failed -f app/a.rb` | Use `app/a.rb` instead of stored paths | Skip |
+
+Repeated `-f` options and Git selectors compose. For review and format execution, every `-f` or
+`--files` occurrence requires at least one path; an empty or missing value exits 2 without running
+any tool. Informational `--help` and `--version` requests, plus the `init` and `doctor` control
+commands, exit before file-scope validation. A valid Git selector that finds no files is instead a
+successful no-op because the selector itself was complete.
+
 ## Exit statuses
 
 | Status | Meaning |
 |---|---|
 | `0` | Every executed tool passed; skipped, missing, and not-run tools do not fail the run |
 | `1` | At least one executed tool failed |
-| `2` | The request used an unrecognized tool, tag, or keyword |
+| `2` | The request used an unrecognized selector or an empty `-f`/`--files` option |
 
 A tool may pass with a nonzero process status when its `commands.max_exit_status` allows it. Reviewer
 returns its own status above instead of forwarding the tool's process status.

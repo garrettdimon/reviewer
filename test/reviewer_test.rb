@@ -78,6 +78,34 @@ module Reviewer
       end
     end
 
+    def test_missing_files_option_precedes_first_time_setup
+      with_missing_config do
+        out, _err = with_argv('-f') do
+          capture_subprocess_io do
+            error = assert_raises(SystemExit) { Reviewer.review }
+            assert_equal Session::USAGE_ERROR, error.status
+          end
+        end
+
+        assert_match(/requires at least one file or path/, out)
+        refute_match(/setting up Reviewer/i, out)
+      end
+    end
+
+    def test_json_missing_files_option_precedes_first_time_setup
+      with_missing_config do
+        out, _err = with_argv('-f', '--json') do
+          capture_subprocess_io do
+            error = assert_raises(SystemExit) { Reviewer.review }
+            assert_equal Session::USAGE_ERROR, error.status
+          end
+        end
+        payload = JSON.parse(out)
+
+        assert_equal missing_files_payload, payload
+      end
+    end
+
     def test_runs_setup_when_config_missing_and_user_says_yes
       with_missing_config do
         stub_prompt = build_tty_prompt("y\n")
@@ -226,6 +254,29 @@ module Reviewer
       assert_match(/"keywords"/, out)
     end
 
+    def test_missing_files_option_precedes_capabilities
+      out, _err = with_argv('-f', '--capabilities') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end
+      end
+
+      assert_match(/requires at least one file or path/, out)
+      refute_match(/"version"/, out)
+    end
+
+    def test_json_missing_files_option_precedes_short_capabilities
+      out, _err = with_argv('-f', '-c', '--json') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end
+      end
+
+      assert_equal missing_files_payload, JSON.parse(out)
+    end
+
     private
 
     def with_argv(*args)
@@ -245,6 +296,75 @@ module Reviewer
       tty_input = StringIO.new(input_text)
       tty_input.define_singleton_method(:tty?) { true }
       Prompt.new(input: tty_input, output: StringIO.new)
+    end
+
+    def missing_files_payload
+      {
+        'schema_version' => 1,
+        'state' => 'error',
+        'error' => {
+          'code' => 'missing_files',
+          'message' => 'The --files option requires at least one file or path.'
+        },
+        'summary' => Report.empty_summary.transform_keys(&:to_s),
+        'tools' => []
+      }
+    end
+  end
+
+  class ArgumentPrecedenceTest < Minitest::Test
+    def setup
+      ARGV.clear
+      Reviewer.instance_variable_set(:@arguments, nil)
+    end
+
+    def test_help_precedes_a_missing_files_error
+      output = with_argv('-f', '--help') { capture_subprocess_io { Reviewer.review }.first }
+
+      assert_match(/Usage: rvw/, output)
+      refute_match(/requires at least one file or path/, output)
+    end
+
+    def test_version_precedes_a_missing_files_error
+      output = with_argv('-f', '--version') { capture_subprocess_io { Reviewer.review }.first }
+
+      assert_match(/#{Reviewer::VERSION}/, output)
+      refute_match(/requires at least one file or path/, output)
+    end
+
+    def test_missing_files_option_precedes_capabilities_in_either_order
+      output = with_argv('--capabilities', '-f') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end.first
+      end
+
+      assert_match(/requires at least one file or path/, output)
+      refute_match(/"version"/, output)
+    end
+
+    def test_capabilities_after_the_option_terminator_are_positional
+      output = with_argv('--', '--capabilities') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end.first
+      end
+
+      assert_match(/Unrecognized: --capabilities/, output)
+      refute_match(/"version"/, output)
+    end
+
+    private
+
+    def with_argv(*args)
+      ARGV.replace(args)
+      Reviewer.instance_variable_set(:@arguments, nil)
+      yield
+    ensure
+      ARGV.clear
+      Reviewer.instance_variable_set(:@arguments, nil)
     end
   end
 end

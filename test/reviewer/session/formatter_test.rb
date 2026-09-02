@@ -40,6 +40,33 @@ module Reviewer
         )
         assert_empty parsed['tools']
       end
+
+      def test_missing_files_option
+        out, _err = capture_subprocess_io { formatter.missing_files_option }
+
+        assert_match(/The --files option requires at least one file or path\./, out)
+      end
+
+      def test_missing_files_option_json_uses_the_error_envelope
+        out, _err = capture_subprocess_io { formatter.missing_files_option_json }
+
+        assert_equal missing_files_payload, JSON.parse(out)
+      end
+
+      private
+
+      def missing_files_payload
+        {
+          'schema_version' => 1,
+          'state' => 'error',
+          'error' => {
+            'code' => 'missing_files',
+            'message' => 'The --files option requires at least one file or path.'
+          },
+          'summary' => Report.empty_summary.transform_keys(&:to_s),
+          'tools' => []
+        }
+      end
     end
   end
 end

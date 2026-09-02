@@ -34,7 +34,7 @@ module Reviewer
       runnable_tools = matching_tools
       elapsed_time = Benchmark.realtime do
         failed_index = runnable_tools.find_index { |tool| run_tool(tool).failed? }
-        record_not_run(runnable_tools.drop(failed_index + 1)) if failed_index
+        record_remaining(runnable_tools.drop(failed_index + 1)) if failed_index
       end
 
       @report.record_duration(elapsed_time)
@@ -43,8 +43,13 @@ module Reviewer
 
     private
 
-    def record_not_run(tools)
+    def record_remaining(tools)
       tools.each do |tool|
+        if Command.new(tool, command_type, context: context).skip?
+          run_tool(tool)
+          next
+        end
+
         result = Runner::Result.not_run(tool: tool, command_type: command_type)
         @report.add(result)
       end

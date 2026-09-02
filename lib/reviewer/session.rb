@@ -45,9 +45,15 @@ module Reviewer
     def history = context.history
 
     def run_tools(command_type)
+      return reject_invalid_files_option if arguments.invalid_files_option?
       return reject_unrecognized_selectors if unrecognized_selectors.any?
 
       json_output? ? run_json(command_type) : run_text(command_type)
+    end
+
+    def reject_invalid_files_option
+      json_output? ? formatter.missing_files_option_json : formatter.missing_files_option
+      USAGE_ERROR
     end
 
     def run_json(command_type)
