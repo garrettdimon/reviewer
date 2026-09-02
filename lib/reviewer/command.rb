@@ -75,7 +75,7 @@ module Reviewer
 
     # Determines if this command should be skipped because files were requested but none match
     #
-    # @return [Boolean] true if files were requested but resolution left none for this tool
+    # @return [Boolean] true if the tool cannot accept an explicit file scope or no files match it
     def skip?
       return true if explicit_files.any? && !tool.supports_files?
 

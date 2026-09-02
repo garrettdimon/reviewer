@@ -122,7 +122,7 @@ State describes the terminal disposition Reviewer acts on. For executed failures
 |---|---|---:|---|
 | `passed` | The command executed within its configured threshold | `true` | None |
 | `failed` | The command executed outside its configured threshold | `false` | Exit `1` |
-| `skipped` | Requested files did not match the tool | `false` | None |
+| `skipped` | The tool cannot accept the file scope, or no requested files matched | `false` | None |
 | `missing` | The executable was unavailable | `false` | None in 1.1 |
 | `not_run` | An earlier tool failed and fail-fast stopped the batch | `false` | None |
 
@@ -166,7 +166,10 @@ Every summary contains `total`, all five state counts, and `duration`; the state
 |---|---|---|
 | Nonempty report | `schema_version`, `success`, `summary`, `tools` | `state`, `message`, `error` |
 | Empty report | `schema_version`, `state: "empty"`, `success: true`, `message`, zero summary, `tools: []` | `error` |
-| Selector error | `schema_version`, `state: "error"`, `error`, zero summary, `tools: []` | `success`, `message` |
+| Usage error | `schema_version`, `state: "error"`, `error`, zero summary, `tools: []` | `success`, `message` |
+
+Usage errors include `error.code: "unrecognized_selector"` for an unknown tool, tag, or keyword and
+`error.code: "missing_files"` for an empty or missing `-f`/`--files` value.
 
 | Tool state | Execution fields | Compatibility flags |
 |---|---|---|
@@ -188,7 +191,8 @@ supported through the 1.x line.
 | `rvw -f app/a.rb` | Run with `app/a.rb` | Skip |
 | `rvw staged untracked` | Run with the deduplicated union | Skip |
 | `rvw staged` with no staged files | Do not run | Do not run |
-| `rvw failed` | Use stored failed paths when available | Retry without a file filter |
+| `rvw failed` | Use stored failed paths when available; otherwise retry without a file filter | Retry without a file filter |
+| `rvw failed staged` | Use the newly resolved staged paths instead of stored paths | Skip |
 | `rvw failed -f app/a.rb` | Use `app/a.rb` instead of stored paths | Skip |
 
 Repeated `-f` options and Git selectors compose. Every `-f` or `--files` occurrence requires at
