@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: read
     steps:
-    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 0
     - name: Verify tag is on main branch
@@ -40,7 +40,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Set up Ruby
       uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
@@ -75,7 +75,7 @@ jobs:
         RELEASE_TAG: ${{ github.ref_name }}
       run: echo "version=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+      uses: softprops/action-gh-release@e598afbe1493e6b1bafb1f389cabb956eab91231 # v3.0.3
       with:
         name: v${{ steps.version.outputs.version }}
         body: |
