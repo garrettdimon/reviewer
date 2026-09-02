@@ -73,7 +73,7 @@ module Reviewer
       @target_files ||= tool.resolve_files(requested_files)
     end
 
-    # Determines if this command should be skipped because files were requested but none match
+    # Determines if this command should be skipped for the requested file scope
     #
     # @return [Boolean] true if the tool cannot accept an explicit file scope or no files match it
     def skip?
