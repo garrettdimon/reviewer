@@ -276,6 +276,18 @@ module Reviewer
       assert_equal expected, @report.results.drop(1).map(&:to_h)
     end
 
+    def test_file_scoped_batch_still_reports_unsupported_tools_as_skipped_after_a_failure
+      arguments = Arguments.new(%w[-f lib/reviewer.rb])
+      context = default_context(arguments: arguments)
+      tools = %i[file_targeting_failing_command list file_targeting_list].map { |key| build_tool(key) }
+
+      capture_subprocess_io do
+        @report = Batch.new(:review, tools, strategy: Runner::Strategies::Captured, context: context).run
+      end
+
+      assert_equal %i[failed skipped not_run], @report.results.map(&:state)
+    end
+
     def test_does_not_record_tools_stopped_after_a_failure
       unrun_tool = build_tool(:minimum_viable_tool)
       record_called = false

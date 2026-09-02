@@ -78,6 +78,15 @@ failing_command:
   commands:
     review: 'exit 1'
 
+# Intentionally Failing Command with File Targeting
+file_targeting_failing_command:
+  disabled: true
+  commands:
+    review: 'exit 1'
+  files:
+    flag: ''
+    separator: ' '
+
 # Intentionally Missing Command
 # Uses the Unix exit code for 'command not found'
 missing_command:
