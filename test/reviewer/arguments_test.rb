@@ -58,6 +58,9 @@ module Reviewer
     def test_rejects_an_empty_files_option
       assert Arguments.new(['-f', '']).invalid_files_option?
       assert Arguments.new(['--files=']).invalid_files_option?
+      assert Arguments.new(['-f,']).invalid_files_option?
+      assert Arguments.new(%w[-jf]).invalid_files_option?
+      assert Arguments.new(%w[-jfr]).invalid_files_option?
     end
 
     def test_rejects_an_empty_files_option_among_repeated_values
@@ -66,17 +69,31 @@ module Reviewer
     end
 
     def test_accepts_every_supported_files_option_form
-      arguments = [
-        %w[-f app/a.rb],
-        %w[--files app/a.rb],
-        %w[-f=app/a.rb],
-        %w[--files=app/a.rb],
-        %w[-fapp/a.rb],
-        %w[-f app/a.rb,app/b.rb],
-        %w[-f app/a.rb -f app/b.rb]
-      ]
+      arguments = {
+        %w[-f app/a.rb] => %w[app/a.rb],
+        %w[--files app/a.rb] => %w[app/a.rb],
+        %w[-f=app/a.rb] => %w[app/a.rb],
+        %w[--files=app/a.rb] => %w[app/a.rb],
+        %w[-fapp/a.rb] => %w[app/a.rb],
+        %w[-jf app/a.rb] => %w[app/a.rb],
+        %w[-jf=app/a.rb] => %w[app/a.rb],
+        %w[-f app/a.rb,app/b.rb] => %w[app/a.rb app/b.rb],
+        %w[-f app/a.rb -f app/b.rb] => %w[app/a.rb app/b.rb],
+        %w[-f -generated.rb] => %w[-generated.rb],
+        %w[-f=-generated.rb] => %w[-generated.rb]
+      }
 
-      arguments.each { |args| refute Arguments.new(args).invalid_files_option?, args.inspect }
+      arguments.each do |args, files|
+        parsed = Arguments.new(args)
+
+        refute parsed.invalid_files_option?, args.inspect
+        assert_equal files, parsed.files.raw, args.inspect
+      end
+    end
+
+    def test_rejects_a_files_option_followed_by_another_known_option
+      assert Arguments.new(%w[-f --json]).invalid_files_option?
+      assert Arguments.new(%w[-f --tags ruby]).invalid_files_option?
     end
 
     def test_exposes_leftover_arguments_as_keywords
@@ -159,6 +176,16 @@ module Reviewer
     def test_json_format_survives_a_missing_files_value
       assert_equal :json, Arguments.new(%w[-f --format json]).format
       assert_equal :json, Arguments.new(%w[-f --format=json]).format
+    end
+
+    def test_repeated_formats_keep_last_value_precedence
+      assert_equal :json, Arguments.new(%w[--format summary --format json]).format
+      assert_equal :summary, Arguments.new(%w[--format json --format summary]).format
+    end
+
+    def test_option_terminator_keeps_following_output_flags_positional
+      refute Arguments.new(%w[-- --json]).json?
+      assert_equal :summary, Arguments.new(%w[--format summary -- --format json]).format
     end
 
     # --format flag tests

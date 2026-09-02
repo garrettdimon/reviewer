@@ -32,7 +32,9 @@ module Reviewer
       FileUtils.cp(FIXTURES.join('file_scoped_cli.yml'), File.join(directory, '.reviewer.yml'))
       FileUtils.cp(FIXTURES.join('file_scoped_cli.gitignore'), File.join(directory, '.gitignore'))
       FileUtils.cp(FIXTURES.join('record_invocation.rb'), directory)
-      %w[staged_only.rb unstaged_only.rb both.rb].each { |file| FileUtils.touch(File.join(directory, file)) }
+      %w[staged_only.rb unstaged_only.rb both.rb -generated.rb].each do |file|
+        FileUtils.touch(File.join(directory, file))
+      end
     end
 
     def initialize_repository(directory)
@@ -56,6 +58,8 @@ module Reviewer
       assert_run(directory, [], expected: [invocation('broad'), invocation('file_aware')])
       assert_run(directory, %w[-f staged_only.rb -f untracked.rb],
                  expected: [invocation('file_aware', 'staged_only.rb', 'untracked.rb')], skipped: 1)
+      assert_run(directory, %w[-f -generated.rb],
+                 expected: [invocation('file_aware', '-generated.rb')], skipped: 1)
       assert_git_selectors(directory)
       assert_run(directory, %w[broad -f staged_only.rb], expected: [], skipped: 1)
     end
@@ -82,6 +86,8 @@ module Reviewer
     def assert_empty_scope_matrix(directory)
       assert_usage_error(directory, %w[-f])
       assert_usage_error(directory, ['-f', ''])
+      assert_usage_error(directory, ['-f,'])
+      assert_usage_error(directory, %w[-jf])
       commit_changes(directory)
       assert_empty_git_scope(directory)
     end

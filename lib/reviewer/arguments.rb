@@ -43,7 +43,16 @@ module Reviewer
     def initialize(options = ARGV, output: Output.new)
       @output = output
       @raw_options = options.to_a.dup
-      @options = Slop.parse(options) { |opts| Options.configure(opts) }
+      @invalid_files_option = false
+      previous_file_count = 0
+      files_callback = lambda do |files|
+        file_count = Array(files).length
+        @invalid_files_option = true if file_count <= previous_file_count
+        previous_file_count = file_count
+      end
+      @parser = Slop::Options.new
+      Options.configure(@parser, files_callback: files_callback)
+      @options = @parser.parse(options)
     end
 
     private
@@ -104,20 +113,19 @@ module Reviewer
     # Whether to output results as JSON
     #
     # @return [Boolean] true if JSON output mode is requested
-    def json? = options[:json] || @raw_options.intersect?(%w[-j --json])
+    def json?
+      return options[:json] unless invalid_files_option?
+
+      options[:json] || raw_option_tokens.any? { |token| json_option_token?(token) }
+    end
 
     # Whether a files option was supplied without a usable value
     #
     # @return [Boolean] true when any -f/--files occurrence is empty
     def invalid_files_option?
-      @raw_options.each_index.any? do |index|
-        option = @raw_options[index]
-
-        if %w[-f --files].include?(option)
-          invalid_file_value?(@raw_options[index + 1], reject_option: true)
-        elsif option.start_with?('-f=', '--files=')
-          invalid_file_value?(option.split('=', 2).last)
-        end
+      @invalid_files_option || raw_option_tokens.each_index.any? do |index|
+        files_option_awaiting_value?(raw_option_tokens[index]) &&
+          known_option_token?(raw_option_tokens[index + 1])
       end
     end
 
@@ -127,7 +135,7 @@ module Reviewer
     def format
       return :json if json?
 
-      raw_value = provided_format || options[:format]
+      raw_value = invalid_files_option? ? recovered_format || options[:format] : options[:format]
       value = raw_value.to_sym
       return value if KNOWN_FORMATS.include?(value)
 
@@ -153,19 +161,55 @@ module Reviewer
 
     private
 
-    def invalid_file_value?(value, reject_option: false)
-      return true if value.nil? || (reject_option && value.start_with?('-'))
+    def raw_option_tokens = @raw_option_tokens ||= @raw_options.take_while { |token| token != '--' }
 
-      value.split(',').all? { |path| path.strip.empty? }
+    def known_option_token?(token)
+      return false unless token&.start_with?('-')
+
+      exact_option_token?(token) || long_option_token?(token) || short_option_token?(token)
     end
 
-    def provided_format
-      @raw_options.each_with_index do |option, index|
-        return @raw_options[index + 1] if option == '--format'
-        return option.split('=', 2).last if option.start_with?('--format=')
-      end
+    def exact_option_token?(token) = parser_options.any? { |option| option.flags.include?(token) }
 
-      nil
+    def long_option_token?(token)
+      parser_options.any? do |option|
+        option.flags.any? { |flag| flag.start_with?('--') && token.start_with?("#{flag}=") }
+      end
+    end
+
+    def short_option_token?(token)
+      return false unless token.match?(/\A-[^-]{2,}\z/)
+
+      first = parser_options.find { |option| option.flags.include?(token[0, 2]) }
+      return true if first&.expects_argument?
+
+      token.delete_prefix('-').chars.all? { |character| short_flags.include?("-#{character}") }
+    end
+
+    def parser_options = @parser_options ||= @parser.to_a
+    def short_flags = @short_flags ||= parser_options.flat_map(&:flags).grep(/\A-[^-]\z/)
+
+    def files_option_awaiting_value?(token)
+      return true if %w[-f --files].include?(token)
+
+      token.match?(/\A-[^-]+f\z/) && short_option_token?(token)
+    end
+
+    def json_option_token?(token)
+      return true if %w[-j --json].include?(token)
+
+      token.match?(/\A-[^-]{2,}\z/) && short_option_token?(token) && token.include?('j')
+    end
+
+    def recovered_format
+      raw_option_tokens.each_with_index.filter_map do |option, index|
+        if option == '--format'
+          raw_option_tokens[index + 1]
+        elsif option.start_with?('--format=')
+          option.split('=', 2).last
+        end
+      end
+                       .last
     end
   end
 end
