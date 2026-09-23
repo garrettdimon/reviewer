@@ -1,0 +1,9 @@
+---
+ignore:
+  # rubyzip < 3.4.0 path traversal in Zip::Entry#extract (GHSA-47m2-wp7j-p9vc). rubyzip is
+  # only present through license_finder in the optional :dogfood group, which opens, globs and
+  # reads zip entries in memory but never extracts them, and it is not a Reviewer runtime
+  # dependency. It cannot be upgraded until license_finder allows rubyzip 3:
+  # https://github.com/pivotal/LicenseFinder/issues/1066
+  # Remove this entry once license_finder permits rubyzip >= 3.4.0.
+  - CVE-2026-85396
