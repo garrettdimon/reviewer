@@ -4,6 +4,8 @@ require 'test_helper'
 
 module Reviewer
   class ShellTest < Minitest::Test
+    WARNING_SIGN = "printf '\\342\\232\\240 1 warning\\n'"
+
     def setup
       @shell = Shell.new
     end
@@ -92,6 +94,27 @@ module Reviewer
       shell = Shell.new(stream: stream)
       shell.direct('echo hello')
       assert_includes stream.string, 'hello'
+    end
+
+    def test_capture_main_decodes_non_ascii_output_as_utf8_under_ascii_locale
+      with_default_external(Encoding::US_ASCII) { @shell.capture_main(WARNING_SIGN) }
+
+      assert_equal Encoding::UTF_8, @shell.result.stdout.encoding
+      assert_equal "\u26A0 1 warning\n", @shell.result.stdout
+    end
+
+    def test_capture_main_decodes_stderr_as_utf8_under_ascii_locale
+      with_default_external(Encoding::US_ASCII) { @shell.capture_main("#{WARNING_SIGN} >&2") }
+
+      assert_equal "\u26A0 1 warning\n", @shell.result.stderr
+    end
+
+    def test_direct_decodes_non_ascii_output_as_utf8_under_ascii_locale
+      shell = Shell.new(stream: StringIO.new)
+      with_default_external(Encoding::US_ASCII) { shell.direct(WARNING_SIGN) }
+
+      assert_equal Encoding::UTF_8, shell.result.stdout.encoding
+      assert_includes shell.result.stdout, "\u26A0 1 warning"
     end
   end
 end

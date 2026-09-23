@@ -10,6 +10,17 @@ module Reviewer
           @strategy = Runner::Strategies::Captured
         end
 
+        def test_captured_runner_reports_failure_for_non_ascii_output_under_ascii_locale
+          runner = Runner.new(build_tool(:failing_with_non_ascii_output), :review, @strategy, context: default_context)
+
+          result = nil
+          with_default_external(Encoding::US_ASCII) do
+            capture_subprocess_io { result = runner.run }
+          end
+          refute runner.success?
+          assert_equal 1, result
+        end
+
         def test_captured_runner_implementation
           captured_runner = Runner.new(build_tool(:list), :review, @strategy, context: default_context)
 

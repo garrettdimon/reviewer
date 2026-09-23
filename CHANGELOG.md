@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Fixed
+
+- Report tool failures normally when a tool prints non-ASCII text under a non-UTF-8 locale (such as
+  `LC_ALL=C` or an unrecognized `LC_ALL`), or prints bytes that aren't valid UTF-8, instead of crashing
+  with an encoding error. Captured output is read as UTF-8 and invalid bytes are replaced.
+
 ## [1.1.1] - 2026-09-02
 
 ### Fixed
