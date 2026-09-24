@@ -10,6 +10,19 @@ module Reviewer
 
       MISSING_FILES_MESSAGE = 'The --files option requires at least one file or path.'
 
+      MISSING_BASE_MESSAGES = {
+        origin_head: [
+          "Can't compare against origin/HEAD: origin/HEAD isn't set",
+          'Run `git remote set-head origin --auto`, then try again.'
+        ],
+        merge_base: [
+          "Can't find where this work split from origin/HEAD",
+          'Fetch the default branch with its history (for example, `fetch-depth: 0` in CI), then try again.'
+        ]
+      }.freeze
+
+      BRANCHED_HINT = "'branched' always compares against origin/HEAD and doesn't take a branch name"
+
       attr_reader :output, :printer
       private :output, :printer
 
@@ -25,31 +38,35 @@ module Reviewer
       # Displays warnings for keywords that don't match any tool or git scope
       # @param unrecognized [Array<String>] the unrecognized keyword strings
       # @param suggestions [Hash{String => String}] keyword => suggested correction
+      # @param hint [String, nil] a closing note about how the request was misread
       #
       # @return [void]
-      def unrecognized_keywords(unrecognized, suggestions)
+      def unrecognized_keywords(unrecognized, suggestions, hint = nil)
         unrecognized.each do |keyword|
           printer.puts(:warning, "Unrecognized: #{keyword}")
           suggestion = suggestions[keyword]
           printer.puts(:muted, "  did you mean '#{suggestion}'?") if suggestion
         end
+        printer.puts(:muted, hint) if hint
         output.newline
       end
 
       # Renders a machine-readable envelope for a name Reviewer cannot honour
       # @param unrecognized [Array<String>] the names that matched nothing
       # @param suggestions [Hash] closest known name per unrecognized name
+      # @param hint [String, nil] a note about how the request was misread, omitted when nil
       #
       # @return [void]
-      def unrecognized_keywords_json(unrecognized, suggestions)
+      def unrecognized_keywords_json(unrecognized, suggestions, hint = nil)
         payload = {
           schema_version: Report::SCHEMA_VERSION,
           state: 'error',
           error: {
             code: 'unrecognized_selector',
             message: "Unrecognized: #{unrecognized.join(', ')}",
-            suggestions: suggestions
-          },
+            suggestions: suggestions,
+            hint: hint
+          }.compact,
           summary: Report.empty_summary,
           tools: []
         }
@@ -73,6 +90,33 @@ module Reviewer
           schema_version: Report::SCHEMA_VERSION,
           state: 'error',
           error: { code: 'missing_files', message: MISSING_FILES_MESSAGE },
+          summary: Report.empty_summary,
+          tools: []
+        }
+
+        printer.write_raw("#{JSON.pretty_generate(payload)}\n")
+      end
+
+      # Displays a usage error when `branched` can't resolve origin/HEAD or its merge base
+      # @param piece [Symbol] :origin_head or :merge_base
+      #
+      # @return [void]
+      def missing_base(piece)
+        problem, fix = MISSING_BASE_MESSAGES.fetch(piece)
+        printer.puts(:warning, problem)
+        printer.puts(:muted, fix)
+        output.newline
+      end
+
+      # Renders the machine-readable form of the missing base usage error
+      # @param piece [Symbol] :origin_head or :merge_base
+      #
+      # @return [void]
+      def missing_base_json(piece)
+        payload = {
+          schema_version: Report::SCHEMA_VERSION,
+          state: 'error',
+          error: { code: 'missing_base', message: MISSING_BASE_MESSAGES.fetch(piece).join('. ') },
           summary: Report.empty_summary,
           tools: []
         }

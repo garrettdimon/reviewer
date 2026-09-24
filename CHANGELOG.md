@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Added
+
+- `branched` keyword: selects every file that differs from `origin/HEAD` since the current work split
+  from it, including uncommitted and new files, so a whole branch can be reviewed before a pull
+  request. It stops with a usage error when `origin/HEAD` or the merge base can't be found.
+
 ### Fixed
 
 - Report tool failures normally when a tool prints non-ASCII text under a non-UTF-8 locale (such as
@@ -10,6 +16,8 @@
   and a non-UTF-8 locale could crash the run.
 - Report a mistyped or unsupported option, such as `rvw --list`, as a usage error with exit status 2
   instead of crashing with a backtrace.
+- Describe `modified` accurately in `--capabilities` and `--help`: it covers tracked files changed
+  since the last commit and excludes untracked files.
 
 ## [1.1.1] - 2026-09-02
 

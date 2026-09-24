@@ -26,8 +26,10 @@ module Reviewer
     KEYWORD_DESCRIPTIONS = {
       'staged' => 'Files staged for commit',
       'unstaged' => 'Files with unstaged changes',
-      'modified' => 'All changed files',
+      'modified' => 'Tracked files changed since the last commit (staged and unstaged); excludes untracked files',
       'untracked' => 'New files not yet tracked',
+      'branched' => 'Every file that differs from origin/HEAD since this work split from it, ' \
+                    'including uncommitted and new files',
       'failed' => 'Tools whose last executed review failed and have not passed since'
     }.freeze
 
@@ -38,6 +40,7 @@ module Reviewer
     SCENARIOS = {
       before_commit: 'rvw staged',
       during_development: 'rvw modified',
+      before_pull_request: 'rvw branched',
       full_review: 'rvw'
     }.freeze
 

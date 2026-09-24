@@ -47,12 +47,18 @@ module Reviewer
     def run_tools(command_type)
       return reject_invalid_files_option if arguments.invalid_files_option?
       return reject_unrecognized_selectors if unrecognized_selectors.any?
+      return reject_missing_base if arguments.files.missing_base
 
       json_output? ? run_json(command_type) : run_text(command_type)
     end
 
-    def reject_invalid_files_option
-      json_output? ? formatter.missing_files_option_json : formatter.missing_files_option
+    def reject_invalid_files_option = reject_as_usage_error(:missing_files_option)
+
+    def reject_missing_base = reject_as_usage_error(:missing_base, arguments.files.missing_base)
+
+    # Renders a usage error through the formatter's text or JSON form, then returns its status
+    def reject_as_usage_error(message, *)
+      formatter.public_send(json_output? ? :"#{message}_json" : message, *)
       USAGE_ERROR
     end
 
@@ -92,21 +98,13 @@ module Reviewer
     # attributing that success to a tool that never ran.
     def reject_unrecognized_selectors
       names = unrecognized_selectors
-      suggestions = build_suggestions(names)
-
-      if json_output?
-        formatter.unrecognized_keywords_json(names, suggestions)
-      else
-        formatter.unrecognized_keywords(names, suggestions)
-      end
-
-      USAGE_ERROR
+      reject_as_usage_error(:unrecognized_keywords, names, build_suggestions(names), unrecognized_selector_hint)
     end
 
-    # Positional selectors and `-t` values are the same request spelled two ways,
-    # so an unknown name has to fail the same either way. Keywords already track
-    # their own unrecognized set; tags are only checked against the configured
-    # vocabulary, since `-t` accepts nothing else.
+    def unrecognized_selector_hint
+      Session::Formatter::BRANCHED_HINT if arguments.files.keywords.include?('branched')
+    end
+
     def unrecognized_selectors
       (arguments.keywords.unrecognized + unrecognized_tags).uniq.sort
     end

@@ -50,10 +50,9 @@ module Reviewer
     def test_includes_keywords
       result = @capabilities.to_h
       assert_kind_of Hash, result[:keywords]
-      assert result[:keywords].key?(:staged)
-      assert result[:keywords].key?(:unstaged)
-      assert result[:keywords].key?(:modified)
-      assert result[:keywords].key?(:untracked)
+      %i[staged unstaged modified untracked branched].each do |keyword|
+        assert result[:keywords].key?(keyword), "missing #{keyword}"
+      end
     end
 
     def test_includes_scenarios
@@ -62,6 +61,7 @@ module Reviewer
       assert result[:scenarios].key?(:before_commit)
       assert result[:scenarios].key?(:during_development)
       assert result[:scenarios].key?(:full_review)
+      assert_equal 'rvw branched', result[:scenarios][:before_pull_request]
     end
 
     def test_to_json_returns_string
