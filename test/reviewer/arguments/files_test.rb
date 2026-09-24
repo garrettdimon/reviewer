@@ -119,17 +119,19 @@ module Reviewer
       end
 
       def test_branched_requires_origin_head_without_falling_back_to_main
-        Dir.mktmpdir do |dir|
-          Dir.chdir(dir) do
-            git('init', '--quiet', '-b', 'main')
-            commit('base.rb')
-            git('remote', 'add', 'origin', File.join(dir, 'missing.git'))
-            File.write('untracked.rb', "untracked\n")
+        with_isolated_git_config do
+          Dir.mktmpdir do |dir|
+            Dir.chdir(dir) do
+              git('init', '--quiet', '-b', 'main')
+              commit('base.rb')
+              git('remote', 'add', 'origin', File.join(dir, 'missing.git'))
+              File.write('untracked.rb', "untracked\n")
 
-            files = Files.new(keywords: %w[branched])
+              files = Files.new(keywords: %w[branched])
 
-            assert_empty files.to_a
-            assert_equal :origin_head, files.missing_base.reason
+              assert_empty files.to_a
+              assert_equal :origin_head, files.missing_base.reason
+            end
           end
         end
       end
@@ -143,6 +145,26 @@ module Reviewer
             assert_match(/not a git repository/, missing.detail)
           end
         end
+      end
+
+      def test_branched_reports_a_failing_file_listing_instead_of_selecting_nothing
+        with_repository_cloned_from_remote do
+          diverge_feature_from_main
+          files = Files.new(keywords: %w[branched])
+          missing = with_env('GIT_INDEX_FILE' => File::NULL) { files.missing_base }
+
+          assert_equal :git_error, missing.reason
+          assert_empty files.to_a
+        end
+      end
+
+      def test_branched_decodes_git_errors_under_an_ascii_locale
+        missing = with_env('GIT_DIR' => "/does-not-exist/caf\u00E9") do
+          with_default_external(Encoding::US_ASCII) { Files.new(keywords: %w[branched]).missing_base }
+        end
+
+        assert_equal :git_error, missing.reason
+        assert_includes missing.detail, "caf\u00E9"
       end
 
       def test_branched_reports_a_missing_merge_base_in_a_shallow_clone
@@ -235,7 +257,11 @@ module Reviewer
 
       # Seeds a bare remote whose default branch is main, then clones it so origin/HEAD is set.
       # Yields inside the clone with the remote's path.
-      def with_repository_cloned_from_remote
+      def with_repository_cloned_from_remote(&)
+        with_isolated_git_config { clone_from_remote(&) }
+      end
+
+      def clone_from_remote
         Dir.mktmpdir do |dir|
           seed = File.join(dir, 'seed')
           remote = File.join(dir, 'remote.git')

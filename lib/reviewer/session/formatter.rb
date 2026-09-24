@@ -87,7 +87,7 @@ module Reviewer
       end
 
       # Displays a usage error when `branched` can't find where the work split from origin/HEAD
-      # @param missing [Arguments::Files::BranchPoint::Missing] why the branch point wasn't found
+      # @param missing [Arguments::Files::BranchedFiles::Missing] why the branched files couldn't be selected
       #
       # @return [void]
       def missing_base(missing)
@@ -97,7 +97,7 @@ module Reviewer
       end
 
       # Renders the machine-readable form of the missing base usage error
-      # @param missing [Arguments::Files::BranchPoint::Missing] why the branch point wasn't found
+      # @param missing [Arguments::Files::BranchedFiles::Missing] why the branched files couldn't be selected
       #
       # @return [void]
       def missing_base_json(missing)

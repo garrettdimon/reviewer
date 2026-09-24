@@ -2,7 +2,7 @@
 
 require 'open3'
 
-require_relative 'files/branch_point'
+require_relative 'files/branched_files'
 
 module Reviewer
   class Arguments
@@ -61,10 +61,10 @@ module Reviewer
       # Why `branched` couldn't select files. `branched` never substitutes another ref, so the
       # caller reports this instead of reviewing nothing.
       #
-      # @return [BranchPoint::Missing, nil] why the branch point couldn't be found, or nil when it
-      #   was found or `branched` wasn't requested
+      # @return [BranchedFiles::Missing, nil] why the files couldn't be selected, or nil when they
+      #   were or `branched` wasn't requested
       def missing_base
-        branch_point.missing if keywords.include?('branched')
+        branched_files.missing if keywords.include?('branched')
       end
 
       private
@@ -112,16 +112,9 @@ module Reviewer
         git_files(%w[ls-files --others --exclude-standard])
       end
 
-      # Every file that differs from origin/HEAD since this work split from it, including
-      # uncommitted and new files
-      def branched
-        commit = branch_point.commit
-        return [] unless commit
+      def branched = branched_files.files
 
-        git_files(%W[diff --name-only #{commit}]) + untracked
-      end
-
-      def branch_point = @branch_point ||= BranchPoint.new
+      def branched_files = @branched_files ||= BranchedFiles.new
 
       # Executes a git command and returns the output as an array of file paths. Git escapes
       # non-ASCII paths unless `core.quotePath` is off, and its output is read as UTF-8 like any
