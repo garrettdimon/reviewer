@@ -26,6 +26,20 @@ module Reviewer
       end
     end
 
+    def test_branched_outside_a_repository_reports_gits_error_instead_of_a_fix
+      with_swapped_config(Reviewer.configuration.file.expand_path) do
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir) do
+            session = build_session(arguments: Arguments.new(%w[branched]))
+            output, = capture_subprocess_io { assert_equal Session::USAGE_ERROR, session.review }
+
+            assert_match(/not a git repository/, output)
+            refute_match(/set-head/, output)
+          end
+        end
+      end
+    end
+
     def test_branched_with_a_branch_name_hints_that_it_takes_none
       tools_collection = Tools.new(config_file: Reviewer.configuration.file)
       session = build_session(arguments: Arguments.new(%w[branched main]), tools: tools_collection)

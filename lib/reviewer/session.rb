@@ -57,8 +57,8 @@ module Reviewer
     def reject_missing_base = reject_as_usage_error(:missing_base, arguments.files.missing_base)
 
     # Renders a usage error through the formatter's text or JSON form, then returns its status
-    def reject_as_usage_error(message, *)
-      formatter.public_send(json_output? ? :"#{message}_json" : message, *)
+    def reject_as_usage_error(formatter_method, *)
+      formatter.public_send(json_output? ? :"#{formatter_method}_json" : formatter_method, *)
       USAGE_ERROR
     end
 
@@ -105,6 +105,10 @@ module Reviewer
       Session::Formatter::BRANCHED_HINT if arguments.files.keywords.include?('branched')
     end
 
+    # Positional selectors and `-t` values are the same request spelled two ways,
+    # so an unknown name has to fail the same either way. Keywords already track
+    # their own unrecognized set; tags are only checked against the configured
+    # vocabulary, since `-t` accepts nothing else.
     def unrecognized_selectors
       (arguments.keywords.unrecognized + unrecognized_tags).uniq.sort
     end

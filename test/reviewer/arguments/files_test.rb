@@ -129,7 +129,18 @@ module Reviewer
             files = Files.new(keywords: %w[branched])
 
             assert_empty files.to_a
-            assert_equal :origin_head, files.missing_base
+            assert_equal :origin_head, files.missing_base.reason
+          end
+        end
+      end
+
+      def test_branched_reports_other_git_errors_with_gits_message
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir) do
+            missing = Files.new(keywords: %w[branched]).missing_base
+
+            assert_equal :git_error, missing.reason
+            assert_match(/not a git repository/, missing.detail)
           end
         end
       end
@@ -144,7 +155,7 @@ module Reviewer
             files = Files.new(keywords: %w[branched])
 
             assert_empty files.to_a
-            assert_equal :merge_base, files.missing_base
+            assert_equal :merge_base, files.missing_base.reason
           end
         end
       end

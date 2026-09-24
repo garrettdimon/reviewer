@@ -61,8 +61,8 @@ module Reviewer
       # Why `branched` couldn't select files. `branched` never substitutes another ref, so the
       # caller reports this instead of reviewing nothing.
       #
-      # @return [Symbol, nil] the missing piece (see BranchPoint#missing), or nil when the branch
-      #   point was found or `branched` wasn't requested
+      # @return [BranchPoint::Missing, nil] why the branch point couldn't be found, or nil when it
+      #   was found or `branched` wasn't requested
       def missing_base
         branch_point.missing if keywords.include?('branched')
       end

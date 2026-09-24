@@ -10,17 +10,6 @@ module Reviewer
 
       MISSING_FILES_MESSAGE = 'The --files option requires at least one file or path.'
 
-      MISSING_BASE_MESSAGES = {
-        origin_head: [
-          "Can't compare against origin/HEAD: origin/HEAD isn't set",
-          'Run `git remote set-head origin --auto`, then try again.'
-        ],
-        merge_base: [
-          "Can't find where this work split from origin/HEAD",
-          'Fetch the default branch with its history (for example, `fetch-depth: 0` in CI), then try again.'
-        ]
-      }.freeze
-
       BRANCHED_HINT = "'branched' always compares against origin/HEAD and doesn't take a branch name"
 
       attr_reader :output, :printer
@@ -97,26 +86,25 @@ module Reviewer
         printer.write_raw("#{JSON.pretty_generate(payload)}\n")
       end
 
-      # Displays a usage error when `branched` can't resolve origin/HEAD or its merge base
-      # @param piece [Symbol] :origin_head or :merge_base
+      # Displays a usage error when `branched` can't find where the work split from origin/HEAD
+      # @param missing [Arguments::Files::BranchPoint::Missing] why the branch point wasn't found
       #
       # @return [void]
-      def missing_base(piece)
-        problem, fix = MISSING_BASE_MESSAGES.fetch(piece)
-        printer.puts(:warning, problem)
-        printer.puts(:muted, fix)
+      def missing_base(missing)
+        printer.puts(:warning, missing.problem)
+        printer.puts(:muted, missing.fix)
         output.newline
       end
 
       # Renders the machine-readable form of the missing base usage error
-      # @param piece [Symbol] :origin_head or :merge_base
+      # @param missing [Arguments::Files::BranchPoint::Missing] why the branch point wasn't found
       #
       # @return [void]
-      def missing_base_json(piece)
+      def missing_base_json(missing)
         payload = {
           schema_version: Report::SCHEMA_VERSION,
           state: 'error',
-          error: { code: 'missing_base', message: MISSING_BASE_MESSAGES.fetch(piece).join('. ') },
+          error: { code: 'missing_base', message: missing.message },
           summary: Report.empty_summary,
           tools: []
         }
