@@ -5,6 +5,9 @@
 - Report tool failures normally when a tool prints non-ASCII text under a non-UTF-8 locale (such as
   `LC_ALL=C` or an unrecognized `LC_ALL`), or prints bytes that aren't valid UTF-8, instead of crashing
   with an encoding error. Captured output is read as UTF-8 and invalid bytes are replaced.
+- Include files with non-ASCII names in `staged`, `unstaged`, `modified` and `untracked` runs. Git's
+  escaped path names previously never matched the real files, so those files were silently skipped,
+  and a non-UTF-8 locale could crash the run.
 
 ## [1.1.1] - 2026-09-02
 

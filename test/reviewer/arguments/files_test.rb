@@ -67,9 +67,9 @@ module Reviewer
 
       def test_git_keywords_preserve_deleted_paths
         commands = {
-          staged: 'git --no-pager diff --staged --name-only',
-          unstaged: 'git --no-pager diff --name-only',
-          modified: 'git --no-pager diff --name-only HEAD'
+          staged: 'git -c core.quotePath=false --no-pager diff --staged --name-only',
+          unstaged: 'git -c core.quotePath=false --no-pager diff --name-only',
+          modified: 'git -c core.quotePath=false --no-pager diff --name-only HEAD'
         }
 
         commands.each do |keyword, expected_command|
@@ -83,6 +83,23 @@ module Reviewer
             assert_equal ['deleted.rb', 'kept.rb'], Files.new(keywords: [keyword]).to_a
           end
           assert_equal expected_command, command
+        end
+      end
+
+      # Git escapes non-ASCII paths by default ("caf\303\251.rb"), and a non-UTF-8 locale labels its
+      # output US-ASCII. Either way the real file would never be reviewed, so run against real git.
+      def test_git_keywords_return_non_ascii_paths_as_utf8
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir) do
+            system('git', 'init', '--quiet', exception: true)
+            system('git', 'config', 'core.quotePath', 'true', exception: true)
+            FileUtils.touch("caf\u00E9.rb")
+            system('git', 'add', "caf\u00E9.rb", exception: true)
+
+            files = with_default_external(Encoding::US_ASCII) { Files.new(keywords: %w[staged]).to_a }
+
+            assert_equal ["caf\u00E9.rb"], files
+          end
         end
       end
 

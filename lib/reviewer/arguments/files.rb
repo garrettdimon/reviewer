@@ -101,15 +101,17 @@ module Reviewer
         git_files(%w[ls-files --others --exclude-standard])
       end
 
-      # Executes a git command and returns the output as an array of file paths
+      # Executes a git command and returns the output as an array of file paths. Git escapes
+      # non-ASCII paths unless `core.quotePath` is off, and its output is read as UTF-8 like any
+      # other command output so the paths match the real files regardless of locale.
       # @param options [Array<String>] the git command options
       #
       # @return [Array<String>] the output lines from the command
       def git_files(options)
-        command = (%w[git --no-pager] + options).join(' ')
+        command = (%w[git -c core.quotePath=false --no-pager] + options).join(' ')
         stdout, stderr, status = Open3.capture3(command)
 
-        return stdout.split("\n").reject(&:empty?) if status.success?
+        return Shell::Result.decode(stdout).split("\n").reject(&:empty?) if status.success?
 
         raise SystemCallError.new("Git Error: #{stderr} (#{command})", status.exitstatus.to_i)
       rescue SystemCallError => e
