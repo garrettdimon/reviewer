@@ -104,6 +104,16 @@ class ReleaseTest < Minitest::Test
     assert_equal ReleaseChecker.new(Reviewer::VERSION).release_notes, stdout.strip
   end
 
+  def test_release_notes_task_reads_the_changelog_as_utf8_under_ascii_locale
+    stdout, stderr, status = Open3.capture3(
+      { 'RELEASE_TAG' => "v#{Reviewer::VERSION}", 'LC_ALL' => 'C' },
+      'bundle', 'exec', 'rake', 'release:notes'
+    )
+
+    assert status.success?, stderr
+    assert_equal ReleaseChecker.new(Reviewer::VERSION).release_notes, stdout.strip
+  end
+
   # GitHub Actions cannot run locally, so this protects the workflow's security boundary structurally.
   def test_release_workflow_pins_actions
     actions = release_workflow.fetch('jobs').values.flat_map do |job|
