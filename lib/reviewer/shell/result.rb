@@ -42,11 +42,20 @@ module Reviewer
       #
       # @return [self]
       def initialize(stdout = nil, stderr = nil, status = nil)
-        @stdout = stdout
-        @stderr = stderr
+        @stdout = self.class.decode(stdout)
+        @stderr = self.class.decode(stderr)
         @status = status
         @exit_status = status&.exitstatus
       end
+
+      # Ruby labels command output with the locale's encoding, which is US-ASCII under `LC_ALL=C`
+      # or an unrecognized locale. Tools overwhelmingly emit UTF-8, so output is read as UTF-8
+      # regardless of locale, and bytes that aren't valid UTF-8 are replaced so that later string
+      # operations can't raise. Passthrough output reaches the terminal before this, unchanged.
+      # @param text [String, nil] raw output from a command
+      #
+      # @return [String, nil] valid UTF-8 text
+      def self.decode(text) = text && String.new(text, encoding: Encoding::UTF_8).scrub
 
       def exists? = [stdout, stderr, exit_status].compact.any?
 

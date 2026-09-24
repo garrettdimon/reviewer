@@ -111,6 +111,19 @@ module Reviewer
       assert_includes failed_files, 'lib/reviewer/command.rb'
     end
 
+    def test_reports_single_tool_failure_for_non_ascii_output_under_ascii_locale
+      tools = [build_tool(:failing_with_non_ascii_output)]
+
+      with_default_external(Encoding::US_ASCII) do
+        capture_subprocess_io do
+          @report = Batch.new(:review, tools, strategy: Runner::Strategies::Passthrough, context: @context).run
+        end
+      end
+
+      refute @report.success?
+      assert_equal 1, @report.results.first.exit_status
+    end
+
     def test_records_review_history_for_passing_tool
       @history.set(:list, :last_status, :failed)
       @history.set(:list, :last_failed_files, ['lib/reviewer/batch.rb'])

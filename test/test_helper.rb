@@ -45,6 +45,24 @@ module Minitest
       @test_fixture_config ||= Reviewer::Configuration::Loader.configuration(file: Reviewer.configuration.file)
     end
 
+    # Simulates a non-UTF-8 locale (e.g. LC_ALL=C) regardless of the developer's own locale.
+    # Ruby warns when this changes, so warnings are silenced while swapping.
+    def with_default_external(encoding)
+      original = Encoding.default_external
+      swap_default_external(encoding)
+      yield
+    ensure
+      swap_default_external(original)
+    end
+
+    def swap_default_external(encoding)
+      verbose = $VERBOSE
+      $VERBOSE = nil
+      Encoding.default_external = encoding
+    ensure
+      $VERBOSE = verbose
+    end
+
     # Temporarily swaps the Reviewer config file and clears memoized tools.
     # Use for tests that need a missing or alternate config.
     def with_swapped_config(file)

@@ -127,6 +127,13 @@ failing_with_stderr:
   commands:
     review: "echo 'stderr warning' >&2 && exit 1"
 
+# Intentionally Failing Command with non-ASCII and invalid UTF-8 output
+# Prints a warning sign (valid UTF-8) and a lone Latin-1 byte (invalid UTF-8), then exits 1
+failing_with_non_ascii_output:
+  disabled: true
+  commands:
+    review: "printf '\\342\\232\\240 1 warning in caf\\351.rb\\n' && exit 1"
+
 # For Testing Seed String Replacement
 dynamic_seed_tool:
   disabled: true

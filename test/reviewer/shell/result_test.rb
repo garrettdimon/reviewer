@@ -62,6 +62,13 @@ module Reviewer
         assert_includes result.to_s, stderr
         assert_includes result.to_s, stdout
       end
+
+      def test_replaces_bytes_that_are_not_valid_utf8
+        result = Result.new("caf\xE9".b, "\xFF".b, @process_status)
+
+        assert_equal "caf\uFFFD", result.stdout
+        assert_equal "\uFFFD", result.stderr
+      end
     end
   end
 end
