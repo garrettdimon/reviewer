@@ -1,10 +1,13 @@
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-24
+
 ### Added
 
 - `branched` keyword: selects every file that differs from `origin/HEAD` since the current work split
   from it, including uncommitted and new files, so a whole branch can be reviewed before a pull
-  request. It stops with a usage error when `origin/HEAD` or the merge base can't be found.
+  request. It never substitutes another branch: when it can't compare against `origin/HEAD`, it
+  stops with a usage error that names the fix or shows Git's message.
 
 ### Fixed
 
