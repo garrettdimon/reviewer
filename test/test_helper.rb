@@ -71,6 +71,21 @@ module Minitest
       $VERBOSE = verbose
     end
 
+    # Temporarily sets environment variables, restoring their previous values afterward
+    def with_env(variables)
+      previous = variables.keys.to_h { |name| [name, ENV.fetch(name, nil)] }
+      variables.each { |name, value| ENV[name] = value }
+      yield
+    ensure
+      previous&.each { |name, value| ENV[name] = value }
+    end
+
+    # Runs git fixtures and the code under test without the developer's global or system git
+    # configuration, so settings like mandatory commit signing or hook paths can't interfere.
+    def with_isolated_git_config(&)
+      with_env('GIT_CONFIG_GLOBAL' => File::NULL, 'GIT_CONFIG_NOSYSTEM' => '1', &)
+    end
+
     # Temporarily swaps the Reviewer config file and clears memoized tools.
     # Use for tests that need a missing or alternate config.
     def with_swapped_config(file)

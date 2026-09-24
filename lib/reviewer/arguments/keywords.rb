@@ -10,7 +10,7 @@ module Reviewer
     class Keywords
       # Keywords that resolve to a list of files. `Arguments::Files` implements one method per
       # entry, so a keyword here without a matching method silently contributes nothing.
-      FOR_FILES = %w[staged unstaged modified untracked].freeze
+      FOR_FILES = %w[staged unstaged modified untracked branched].freeze
 
       # Keywords that select tools rather than files. `failed` reads `last_status` from history via
       # `Tools#failed_from_history`; the per-tool file scope comes from `Command#stored_failed_files`.

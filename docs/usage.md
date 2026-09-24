@@ -59,8 +59,16 @@ File selectors resolve paths from Git:
 |---|---|
 | `staged` | Staged changes |
 | `unstaged` | Unstaged changes |
-| `modified` | Staged and unstaged changes compared with `HEAD` |
+| `modified` | Tracked files changed since the last commit (staged and unstaged); excludes untracked files |
 | `untracked` | Untracked, non-ignored files |
+| `branched` | Every file that differs from `origin/HEAD` since this work split from it, including uncommitted and new files |
+
+`branched` always compares against `origin/HEAD` and never substitutes another branch. When it
+can't, it stops with a usage error rather than reviewing nothing:
+
+- If `origin/HEAD` isn't set, run `git remote set-head origin --auto`.
+- In a shallow clone, such as a default CI checkout, fetch the default branch with its history
+  (for example, `fetch-depth: 0`).
 
 `failed` selects tools whose last executed review failed and, when available, reuses each tool's
 stored failed file paths. File-aware tools retry those paths; tools without file support retry their
@@ -73,12 +81,13 @@ Selections compose:
 ```console
 rvw rubocop staged
 rvw -t ruby modified
+rvw rubocop branched
 rvw tests -f test/reviewer_test.rb
 ```
 
-Explicit `-f`, `staged`, `unstaged`, `modified`, and `untracked` requests skip tools without a
-`files:` configuration instead of running their full-project command. Bare `rvw` remains the full
-configured review.
+Explicit `-f`, `staged`, `unstaged`, `modified`, `untracked`, and `branched` requests skip tools
+without a `files:` configuration instead of running their full-project command. Bare `rvw` remains
+the full configured review.
 
 The [configuration reference](configuration.md#file-targeting) describes filtering, file-scoped
 commands, and Minitest/RSpec source-to-test mapping.

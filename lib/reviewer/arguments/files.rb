@@ -2,6 +2,8 @@
 
 require 'open3'
 
+require_relative 'files/branched_files'
+
 module Reviewer
   class Arguments
     # Generates a Ruby-friendly list (Array) of files to run the command against from the provided
@@ -56,6 +58,15 @@ module Reviewer
       end
       alias inspect to_h
 
+      # Why `branched` couldn't select files. `branched` never substitutes another ref, so the
+      # caller reports this instead of reviewing nothing.
+      #
+      # @return [BranchedFiles::Missing, nil] why the files couldn't be selected, or nil when they
+      #   were or `branched` wasn't requested
+      def missing_base
+        branched_files.missing if keywords.include?('branched')
+      end
+
       private
 
       # Combines the sorted list of unique files/paths by merging the explicitly-provided file
@@ -100,6 +111,10 @@ module Reviewer
       def untracked
         git_files(%w[ls-files --others --exclude-standard])
       end
+
+      def branched = branched_files.files
+
+      def branched_files = @branched_files ||= BranchedFiles.new
 
       # Executes a git command and returns the output as an array of file paths. Git escapes
       # non-ASCII paths unless `core.quotePath` is off, and its output is read as UTF-8 like any

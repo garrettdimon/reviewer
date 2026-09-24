@@ -10,6 +10,8 @@ module Reviewer
 
       MISSING_FILES_MESSAGE = 'The --files option requires at least one file or path.'
 
+      BRANCHED_HINT = "'branched' always compares against origin/HEAD and doesn't take a branch name"
+
       attr_reader :output, :printer
       private :output, :printer
 
@@ -25,31 +27,35 @@ module Reviewer
       # Displays warnings for keywords that don't match any tool or git scope
       # @param unrecognized [Array<String>] the unrecognized keyword strings
       # @param suggestions [Hash{String => String}] keyword => suggested correction
+      # @param hint [String, nil] a closing note about how the request was misread
       #
       # @return [void]
-      def unrecognized_keywords(unrecognized, suggestions)
+      def unrecognized_keywords(unrecognized, suggestions, hint = nil)
         unrecognized.each do |keyword|
           printer.puts(:warning, "Unrecognized: #{keyword}")
           suggestion = suggestions[keyword]
           printer.puts(:muted, "  did you mean '#{suggestion}'?") if suggestion
         end
+        printer.puts(:muted, hint) if hint
         output.newline
       end
 
       # Renders a machine-readable envelope for a name Reviewer cannot honour
       # @param unrecognized [Array<String>] the names that matched nothing
       # @param suggestions [Hash] closest known name per unrecognized name
+      # @param hint [String, nil] a note about how the request was misread, omitted when nil
       #
       # @return [void]
-      def unrecognized_keywords_json(unrecognized, suggestions)
+      def unrecognized_keywords_json(unrecognized, suggestions, hint = nil)
         payload = {
           schema_version: Report::SCHEMA_VERSION,
           state: 'error',
           error: {
             code: 'unrecognized_selector',
             message: "Unrecognized: #{unrecognized.join(', ')}",
-            suggestions: suggestions
-          },
+            suggestions: suggestions,
+            hint: hint
+          }.compact,
           summary: Report.empty_summary,
           tools: []
         }
@@ -73,6 +79,32 @@ module Reviewer
           schema_version: Report::SCHEMA_VERSION,
           state: 'error',
           error: { code: 'missing_files', message: MISSING_FILES_MESSAGE },
+          summary: Report.empty_summary,
+          tools: []
+        }
+
+        printer.write_raw("#{JSON.pretty_generate(payload)}\n")
+      end
+
+      # Displays a usage error when `branched` can't find where the work split from origin/HEAD
+      # @param missing [Arguments::Files::BranchedFiles::Missing] why the branched files couldn't be selected
+      #
+      # @return [void]
+      def missing_base(missing)
+        printer.puts(:warning, missing.problem)
+        printer.puts(:muted, missing.fix)
+        output.newline
+      end
+
+      # Renders the machine-readable form of the missing base usage error
+      # @param missing [Arguments::Files::BranchedFiles::Missing] why the branched files couldn't be selected
+      #
+      # @return [void]
+      def missing_base_json(missing)
+        payload = {
+          schema_version: Report::SCHEMA_VERSION,
+          state: 'error',
+          error: { code: 'missing_base', message: missing.message },
           summary: Report.empty_summary,
           tools: []
         }

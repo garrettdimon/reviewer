@@ -147,8 +147,9 @@ module Reviewer
         Keywords:
             staged                       Files staged for commit
             unstaged                     Files with unstaged changes
-            modified                     All changed files (staged + unstaged)
+            modified                     Tracked files changed since the last commit
             untracked                    New files not yet tracked by git
+            branched                     All files that differ from origin/HEAD, including new ones
             failed                       Re-run tools whose last executed review failed
 
         Options:
@@ -158,6 +159,7 @@ module Reviewer
             rvw rubocop                  Run RuboCop only
             rvw staged                   Review staged files across all tools
             rvw -t security modified     Run security-tagged tools on changed files
+            rvw branched                 Review everything this branch changes before a PR
             rvw tests -f test/user_test.rb   Run tests on a specific file
             rvw failed                   Re-run tools whose last executed review failed
             fmt rubocop                  Auto-fix with RuboCop
