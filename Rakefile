@@ -60,7 +60,7 @@ end
 
 # Validates release readiness
 class ReleaseChecker
-  def initialize(version, changelog: File.read('CHANGELOG.md'))
+  def initialize(version, changelog: File.read('CHANGELOG.md', encoding: Encoding::UTF_8))
     @version = version
     @changelog = changelog
     @errors = []

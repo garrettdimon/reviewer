@@ -17,6 +17,14 @@ if ENV['COVERAGE'] || ENV['CI']
   SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(formatters)
 end
 
+# The project's docs, fixtures and captured output are UTF-8, so the suite reads text as UTF-8
+# regardless of the developer's locale. Tests that exercise a non-UTF-8 locale opt in with
+# `with_default_external`. Ruby warns when this changes, so the warning is silenced here.
+original_verbose = $VERBOSE
+$VERBOSE = nil
+Encoding.default_external = Encoding::UTF_8
+$VERBOSE = original_verbose
+
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'reviewer'
 
