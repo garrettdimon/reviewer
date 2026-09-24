@@ -356,6 +356,30 @@ module Reviewer
       refute_match(/"version"/, output)
     end
 
+    def test_unknown_option_is_a_usage_error
+      out, _err = with_argv('--list') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.review }
+          assert_equal Session::USAGE_ERROR, error.status
+        end
+      end
+
+      assert_match(/unknown option `--list'/, out)
+      assert_match(/rvw --help/, out)
+    end
+
+    def test_unknown_option_is_a_usage_error_for_format
+      out, _err = with_argv('--bogus') do
+        capture_subprocess_io do
+          error = assert_raises(SystemExit) { Reviewer.format }
+          assert_equal Session::USAGE_ERROR, error.status
+        end
+      end
+
+      assert_match(/unknown option `--bogus'/, out)
+      assert_match(/rvw --help/, out)
+    end
+
     private
 
     def with_argv(*args)

@@ -41,6 +41,8 @@ module Reviewer
     # @return [void] Prints output to the console
     def review
       handle_early_exits { exit build_session.review }
+    rescue Slop::Error => e
+      reject_invalid_option(e.message)
     end
 
     # Runs the `format` command for the specified tools/files for which it is configured.
@@ -48,6 +50,8 @@ module Reviewer
     # @return [void] Prints output to the console
     def format
       handle_early_exits { exit build_session.format }
+    rescue Slop::Error => e
+      reject_invalid_option(e.message)
     end
 
     # The collection of arguments that were passed via the command line.
@@ -103,6 +107,16 @@ module Reviewer
       return run_first_time_setup if first_time_setup?
 
       yield
+    end
+
+    # A mistyped or unsupported option is a usage error, not a crash
+    # @param message [String] the parser's description of the invalid option
+    #
+    # @return [void]
+    def reject_invalid_option(message)
+      output.printer.puts(:warning, message)
+      output.printer.puts(:muted, 'Run `rvw --help` for usage.')
+      exit Session::USAGE_ERROR
     end
 
     def first_time_setup? = !arguments.invalid_files_option? && !configuration.file.exist?
